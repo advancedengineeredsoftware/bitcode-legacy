@@ -94,6 +94,18 @@ jest.mock('@/lib/depository-settled-demand', () => ({
   })),
 }));
 
+// Demonstration mode reads the request checkout over GitHub REST.
+jest.mock('@/lib/github-repository-rest', () => ({
+  listGitHubRepositoryTreePaths: jest.fn(async () => [
+    'README.md',
+    'src/app.py',
+    'src/http/client.py',
+    'secret/keys.py',
+  ]),
+  readGitHubRepositoryLanguage: jest.fn(async () => 'Python'),
+  resolveGitHubAccessTokenForUser: jest.fn(async () => 'ghs_installation_token'),
+}));
+
 import { createClient } from '@bitcode/supabase/ssr/server';
 import { supabaseAdmin } from '@bitcode/supabase';
 import { createStreamingExecution } from '@bitcode/pipelines-generics';
@@ -452,5 +464,41 @@ describe('POST /api/deposit/synthesize-options', () => {
     const failed = executionRow.upsert.mock.calls.find((call) => call[0]?.status === 'failed')![0];
     expect(failed.status).toBe('failed');
     expect(failed.error.message).toContain('pipeline boom');
+  });
+
+  describe('demonstration mode (BITCODE_DEMONSTRATION_MODE=1)', () => {
+    const env = process.env;
+    beforeEach(() => {
+      process.env = { ...env, BITCODE_DEMONSTRATION_MODE: '1', BITCODE_DEMONSTRATION_PACE: '0' };
+    });
+    afterEach(() => {
+      process.env = env;
+    });
+
+    it('replays synthesis (no SDIVF / clone) and persists really-projected catalog options', async () => {
+      const { executionRow } = installSupabaseMocks({});
+      installExecutionMock();
+      // The inference opt-out does not gate a replay.
+      mockRealInference.mockReturnValue(false);
+
+      const response = await POST(createRequest());
+      expect(response.status).toBe(200);
+      await flushBackground(
+        () => executionRow.upsert.mock.calls.some((call) => call[0]?.status === 'completed'),
+        400,
+      );
+      expect(mockPipeline).not.toHaveBeenCalled();
+      expect(mockCreateCloneForRun).not.toHaveBeenCalled();
+
+      const completed = executionRow.upsert.mock.calls.find((call) => call[0]?.status === 'completed')![0];
+      expect(completed.context.synthesisReplay).toBe('demonstration');
+      expect(completed.output.depositOptionSynthesis.optionCount).toBe(4);
+      const provenance = completed.output.depositOptionSynthesis.options.flatMap(
+        (option: { contents?: { provenantSourcePaths?: string[] } }) => option.contents?.provenantSourcePaths ?? [],
+      );
+      expect(provenance).toContain('src/http/client.py');
+      // Impermissible sources stay excluded from provenance.
+      expect(provenance.some((path: string) => path.startsWith('secret/'))).toBe(false);
+    });
   });
 });

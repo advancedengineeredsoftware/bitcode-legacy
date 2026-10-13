@@ -65,6 +65,9 @@ export default async function runReadFinishSynthesizeRunAgent(input: any, execut
     metadata: {
       measurementRationale: opt?.measurementRationale ?? null,
     },
+    // Depository supply this option was synthesized from (seller linkage for
+    // settle payout). Server-only: the unpaid projection is an allowlist.
+    supplyProvenance: opt?.supplyProvenance ?? null,
     selectable: true,
     settleable: true,
   }));

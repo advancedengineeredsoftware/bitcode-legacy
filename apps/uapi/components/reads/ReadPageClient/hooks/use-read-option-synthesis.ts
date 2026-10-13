@@ -96,6 +96,8 @@ export function useReadOptionSynthesis(input: {
   const [dispatchedAtMs, setDispatchedAtMs] = useState<number | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const dispatchedAtMsRef = useRef<number | null>(null);
+  /** Completed run whose stored envelope was already hydrated (reopen path). */
+  const hydratedRunIdRef = useRef<string | null>(null);
 
   const stopPoll = useCallback(() => {
     if (pollRef.current) {
@@ -243,11 +245,52 @@ export function useReadOptionSynthesis(input: {
     );
   }, []);
 
+  /**
+   * Reopen a completed run from the pipelines table: hydrate its stored
+   * (unpaid) selection envelope once so options + checkout are available.
+   */
+  const hydrateCompletedRun = useCallback(async (id: string) => {
+    hydratedRunIdRef.current = id;
+    try {
+      const res = await fetch(`/api/executions/history/${id}`);
+      const data = await res.json().catch(() => null);
+      const output = data?.run?.output as
+        | { selectionEnvelope?: ReadSelectionEnvelope; options?: ReadSynthesizedOption[] }
+        | undefined;
+      const stored =
+        output?.selectionEnvelope ||
+        (Array.isArray(output?.options)
+          ? {
+              options: output!.options,
+              purpose: "user-select-options-to-settle",
+              nextPipeline: "settle-asset-pack-pipeline",
+            }
+          : null);
+      if (hydratedRunIdRef.current !== id) return;
+      setRunId(id);
+      setEnvelope(stored);
+      setSelectedIndexes([]);
+      setStatus("complete");
+      setError(null);
+    } catch {
+      hydratedRunIdRef.current = null;
+    }
+  }, []);
+
   // Adopt a still-running row from URL/liveRuns (deposit lifecycle twin).
   useEffect(() => {
     const active = String(activeRunId || "").trim();
     if (!active) return;
     const rowStatus = String(activeRunStatus || "").toLowerCase();
+    if (
+      rowStatus === "completed" &&
+      status !== "running" &&
+      hydratedRunIdRef.current !== active &&
+      !(runId === active && envelope)
+    ) {
+      void hydrateCompletedRun(active);
+      return;
+    }
     if (rowStatus === "running") {
       if (runId !== active) setRunId(active);
       if (status !== "running" && status !== "complete") {
@@ -262,7 +305,16 @@ export function useReadOptionSynthesis(input: {
       setStatus("cancelled");
       setError(null);
     }
-  }, [activeRunId, activeRunStatus, pollForOptions, runId, status, stopPoll]);
+  }, [
+    activeRunId,
+    activeRunStatus,
+    envelope,
+    hydrateCompletedRun,
+    pollForOptions,
+    runId,
+    status,
+    stopPoll,
+  ]);
 
   /**
    * Cooperative cancel (deposit twin): mark execution cancelled; worker stops
@@ -330,6 +382,7 @@ export function useReadOptionSynthesis(input: {
   /** Clear compose/detail synthesis state when returning to the pipelines master. */
   const reset = useCallback(() => {
     stopPoll();
+    hydratedRunIdRef.current = null;
     setStatus("idle");
     setRunId(null);
     setError(null);

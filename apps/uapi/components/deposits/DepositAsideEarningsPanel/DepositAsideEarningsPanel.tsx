@@ -1,7 +1,8 @@
 'use client';
 
 /**
- * Deposit route aside — Earnings / all-repositories supply estimate panel.
+ * Deposit route aside — Earnings / all-repositories supply estimate panel,
+ * plus realized sales (sold DataPacks → seller compensation split).
  */
 
 import React from "react";
@@ -19,6 +20,7 @@ import {
 } from "@/components/deposits/models/deposit-stat-explainers";
 import type { DepositRouteSession } from "@/components/deposits/models/deposit-route-model";
 import type { DepositSettledDemandEstimate } from "@/components/deposits/models/deposit-settled-demand";
+import { DepositSoldDataPacks } from "@/components/deposits/DepositSoldDataPacks/DepositSoldDataPacks";
 
 export type DepositAsideEarningsPanelProps = {
   depositRouteSession: DepositRouteSession;
@@ -264,6 +266,7 @@ export function DepositAsideEarningsPanel({
           />
         )}
       </div>
+      <DepositSoldDataPacks />
     </ProductRouteAsideCard>
   );
 }

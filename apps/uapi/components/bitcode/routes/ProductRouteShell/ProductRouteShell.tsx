@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { BitcodeDemonstrationModeBadge } from "@/components/bitcode/layout/BitcodeDemonstrationModeBadge/BitcodeDemonstrationModeBadge";
 import type { LucideIcon } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { TelemetryExplainerTrigger } from "@/components/bitcode/pipeline/TelemetryExplainerTrigger/TelemetryExplainerTrigger";
@@ -360,6 +361,7 @@ export function ProductRouteShell({
           >
             <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             {label}
+            <BitcodeDemonstrationModeBadge />
           </p>
           {/*
             Phone: title then metrics stack (wrap) so chips never clip the title.

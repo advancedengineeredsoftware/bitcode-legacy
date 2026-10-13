@@ -21,7 +21,7 @@ import { useExchangeRouteParams } from "./hooks/use-exchange-route-params";
 import { ExchangeActivityMaster } from "@/components/exchange/ExchangeActivityMaster/ExchangeActivityMaster";
 import { ExchangeActivityDetail } from "@/components/exchange/ExchangeActivityDetail/ExchangeActivityDetail";
 import { ExchangePortfolioStrip } from "@/components/exchange/ExchangePortfolioStrip/ExchangePortfolioStrip";
-import { useUserData } from "@/hooks/useUserData";
+import { mutateUserData, useUserData } from "@/hooks/useUserData";
 
 export default function ExchangePageClient() {
   const { walletConnectionStatus, data: userData } = useUserData();
@@ -164,7 +164,11 @@ export default function ExchangePageClient() {
           detail={detail}
           layout="main"
           viewerEthereumAddress={viewerEthereumAddress}
-          onPayoutFinalized={() => void refresh()}
+          onPayoutFinalized={() => {
+            void refresh();
+            // Finalized seller BTD lands in projected holdings (header chip).
+            void mutateUserData().catch(() => undefined);
+          }}
         />
         <ExchangeActivityDetail detail={detail} layout="aside" />
       </ProductDetailStage>

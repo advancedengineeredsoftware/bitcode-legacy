@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
 import { normalizeExecutionHistoryRow } from '@bitcode/api/src/routes/executions';
+import {
+  isBitcodeDemonstrationModeEnabled,
+  scopeExecutionRowsToActiveDataset,
+  scopeExecutionsQueryToActiveDataset,
+} from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
 
 import { supabaseAdmin } from '@bitcode/supabase';
 import { createClient } from '@bitcode/supabase/ssr/server';
@@ -100,21 +105,28 @@ export async function GET(request: Request) {
     });
   }
 
+  // Demonstration mode: pack activity is demonstration data only, and the
+  // account's real notifications (about real packs) are withheld.
+  const demonstration = isBitcodeDemonstrationModeEnabled();
   const [executionsResult, notificationsResult] = await Promise.all([
-    supabaseAdmin
-      .from('executions')
-      .select(
-        'id, user_id, created_at, started_at, completed_at, status, type, input, output, context, items, error, total_tokens, total_cost, duration_ms',
-      )
-      .eq('user_id', userId)
+    scopeExecutionsQueryToActiveDataset(
+      supabaseAdmin
+        .from('executions')
+        .select(
+          'id, user_id, created_at, started_at, completed_at, status, type, input, output, context, items, error, total_tokens, total_cost, duration_ms',
+        )
+        .eq('user_id', userId),
+    )
       .order('created_at', { ascending: false })
       .limit(limit),
-    supabaseAdmin
-      .from('notifications')
-      .select('id, user_id, type, title, message, data, is_read, created_at')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(limit),
+    demonstration
+      ? Promise.resolve({ data: [], error: null })
+      : supabaseAdmin
+          .from('notifications')
+          .select('id, user_id, type, title, message, data, is_read, created_at')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(limit),
   ]);
 
   if (executionsResult.error) {
@@ -126,7 +138,7 @@ export async function GET(request: Request) {
   }
 
   const records = [
-    ...(executionsResult.data || []).map((row: any) =>
+    ...scopeExecutionRowsToActiveDataset((executionsResult.data || []) as any[]).map((row: any) =>
       buildBitcodeActivityRecordFromExecutionHistory(normalizeExecutionHistoryRow(row)),
     ),
     ...(notificationsResult.data || []).map((row: any) =>

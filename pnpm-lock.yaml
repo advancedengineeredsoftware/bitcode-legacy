@@ -1137,6 +1137,9 @@ importers:
       '@bitcode/generic-agents-web-research':
         specifier: workspace:*
         version: link:../../../generic-agents/web-researcher
+      '@bitcode/generic-artifacts-patch-kind':
+        specifier: workspace:*
+        version: link:../../../generic-artifacts/patch-kind
       '@bitcode/generic-asset-packs-synthesis':
         specifier: workspace:*
         version: link:../../../generic-asset-packs/synthesis

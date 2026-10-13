@@ -237,6 +237,47 @@ describe('POST /api/packs/payout/finalize (MVP-E2E L1-P1)', () => {
   });
 });
 
+describe('POST /api/packs/payout/finalize — linked seller authority (V48 G4-5)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  function linkedSettleRow() {
+    return {
+      id: 'run-linked',
+      user_id: 'buyer-1',
+      status: 'completed',
+      output: { pendingPayout: pendingPayout({ sellerUserId: 'seller-1' }) },
+      context: { settlementState: 'settled', sellerUserId: 'seller-1' },
+    };
+  }
+
+  it('lets the linked seller (not the buyer-owner) finalize the split', async () => {
+    sessionUser('seller-1');
+    let calls = 0;
+    mockFrom.mockImplementation(() => {
+      calls += 1;
+      return calls === 1 ? mockSelectRow(linkedSettleRow()) : mockUpdateOk();
+    });
+    const response = await POST(postFor({ settleRunId: 'run-linked', sellerBtdBps: 2500 }));
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.payout).toEqual(
+      expect.objectContaining({ status: 'finalized', sellerBtdBpsFinalized: 2500 }),
+    );
+  });
+
+  it('refuses the buyer-owner when a seller is linked', async () => {
+    sessionUser('buyer-1');
+    mockFrom.mockImplementation(() => mockSelectRow(linkedSettleRow()));
+    const response = await POST(postFor({ settleRunId: 'run-linked', sellerBtdBps: 2500 }));
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toEqual(
+      expect.objectContaining({ code: 'settle_run_forbidden' }),
+    );
+  });
+});
+
 describe('GET /api/packs/payout/finalize (preview)', () => {
   it('returns split preview without writing', async () => {
     const response = await GET(

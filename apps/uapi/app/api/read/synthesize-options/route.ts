@@ -13,6 +13,10 @@ import { supabaseAdmin } from '@bitcode/supabase';
 import { createClient } from '@bitcode/supabase/ssr/server';
 import { createStreamingExecution } from '@bitcode/pipelines-generics';
 import { isAssetPackRealInferenceEnabled } from '@bitcode/asset-packs-pipelines-syntheses-domain/runtime-inference-policy';
+import {
+  isBitcodeDemonstrationModeEnabled,
+  withDemonstrationDataset,
+} from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
 import { runReadOptionSynthesis } from './dispatch-read-synthesis';
 
 export const runtime = 'nodejs';
@@ -37,7 +41,8 @@ export async function POST(request: Request) {
 
   // Real inference is the product default (host/Pipeliner). Explicit opt-out
   // BITCODE_ASSET_PACK_REAL_INFERENCE=0 remains for deterministic unit tests.
-  if (!isAssetPackRealInferenceEnabled()) {
+  // Demonstration mode replays synthesis, so the inference opt-out does not gate it.
+  if (!isAssetPackRealInferenceEnabled() && !isBitcodeDemonstrationModeEnabled()) {
     return NextResponse.json(
       {
         error:
@@ -112,7 +117,7 @@ export async function POST(request: Request) {
       relevantPathCount: relevantPaths.length,
       irrelevantPathCount: irrelevantPaths.length,
     },
-    context: {
+    context: withDemonstrationDataset({
       source: 'read-synthesize-options',
       route: '/reads',
       pipelineCore: 'synthesize-reads-asset-packs-pipeline',
@@ -122,7 +127,7 @@ export async function POST(request: Request) {
       sourceCommit: sourceCommit || null,
       relevantPaths,
       irrelevantPaths,
-    },
+    }),
     started_at: new Date().toISOString(),
   });
 

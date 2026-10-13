@@ -62,6 +62,7 @@ import type {
   SettleAssetPackResult,
   SettleBtcMempoolObservation,
   SettleBtcPaymentObservation,
+  SettleBtcPaymentObservationInput,
   SettleExecutionStore,
   SettlePackActivity,
   SettleRightsArtifact,
@@ -291,21 +292,21 @@ const settleBtc: Executor<SettleAssetPackInput, SettleAssetPackInput> = async (
   execution,
 ) => {
   storeCrossPhaseArtifact(execution, 'settle-asset-pack-pipeline', 'stage', 'settle-btc');
-  const prior = input.paymentObservation ?? {};
+  const prior: SettleBtcPaymentObservationInput = input.paymentObservation ?? {};
   const txId =
     typeof prior.txId === 'string' && prior.txId.trim() ? prior.txId.trim() : null;
+  const network = typeof prior.network === 'string' ? prior.network : 'btc-testnet';
+  const isBitcoinRail = network.startsWith('btc');
+  const verified = prior.verification?.ok === true ? prior.verification : null;
   let mempool: SettleBtcMempoolObservation | null = null;
 
-  if (txId) {
+  // Route-verified payments are authoritative; otherwise observe BTC rails
+  // directly (testnet4 Esplora — product BTC rail is testnet4, not testnet3).
+  if (txId && isBitcoinRail && !verified) {
+    const base = network.includes('main')
+      ? 'https://mempool.space/api'
+      : 'https://mempool.space/testnet4/api';
     try {
-      const network =
-        typeof prior.network === 'string' && prior.network.includes('main')
-          ? 'mainnet'
-          : 'testnet';
-      const base =
-        network === 'mainnet'
-          ? 'https://mempool.space/api'
-          : 'https://mempool.space/testnet/api';
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 8_000);
       const res = await fetch(`${base}/tx/${encodeURIComponent(txId)}`, {
@@ -342,30 +343,40 @@ const settleBtc: Executor<SettleAssetPackInput, SettleAssetPackInput> = async (
     }
   }
 
-  const confirmed = Boolean(mempool?.confirmed);
+  const confirmed = verified ? verified.confirmed : Boolean(mempool?.confirmed);
+  const blockTime = verified ? verified.blockTime ?? null : mempool?.blockTime ?? null;
+  const observedStatus: SettleBtcPaymentObservation['status'] = confirmed
+    ? 'final'
+    : txId && (verified || mempool)
+      ? 'observed'
+      : 'observed-projection';
   const observation: SettleBtcPaymentObservation = {
     schema: 'bitcode.settle-asset-pack.payment-observation',
     agent: 'settle-btc',
-    network: typeof prior.network === 'string' ? prior.network : 'btc-testnet',
-    status: confirmed ? 'final' : txId ? 'observed' : 'observed-projection',
+    network,
+    status: observedStatus,
     txId,
     amountSats: typeof prior.amountSats === 'number' ? prior.amountSats : null,
     confirmedAt: confirmed
-      ? new Date(
-          typeof mempool?.blockTime === 'number' ? mempool.blockTime * 1000 : Date.now(),
-        ).toISOString()
+      ? new Date(typeof blockTime === 'number' ? blockTime * 1000 : Date.now()).toISOString()
       : prior.confirmedAt || new Date().toISOString(),
     finality: confirmed
       ? 'testnet-confirmed'
-      : txId
+      : observedStatus === 'observed'
         ? 'testnet-mempool-observed'
         : 'testnet-projected',
     mempool,
-    note: confirmed
-      ? 'BTC payment confirmed on-chain (mempool observation).'
-      : txId
-        ? 'BTC txId observed via mempool API; awaiting confirmations or projected finality for testnet settle.'
-        : 'Projected testnet payment observation (supply txId for live mempool watch).',
+    payAsset: prior.payAsset ?? null,
+    allocatedPayAmount: prior.allocatedPayAmount ?? null,
+    explorerUrl: prior.explorerUrl ?? null,
+    verification: verified,
+    note: verified
+      ? `Payment verified on ${network}: ${verified.paidAmount ?? '?'} paid to the settlement recipient${confirmed ? ' (confirmed)' : ' (mempool, awaiting confirmation)'}.`
+      : confirmed
+        ? 'BTC payment confirmed on-chain (mempool observation).'
+        : txId
+          ? 'Payment txId observed; awaiting confirmations or projected finality for testnet settle.'
+          : 'Projected testnet payment observation (supply txId for live payment watch).',
   };
   storeCrossPhaseArtifact(execution, 'settle-asset-pack-pipeline', 'paymentObservation', observation);
   storeCrossPhaseArtifact(execution, 'settle-asset-pack-pipeline', 'settleBtc', observation);
@@ -401,7 +412,7 @@ const mintBtd: Executor<SettleAssetPackInput, SettleAssetPackInput> = async (
     throw new Error('quote-btd-volume: decayed BTD volume is zero (supply exhausted or zero fit).');
   }
 
-  const multiRail = buildMultiRailSpotQuote(decayed.btdVolume, createMockSpotBoard());
+  const multiRail = buildMultiRailSpotQuote(decayed.btdVolume, input.spotBoard ?? createMockSpotBoard());
   const settlementBtd = {
     ...raw,
     amountBaseUnits: decayed.btdVolume,
@@ -551,7 +562,7 @@ const settleAssetPack: Executor<SettleAssetPackInput, SettleAssetPackInput> = as
 
   const multiRail = buildMultiRailSpotQuote(
     settlementBtd.amountBaseUnits,
-    createMockSpotBoard(),
+    input.spotBoard ?? createMockSpotBoard(),
   );
   const rail = multiRail.options.find((o) => o.payAsset === payAsset) || multiRail.options[0];
   if (!rail?.available || rail.payAmount <= 0n) {
@@ -730,6 +741,17 @@ interface CreatePullRequestResult {
   htmlUrl?: string;
 }
 
+/** PR body lines proving payment (rail + explorer link) when observed. */
+function paymentReceiptLines(
+  observation: SettleAssetPackInput['paymentObservation'],
+): string[] {
+  const payment = (observation ?? {}) as SettleBtcPaymentObservationInput;
+  if (!payment.txId) return [];
+  const rail = payment.payAsset ? `${payment.payAsset} on ${payment.network ?? 'testnet'}` : payment.network ?? 'testnet';
+  const link = payment.explorerUrl ? `[${payment.txId}](${payment.explorerUrl})` : `\`${payment.txId}\``;
+  return ['', '### Payment', '', `Paid with ${rail}: ${link}`];
+}
+
 const shipAssetPackPatchPr: Executor<SettleAssetPackInput, SettleAssetPackInput> = async (
   input,
   execution,
@@ -860,6 +882,7 @@ const shipAssetPackPatchPr: Executor<SettleAssetPackInput, SettleAssetPackInput>
           fileChanges.length
             ? `Files: ${fileChanges.map((c) => `${c.op || 'modify'} ${c.path}`).join(', ')}`
             : 'No fileChanges on patch descriptor (branch still opened from request SHA).',
+          ...paymentReceiptLines(input.paymentObservation),
         ];
         const pr = (await git.createPullRequest({
           ...baseAuth,

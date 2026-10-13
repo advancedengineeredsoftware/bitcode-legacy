@@ -107,7 +107,9 @@ module.exports = {
     '^@bitcode/supabase$': '<rootDir>/../../packages/supabase/src/index.ts',
     '^@bitcode/asset-packs-pipelines-domain$': '<rootDir>/../../packages/asset-packs-pipelines/domain/src/index.ts',
     '^@bitcode/asset-packs-pipelines-syntheses-domain$': '<rootDir>/../../packages/asset-packs-pipelines/syntheses/domain/src/index.ts',
-    '^@bitcode/asset-packs-pipelines-syntheses-domain/(.+)$': '<rootDir>/../../packages/asset-packs-pipelines/syntheses/domain/src/$1',
+    '^@bitcode/asset-packs-pipelines-syntheses-domain/demonstration$': '<rootDir>/../../packages/asset-packs-pipelines/syntheses/domain/src/demonstration/index.ts',
+    '^@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/agents/finish/read-finish-synthesize-run-agent$': '<rootDir>/../../packages/asset-packs-pipelines/syntheses/read/src/agents/finish/read-finish-synthesize-run-agent.ts',
+    '^@bitcode/asset-packs-pipelines-syntheses-domain/(.+)$':'<rootDir>/../../packages/asset-packs-pipelines/syntheses/domain/src/$1',
     '^@bitcode/engine/pipeline$': '<rootDir>/../../packages/asset-packs-pipelines/syntheses/domain/src/run.ts',
     '^@bitcode/engine/(.*)$': '<rootDir>/../../packages/pipelines-generics/src/pipeline/$1',
     // Fallback - treat other @bitcode/<pkg> references as pointing into packages/<pkg>/src

@@ -1,4 +1,5 @@
 import { buildGetAuxillaryDataRoute } from '@bitcode/api/src/routes/auxillaries';
+import { demonstrationOpeningBtdForWallet } from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
 import { buildMockAuxillariesData, isAuxillariesMockMode } from '@/lib/mock-review-mode';
 import { bitcodeServerTelemetry } from '@/lib/bitcode-server-telemetry';
 import { readBitcodeWalletConnectionStatus } from '@/app/api/wallet/_shared';
@@ -16,6 +17,11 @@ export const dynamic = 'force-dynamic';
 const getAuxillaryData = buildGetAuxillaryDataRoute({
   isMockMode: isAuxillariesMockMode,
   mockAuxillaryData: buildMockAuxillariesData,
+  // Demonstration account starts with an opening BTD balance (operator config).
+  resolveOpeningBtd: ({ profile }) =>
+    demonstrationOpeningBtdForWallet(
+      (profile as { wallet_address?: string | null } | null)?.wallet_address ?? null,
+    ),
   resolveWalletConnectionStatus: async ({ supabase, userId, profile }) => {
     return readBitcodeWalletConnectionStatus({
       supabase,

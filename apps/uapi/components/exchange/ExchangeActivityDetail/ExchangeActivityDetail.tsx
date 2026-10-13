@@ -598,8 +598,16 @@ function PayoutFromDetail({
   const viewer = (viewerEthereumAddress || "").toLowerCase();
   const seller = String(pending.sellerAccount || "").toLowerCase();
   const buyer = String(pending.buyerAccount || "").toLowerCase();
-  const canFinalize = Boolean(viewer && seller && viewer === seller);
-  const isBuyer = Boolean(viewer && buyer && viewer === buyer);
+  // Server-stamped viewer roles (session identity) win; wallet match is the
+  // fallback for rows without roles.
+  const canFinalize =
+    typeof meta.viewerCanFinalizePayout === "boolean"
+      ? meta.viewerCanFinalizePayout
+      : Boolean(viewer && seller && viewer === seller);
+  const isBuyer =
+    typeof meta.viewerIsBuyer === "boolean"
+      ? meta.viewerIsBuyer
+      : Boolean(viewer && buyer && viewer === buyer);
   const settleRunId =
     typeof meta.settleRunId === "string"
       ? meta.settleRunId

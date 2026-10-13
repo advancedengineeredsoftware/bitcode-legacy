@@ -8,6 +8,12 @@
  * V48-Gate5-F01: preferred client payload is synthesisRunId + selectedIndexes.
  * Server rehydrates full commercial material from the synthesis run (fullOptions).
  * Client-posted selectedOptions are unpaid-safe only and cannot supply patch.
+ *
+ * Payment: when the buyer supplies a txId it is verified on-chain against the
+ * server-priced selection total and the rail's settlement recipient (fail
+ * closed), and may back only one checkout. Demonstration mode (or
+ * BITCODE_SETTLEMENT_REQUIRE_PAYMENT=1) requires a verified payment; otherwise
+ * settle may still record a projected payment observation.
  */
 
 import { randomUUID } from 'crypto';
@@ -17,15 +23,32 @@ import { supabaseAdmin } from '@bitcode/supabase';
 import { createClient } from '@bitcode/supabase/ssr/server';
 import { Execution } from '@bitcode/execution-generics';
 import {
-  parseSettleAssetPackOption,
   runExecutionPipelineSimpleSettleAssetPack,
   type SettleAssetPackOption,
   type SettleAssetPackInput,
   type SettleBtcPaymentObservationInput,
   type SettleRepositoryRef,
 } from '@bitcode/asset-packs-pipelines-execution-pipeline-simple-settle-asset-pack';
+import type { PayAsset, UsdSpotBoard } from '@bitcode/btd/erc1155';
 import { storeCrossPhaseArtifact } from '@bitcode/asset-packs-pipelines-syntheses-domain';
+import { withDemonstrationDataset } from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
 import { assessSelectedOptionsForSettle } from '@/components/reads/models/read-buyer-measurement-projection';
+import {
+  isSettlementPaymentAlreadyUsed,
+  isSettlementPaymentRequired,
+  quoteReadSettlementSelection,
+  rehydrateReadSynthesisSelection,
+  resolveSellerEthereumAddress,
+  resolveSettlementPayTo,
+  resolveSettlementSpotBoard,
+  verifyReadSettlementPayment,
+  type ReadOptionSupplyProvenance,
+  type ReadSettlementQuote,
+} from '@/lib/read-settlement-checkout';
+import {
+  resolveGitHubAccessTokenForUser,
+  resolveGitHubCommitSha,
+} from '@/lib/github-repository-rest';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -88,28 +111,6 @@ function parsePaymentObservation(
   };
 }
 
-async function resolveGithubToken(
-  admin: typeof supabaseAdmin,
-  userId: string,
-): Promise<string | null> {
-  try {
-    const { data: githubConnection } = await admin
-      .from('user_connections')
-      .select('connection_data')
-      .eq('user_id', userId)
-      .eq('provider', 'github')
-      .eq('is_active', true)
-      .maybeSingle();
-    const data = githubConnection?.connection_data;
-    if (!isObject(data)) return null;
-    if (typeof data.access_token === 'string') return data.access_token;
-    if (typeof data.token === 'string') return data.token;
-  } catch {
-    /* projected PR path */
-  }
-  return null;
-}
-
 interface RunOneSettleInput {
   admin: typeof supabaseAdmin;
   userId: string;
@@ -125,12 +126,28 @@ interface RunOneSettleInput {
   buyerEthereumAddress: string | null;
   depositorEthereumAddress: string | null;
   masterEthereumAddress: string | null;
+  /** Admitted Depository supply this option came from (seller linkage). */
+  supplyProvenance: ReadOptionSupplyProvenance | null;
+  /** Spot board the buyer was quoted and paid with. */
+  spotBoard: UsdSpotBoard;
 }
 
 async function runOneSettle(input: RunOneSettleInput) {
   const settleRunId = randomUUID();
   const startedAt = new Date().toISOString();
   const optionTitle = input.option.title ?? null;
+  const paymentTxId = input.paymentObservation.txId?.trim().toLowerCase() || null;
+  // Seller identity + payment proof travel on every settle row: /exchange
+  // seller lenses and payout authorization key off sellerUserId, and the
+  // replay guard keys off paymentTxId.
+  const linkageContext = {
+    paymentTxId,
+    paymentExplorerUrl: input.paymentObservation.explorerUrl ?? null,
+    payAsset: input.paymentObservation.payAsset ?? null,
+    sellerUserId: input.supplyProvenance?.sellerUserId ?? null,
+    supplyAdmissionRunId: input.supplyProvenance?.admissionRunId ?? null,
+    depositoryAssetPackId: input.supplyProvenance?.depositoryAssetPackId ?? null,
+  };
 
   await input.admin.from('executions').insert({
     id: settleRunId,
@@ -145,7 +162,7 @@ async function runOneSettle(input: RunOneSettleInput) {
       repositoryFullName: input.repositoryFullName,
       needLength: input.need?.length ?? 0,
     },
-    context: {
+    context: withDemonstrationDataset({
       source: 'read-settle-asset-pack',
       route: '/reads',
       pipelineCore: 'settle-asset-pack-pipeline',
@@ -154,7 +171,8 @@ async function runOneSettle(input: RunOneSettleInput) {
       optionCount: 1,
       optionTitle,
       packActivityType: 'settled-assetpack',
-    },
+      ...linkageContext,
+    }),
     started_at: startedAt,
   });
 
@@ -183,6 +201,7 @@ async function runOneSettle(input: RunOneSettleInput) {
     masterEthereumAddress: input.masterEthereumAddress,
     need: input.need,
     synthesisRunId: input.synthesisRunId,
+    spotBoard: input.spotBoard,
   };
 
   try {
@@ -193,7 +212,9 @@ async function runOneSettle(input: RunOneSettleInput) {
     const mintBtd = result.mintBtd;
     const settleBtd = result.settleBtd;
     const settleAssetPack = result.settleAssetPack;
-    const pendingPayout = result.pendingPayout || null;
+    const pendingPayout = result.pendingPayout
+      ? { ...result.pendingPayout, sellerUserId: linkageContext.sellerUserId }
+      : null;
     const summary = result.summary;
     const deliveryState = packActivity.deliveryState || shippable.status || 'projected';
     const rightsState = 'btd-rights-transferred' as const;
@@ -243,6 +264,8 @@ async function runOneSettle(input: RunOneSettleInput) {
           settleAssetPack,
           pendingPayout,
           entitledPatch,
+          paymentVerification: input.paymentObservation.verification ?? null,
+          paymentExplorerUrl: linkageContext.paymentExplorerUrl,
           selectedCount: 1,
           optionCount: 1,
           assetPackTitle: optionTitle || packActivity.assetPackTitle || null,
@@ -258,7 +281,7 @@ async function runOneSettle(input: RunOneSettleInput) {
           sellerAccount: pendingPayout?.sellerAccount || null,
           summary,
         },
-        context: {
+        context: withDemonstrationDataset({
           source: 'read-settle-asset-pack',
           route: '/reads',
           pipelineCore: 'settle-asset-pack-pipeline',
@@ -279,7 +302,8 @@ async function runOneSettle(input: RunOneSettleInput) {
           buyerAccount: pendingPayout?.buyerAccount || null,
           sellerAccount: pendingPayout?.sellerAccount || null,
           assetPackKey: pendingPayout?.assetPackKey || packActivity.assetPackKey || null,
-        },
+          ...linkageContext,
+        }),
       })
       .eq('id', settleRunId)
       .eq('user_id', input.userId);
@@ -289,10 +313,18 @@ async function runOneSettle(input: RunOneSettleInput) {
       settleRunId,
       packActivity,
       pendingPayout,
+      optionTitle,
       shippable: {
         prUrl,
         status: deliveryState,
         repository: shippable.repository,
+        note: shippable.note,
+      },
+      payment: {
+        txId: paymentTxId,
+        explorerUrl: linkageContext.paymentExplorerUrl,
+        payAsset: linkageContext.payAsset,
+        confirmed: input.paymentObservation.verification?.confirmed ?? false,
       },
       mintBtd,
       settleBtd,
@@ -347,86 +379,38 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const repositoryFullName =
-    typeof body.repositoryFullName === 'string' ? body.repositoryFullName : null;
-  const repository = parseRepository(body.repository, repositoryFullName);
   const synthesisRunId =
     typeof body.synthesisRunId === 'string' ? body.synthesisRunId : null;
   const need = typeof body.need === 'string' ? body.need : null;
-
   const admin = supabaseAdmin;
 
   // R3: fail-closed — require server rehydrate (no client selectedOptions).
-  const selectedIndexes = Array.isArray(body.selectedIndexes)
-    ? body.selectedIndexes
-        .map((v) => (typeof v === 'number' ? v : Number(v)))
-        .filter((n) => Number.isInteger(n) && n >= 0)
-    : [];
-
-  if (!synthesisRunId || selectedIndexes.length === 0) {
+  const selection = await rehydrateReadSynthesisSelection({
+    userId: user.id,
+    synthesisRunId,
+    selectedIndexes: body.selectedIndexes,
+    admin,
+  });
+  if (!selection.ok) {
     return NextResponse.json(
-      {
-        error:
-          'synthesisRunId + selectedIndexes is required — server rehydrates full commercial material; client options are not accepted.',
-        code: 'rehydrate_required',
-      },
-      { status: 400 },
+      { error: selection.error, code: selection.code },
+      { status: selection.status },
     );
   }
+  const selectedOptions = selection.options.map((entry) => entry.option);
 
-  const { data: synthesisRun, error: synthesisError } = await admin
-    .from('executions')
-    .select('id, user_id, output, context')
-    .eq('id', synthesisRunId)
-    .maybeSingle();
-
-  if (synthesisError || !synthesisRun || synthesisRun.user_id !== user.id) {
-    return NextResponse.json(
-      {
-        error: 'Synthesis run not found or access denied for settle rehydrate.',
-        code: 'synthesis_run_required',
-      },
-      { status: 404 },
-    );
-  }
-
-  const output = isObject(synthesisRun.output) ? synthesisRun.output : {};
-  // Prefer fullOptions; legacy commercial options only if still patch-bearing.
-  const commercialPool = Array.isArray(output.fullOptions) && output.fullOptions.length > 0
-    ? output.fullOptions
-    : Array.isArray(output.options)
-      ? output.options
-      : [];
-
-  const selectedOptions: SettleAssetPackOption[] = [];
-  for (const index of selectedIndexes) {
-    const raw = commercialPool[index];
-    if (!raw) {
-      return NextResponse.json(
-        {
-          error: `Selected option index ${index} missing from synthesis fullOptions.`,
-          code: 'option_index_missing',
-        },
-        { status: 400 },
-      );
-    }
-    const parsed = parseSettleAssetPackOption(raw);
-    if (!parsed) {
-      return NextResponse.json(
-        {
-          error: `Selected option index ${index} failed commercial parse after rehydrate.`,
-          code: 'option_rehydrate_invalid',
-        },
-        { status: 400 },
-      );
-    }
-    // R4: reattach raw patch (incl. fileChanges) for entitled delivery + ship.
-    const rawObj = isObject(raw) ? raw : {};
-    if (rawObj.patch != null) {
-      parsed.patch = rawObj.patch as SettleAssetPackOption['patch'];
-    }
-    selectedOptions.push(parsed);
-  }
+  // Repository defaults from the synthesis run (a reopened run may not have
+  // client repository context); explicit client values win.
+  const synthesisContext = selection.synthesisContext;
+  const contextString = (key: string) =>
+    typeof synthesisContext[key] === 'string' ? (synthesisContext[key] as string) : null;
+  const repositoryFullName =
+    (typeof body.repositoryFullName === 'string' && body.repositoryFullName) ||
+    contextString('repositoryFullName');
+  const repository = parseRepository(body.repository, repositoryFullName);
+  repository.fullName = repository.fullName || repositoryFullName;
+  repository.branch = repository.branch || contextString('sourceBranch');
+  repository.commit = repository.commit || contextString('sourceCommit');
 
   // Measurement-only buy gate (needinesses + absolute safety) — fail closed server-side.
   const measurementGate = assessSelectedOptionsForSettle(
@@ -472,56 +456,128 @@ export async function POST(request: Request) {
   // settle pipeline selects the correct multi-rail spot (never pay BTD).
   const requestedPayAsset =
     typeof body.payAsset === 'string' ? body.payAsset.toUpperCase() : null;
+  const payAsset: PayAsset =
+    requestedPayAsset === 'BTC' || requestedPayAsset === 'SOL' ? requestedPayAsset : 'ETH';
   const payAssetNetwork =
-    requestedPayAsset === 'BTC'
-      ? 'btc-testnet'
-      : requestedPayAsset === 'SOL'
-        ? 'solana-devnet'
-        : requestedPayAsset === 'ETH'
-          ? 'ethereum-sepolia'
-          : null;
+    payAsset === 'BTC' ? 'btc-testnet4' : payAsset === 'SOL' ? 'solana-devnet' : 'ethereum-sepolia';
   const rawObservation = isObject(body.paymentObservation)
     ? { ...body.paymentObservation }
     : {};
-  if (payAssetNetwork && typeof rawObservation.network !== 'string') {
-    rawObservation.network = payAssetNetwork;
-  }
-  if (requestedPayAsset && !rawObservation.payAsset) {
-    rawObservation.payAsset = requestedPayAsset;
-  }
-  const paymentObservation = parsePaymentObservation(
-    Object.keys(rawObservation).length > 0 ? rawObservation : body.paymentObservation,
-    body.amountSats,
-    body.txId,
-  );
+  rawObservation.network = payAssetNetwork;
+  const paymentObservation = parsePaymentObservation(rawObservation, body.amountSats, body.txId);
+  paymentObservation.payAsset = payAsset;
 
-  const githubAccessToken = await resolveGithubToken(admin, user.id);
+  // Server-authoritative pricing: each option priced alone (1:1 settle).
+  const spotBoard = resolveSettlementSpotBoard();
+  let quote: ReadSettlementQuote;
+  try {
+    quote = quoteReadSettlementSelection(selection.options, spotBoard);
+  } catch (err) {
+    return NextResponse.json(
+      {
+        error: err instanceof Error ? err.message : 'Selected options cannot be priced.',
+        code: 'settle_quote_failed',
+      },
+      { status: 400 },
+    );
+  }
+
+  const txId = paymentObservation.txId?.trim() || null;
+  if (!txId && isSettlementPaymentRequired()) {
+    return NextResponse.json(
+      {
+        error: 'A verified testnet payment is required to settle. Pay the quoted total from your wallet, then settle.',
+        code: 'payment_required',
+      },
+      { status: 402 },
+    );
+  }
+  if (txId) {
+    if (await isSettlementPaymentAlreadyUsed(txId, admin)) {
+      return NextResponse.json(
+        { error: 'This payment transaction already settled a checkout.', code: 'payment_already_used' },
+        { status: 409 },
+      );
+    }
+    const payTo = resolveSettlementPayTo().find((rail) => rail.payAsset === payAsset)!;
+    const total = quote.totals.find((rail) => rail.payAsset === payAsset)!;
+    const verification = await verifyReadSettlementPayment({
+      payAsset,
+      txId,
+      requiredAmount: BigInt(total.payAmount),
+      payTo,
+    });
+    if ('code' in verification) {
+      // Rail misconfiguration / unsupported rail (not a chain verdict).
+      return NextResponse.json(
+        { error: verification.error, code: verification.code },
+        { status: verification.status },
+      );
+    }
+    if (!verification.ok) {
+      return NextResponse.json(
+        {
+          error: `Payment verification failed (${verification.reason}).`,
+          code: 'payment_unverified',
+          verification,
+        },
+        { status: 402 },
+      );
+    }
+    paymentObservation.status = verification.confirmed ? 'final' : 'observed';
+    paymentObservation.explorerUrl = verification.explorerUrl;
+    paymentObservation.verification = verification;
+    paymentObservation.confirmedAt = verification.blockTime
+      ? new Date(verification.blockTime * 1000).toISOString()
+      : null;
+  }
+
+  const githubAccessToken = await resolveGitHubAccessTokenForUser(user.id, admin);
+  // Live ship branches from the request SHA; resolve the branch head when the
+  // client did not pin one (projected ship otherwise).
+  if (!repository.commit && githubAccessToken && repository.fullName) {
+    repository.commit = await resolveGitHubCommitSha({
+      token: githubAccessToken,
+      repositoryFullName: repository.fullName,
+      ref: repository.branch || 'main',
+    });
+  }
 
   const results = [];
-  for (const option of selectedOptions) {
+  for (const [position, entry] of selection.options.entries()) {
+    const optionQuote = quote.perOption[position];
+    const allocated = optionQuote.rails.find((rail) => rail.payAsset === payAsset)?.payAmount ?? null;
+    const sellerUserId = entry.supplyProvenance?.sellerUserId ?? null;
     // Sequential 1:1 runs so each ERC1155 projected state is independent.
+    // eslint-disable-next-line no-await-in-loop
+    const depositorEthereumAddress =
+      (typeof body.depositorEthereumAddress === 'string' && body.depositorEthereumAddress) ||
+      (sellerUserId ? await resolveSellerEthereumAddress(sellerUserId, admin) : null);
     // eslint-disable-next-line no-await-in-loop
     const one = await runOneSettle({
       admin,
       userId: user.id,
-      option,
+      option: entry.option,
       repository,
-      repositoryFullName: repositoryFullName || repository.fullName || null,
+      repositoryFullName: repository.fullName || null,
       synthesisRunId,
       need,
-      paymentObservation,
+      paymentObservation: {
+        ...paymentObservation,
+        allocatedPayAmount: allocated,
+        amountSats: payAsset === 'BTC' && allocated ? Number(allocated) : paymentObservation.amountSats ?? null,
+      },
       githubAccessToken,
       readerWalletId: typeof body.readerWalletId === 'string' ? body.readerWalletId : null,
       depositorWalletId:
         typeof body.depositorWalletId === 'string' ? body.depositorWalletId : null,
       buyerEthereumAddress:
         typeof body.buyerEthereumAddress === 'string' ? body.buyerEthereumAddress : null,
-      depositorEthereumAddress:
-        typeof body.depositorEthereumAddress === 'string'
-          ? body.depositorEthereumAddress
-          : null,
+      depositorEthereumAddress,
       masterEthereumAddress:
         typeof body.masterEthereumAddress === 'string' ? body.masterEthereumAddress : null,
+      supplyProvenance: entry.supplyProvenance,
+      spotBoard,
     });
     results.push(one);
   }
@@ -536,6 +592,14 @@ export async function POST(request: Request) {
       settleRunId: settleRunIds[0] || null,
       results,
       optionCount: selectedOptions.length,
+      payment: txId
+        ? {
+            txId,
+            payAsset,
+            explorerUrl: paymentObservation.explorerUrl ?? null,
+            confirmed: paymentObservation.verification?.confirmed ?? false,
+          }
+        : null,
       status: allOk ? 'completed' : 'partial_or_failed',
     },
     { status: allOk ? 200 : 500 },

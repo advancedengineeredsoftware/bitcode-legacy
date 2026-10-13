@@ -1,6 +1,8 @@
 /**
  * Read AssetPack options list + multi-rail settle checkout (deposit twin).
- * Pay rails: ETH (P0 live path) | BTC | SOL. Never pay BTD.
+ * Pay rails: ETH (Sepolia) | BTC (testnet4) | SOL. Never pay BTD.
+ * A rail with a configured settlement recipient pays from the buyer's wallet
+ * and settle verifies the transaction on-chain; otherwise settle is projected.
  */
 
 "use client";
@@ -11,6 +13,11 @@ import type {
   ReadSynthesizedOption,
 } from "@/components/reads/ReadPageClient/hooks/use-read-option-synthesis";
 import { ReadsOptionCard } from "@/components/reads/ReadsOptionCard/ReadsOptionCard";
+import {
+  ReadsSettlementReceipts,
+  type ReadSettlementReceipt,
+} from "@/components/reads/ReadsSettlementReceipts/ReadsSettlementReceipts";
+import type { ReadCheckoutPhase } from "@/components/reads/ReadPageClient/hooks/use-read-settlement-checkout";
 
 export type ReadPayAsset = "ETH" | "BTC" | "SOL";
 
@@ -26,6 +33,13 @@ export type ReadSettleQuoteOption = {
   decimals: number;
 };
 
+export type ReadSettlePayTo = {
+  payAsset: ReadPayAsset;
+  network: string;
+  address: string | null;
+  liveVerification: boolean;
+};
+
 export type ReadSettleQuote = {
   provider: string;
   needFitVolume: number;
@@ -36,6 +50,10 @@ export type ReadSettleQuote = {
   decayMicro: number;
   expiresAt: string;
   options: ReadSettleQuoteOption[];
+  /** Settlement recipients per rail (server-configured). */
+  payTo?: ReadSettlePayTo[];
+  /** Server requires a verified on-chain payment to settle. */
+  paymentRequired?: boolean;
 };
 
 export function ReadsAssetPackOptions(props: {
@@ -46,7 +64,12 @@ export function ReadsAssetPackOptions(props: {
   onSettleSelected: () => void;
   settleBusy?: boolean;
   settleError?: string | null;
-  settleMessage?: string | null;
+  /** Checkout lifecycle (wallet payment → verification → settled). */
+  checkoutPhase?: ReadCheckoutPhase;
+  /** Per-option settle receipts (PR + payment links) after settle. */
+  receipts?: ReadSettlementReceipt[];
+  /** Txid already broadcast but not yet settled (retry without re-paying). */
+  pendingPaymentTxId?: string | null;
   /** Selected pay rail (ETH is P0). */
   payAsset?: ReadPayAsset;
   onPayAssetChange?: (asset: ReadPayAsset) => void;
@@ -74,7 +97,9 @@ export function ReadsAssetPackOptions(props: {
     onSettleSelected,
     settleBusy,
     settleError,
-    settleMessage,
+    checkoutPhase = "idle",
+    receipts = [],
+    pendingPaymentTxId = null,
     payAsset = "ETH",
     onPayAssetChange,
     quote = null,
@@ -92,37 +117,49 @@ export function ReadsAssetPackOptions(props: {
   const hasSelection = selectedIndexes.length > 0;
   const selectedRail = quote?.options.find((o) => o.payAsset === payAsset) ?? null;
   const railAvailable = selectedRail?.available !== false;
-  // Projected multi-rail settle is allowed for all three rails (ETH P0 live path).
+  const payToFor = (asset: ReadPayAsset) =>
+    quote?.payTo?.find((rail) => rail.payAsset === asset) ?? null;
+  const selectedPayTo = payToFor(payAsset);
+  const livePayment = Boolean(selectedPayTo?.address && selectedPayTo.liveVerification);
   // Measurement-only buy gate: need-fit + safety (do_not_buy / cannot_assess block).
+  // Payment-required checkouts also need a live rail for the selected asset.
   const canSettle =
     hasSelection &&
     !settleBusy &&
     !quoteBusy &&
+    Boolean(quote) &&
     railAvailable &&
-    measurementGateAllowed;
+    measurementGateAllowed &&
+    (livePayment || !quote?.paymentRequired);
 
+  const railHint = (asset: ReadPayAsset, network: string) => {
+    const payTo = payToFor(asset);
+    if (payTo?.address && payTo.liveVerification) return `${network} · wallet payment, verified on-chain`;
+    return quote?.paymentRequired ? `${network} · not configured` : `${network} · projected settle`;
+  };
   const rails: Array<{
     asset: ReadPayAsset;
     label: string;
     hint: string;
     disabled?: boolean;
   }> = [
-    {
-      asset: "ETH",
-      label: "Pay with Ethereum",
-      hint: "Sepolia · P0 working rail",
-    },
-    {
-      asset: "BTC",
-      label: "Pay with Bitcoin",
-      hint: "Mock / attestor later",
-    },
-    {
-      asset: "SOL",
-      label: "Pay with Solana",
-      hint: "Mock / attestor later",
-    },
+    { asset: "ETH", label: "Pay with Ethereum", hint: railHint("ETH", "Sepolia") },
+    { asset: "BTC", label: "Pay with Bitcoin", hint: railHint("BTC", "Testnet4") },
+    { asset: "SOL", label: "Pay with Solana", hint: railHint("SOL", "Devnet") },
   ];
+  const amountLabel = selectedRail ? `${selectedRail.payAmountDisplay} ${payAsset}` : payAsset;
+  const settleLabel =
+    checkoutPhase === "awaiting-wallet"
+      ? "Confirm payment in your wallet…"
+      : checkoutPhase === "verifying-payment"
+        ? livePayment
+          ? "Verifying payment & settling…"
+          : "Settling…"
+        : pendingPaymentTxId
+          ? `Retry settle with paid tx (${selectedIndexes.length})`
+          : livePayment
+            ? `Pay ${amountLabel} & settle (${selectedIndexes.length})`
+            : `Settle (projected) with ${payAsset} (${selectedIndexes.length})`;
 
   return (
     <section
@@ -170,8 +207,9 @@ export function ReadsAssetPackOptions(props: {
               Checkout · multi-rail spot
             </p>
             <p className="mt-1 text-xs text-neutral-400">
-              Never pay BTD. Buyers pay ETH (P0), later BTC/SOL. Sellers earn BTD on
-              settle (escrow mint → finalize on Packs).
+              Never pay BTD. Buyers pay ETH or BTC on testnet; each selected DataPack
+              settles in its own pipeline and ships as a pull request. Sellers earn BTD
+              on settle (escrow mint → split finalized on Exchange).
             </p>
           </div>
 
@@ -267,19 +305,24 @@ export function ReadsAssetPackOptions(props: {
             </div>
             <div>
               <p className="text-[0.6rem] uppercase tracking-[0.16em] text-neutral-500">
-                Buyer wallet
+                Buyer wallet → pay to
               </p>
               <p
                 className="mt-1 break-all font-mono text-xs text-white/90"
                 data-testid="reads-buyer-address"
               >
-                {buyerEthereumAddress || "Connect Ethereum in Auxillaries"}
+                {buyerEthereumAddress || "Connect a wallet in Auxillaries"}
               </p>
-              {!buyerEthereumAddress ? (
-                <p className="mt-0.5 text-[0.7rem] text-amber-200/80">
-                  Projected settle still runs; live Sepolia needs a connected 0x address.
-                </p>
-              ) : null}
+              <p
+                className="mt-0.5 break-all font-mono text-[0.7rem] text-neutral-400"
+                data-testid="reads-pay-to-address"
+              >
+                {selectedPayTo?.address
+                  ? `→ ${selectedPayTo.address}`
+                  : quote?.paymentRequired
+                    ? `No ${payAsset} settlement recipient configured`
+                    : "→ projected (no live recipient)"}
+              </p>
             </div>
           </div>
 
@@ -331,11 +374,7 @@ export function ReadsAssetPackOptions(props: {
               disabled={!canSettle}
               className="border border-emerald-300/40 bg-emerald-400/15 px-4 py-2 text-sm font-medium text-emerald-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {settleBusy
-                ? "Settling…"
-                : payAsset === "ETH"
-                  ? `Buy with ETH · settle (${selectedIndexes.length})`
-                  : `Settle with ${payAsset} (${selectedIndexes.length})`}
+              {settleLabel}
             </button>
             {onRefreshQuote && hasSelection ? (
               <button
@@ -358,12 +397,8 @@ export function ReadsAssetPackOptions(props: {
                 {settleError}
               </p>
             ) : null}
-            {settleMessage ? (
-              <p className="text-sm text-emerald-100/90" data-testid="reads-settle-message">
-                {settleMessage}
-              </p>
-            ) : null}
           </div>
+          <ReadsSettlementReceipts receipts={receipts} />
         </div>
       ) : null}
     </section>

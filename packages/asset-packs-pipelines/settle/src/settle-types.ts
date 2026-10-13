@@ -9,6 +9,7 @@ import type {
   NeedinessRowInput,
   SettlementBtdFromNeedinessesResult,
   SerializedBitcodeErc1155State,
+  UsdSpotBoard,
 } from '@bitcode/btd/erc1155';
 
 // ---------------------------------------------------------------------------
@@ -66,6 +67,27 @@ export interface SettleBtcPaymentObservationInput {
   amountSats?: number | null;
   confirmedAt?: string | null;
   finality?: string | null;
+  /** Pay rail the buyer used (ETH | BTC | SOL); never BTD. */
+  payAsset?: string | null;
+  /** This option's allocation of the paid amount (pay-asset base units). */
+  allocatedPayAmount?: string | null;
+  /** Block explorer link for the payment transaction. */
+  explorerUrl?: string | null;
+  /**
+   * On-chain verification performed by the settle route before dispatch
+   * (`bitcode.settle.pay-rail-verification`). When `ok`, settle-btc trusts it
+   * instead of re-observing the chain.
+   */
+  verification?: {
+    schema: string;
+    ok: boolean;
+    confirmed: boolean;
+    blockTime?: number | null;
+    paidAmount?: string;
+    requiredAmount?: string;
+    recipient?: string;
+    network?: string;
+  } | null;
 }
 
 export interface SettleBtcMempoolObservation {
@@ -90,6 +112,10 @@ export interface SettleBtcPaymentObservation {
   finality: string;
   mempool: SettleBtcMempoolObservation | null;
   note: string;
+  payAsset?: string | null;
+  allocatedPayAmount?: string | null;
+  explorerUrl?: string | null;
+  verification?: SettleBtcPaymentObservationInput['verification'];
 }
 
 // ---------------------------------------------------------------------------
@@ -330,6 +356,11 @@ export interface SettleAssetPackInput {
   depositorEthereumAddress?: string | null;
   masterEthereumAddress?: string | null;
   erc1155State?: BitcodeErc1155State | null;
+  /**
+   * Testnet spot board for BTD volume → pay-asset amounts. Must match the
+   * board the buyer was quoted (and paid) with; defaults to the mock board.
+   */
+  spotBoard?: UsdSpotBoard | null;
   need?: string | null;
   synthesisRunId?: string | null;
   assetPackSettlementRightsDeliveryBoundary?: SettleValidationBoundary | null;

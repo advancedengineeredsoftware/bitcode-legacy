@@ -192,3 +192,34 @@ export function buildBitcodeEthereumAuthMessage(input: {
 
 /** Target chain for testnet product (Sepolia). */
 export const BITCODE_ETHEREUM_TESTNET_CHAIN_ID = 11155111;
+
+/**
+ * Pay `valueWei` to `to` on Sepolia from the connected EIP-1193 wallet and
+ * return the transaction hash. Switches the wallet to Sepolia first; settle
+ * verifies the transaction on-chain (recipient, value, chain).
+ */
+export async function sendEthereumWalletPayment(input: {
+  to: string;
+  valueWei: bigint;
+}): Promise<{ txHash: string; from: string }> {
+  if (typeof window === 'undefined' || !window.ethereum) {
+    throw new Error('No Ethereum wallet detected.');
+  }
+  if (!isPlausibleEthereumAddress(input.to) || input.valueWei <= 0n) {
+    throw new Error('Ethereum payment requires a valid recipient and a positive amount.');
+  }
+  const accounts = (await window.ethereum.request({ method: 'eth_requestAccounts' })) as string[];
+  const from = accounts?.[0];
+  if (!from || !isPlausibleEthereumAddress(from)) {
+    throw new Error('Wallet did not return a valid Ethereum account.');
+  }
+  await switchEthereumChain(BITCODE_ETHEREUM_TESTNET_CHAIN_ID);
+  const txHash = (await window.ethereum.request({
+    method: 'eth_sendTransaction',
+    params: [{ from, to: input.to, value: `0x${input.valueWei.toString(16)}` }],
+  })) as string;
+  if (typeof txHash !== 'string' || !/^0x[0-9a-fA-F]{64}$/.test(txHash)) {
+    throw new Error('Wallet did not return a transaction hash.');
+  }
+  return { txHash, from: from.toLowerCase() };
+}

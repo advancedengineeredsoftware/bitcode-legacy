@@ -853,18 +853,17 @@ async function connectLeather(provider: Extract<BitcoinWalletProvider, { id: 'le
   return connection;
 }
 
-async function connectXverse(provider: Extract<BitcoinWalletProvider, { id: 'xverse' }>) {
-  bitcodeQaTelemetry('info', 'wallet-client', 'connect-start', {
-    provider: provider.id,
-    providerId: provider.providerId,
-  });
+/**
+ * Sats Connect request bound to the detected Xverse provider, normalized to
+ * `{ status, result | error }` across provider / module request shapes.
+ */
+async function createXverseRequest(provider: Extract<BitcoinWalletProvider, { id: 'xverse' }>) {
   const satsConnect = await import('sats-connect');
   const satsConnectRecord = satsConnect as UnknownRecord;
   if (typeof provider.request !== 'function' && typeof satsConnectRecord.request !== 'function') {
     throw new Error('Sats Connect request API is unavailable.');
   }
 
-  const requestedNetwork = readSatsConnectNetwork();
   const providerObject =
     typeof satsConnectRecord.getProviderById === 'function' && provider.providerId
       ? asRecord((satsConnectRecord.getProviderById as (providerId: string) => unknown)(provider.providerId))
@@ -910,6 +909,16 @@ async function connectXverse(provider: Extract<BitcoinWalletProvider, { id: 'xve
       result: response,
     };
   };
+  return request;
+}
+
+async function connectXverse(provider: Extract<BitcoinWalletProvider, { id: 'xverse' }>) {
+  bitcodeQaTelemetry('info', 'wallet-client', 'connect-start', {
+    provider: provider.id,
+    providerId: provider.providerId,
+  });
+  const requestedNetwork = readSatsConnectNetwork();
+  const request = await createXverseRequest(provider);
 
   const response = await withWalletRequestTimeout(request(
     'wallet_connect',
@@ -1061,4 +1070,73 @@ export async function connectBitcoinWallet(preferredProviderId?: BitcoinWalletPr
       ? `Bitcoin wallet connection failed. ${failures.join(' ')}`
       : 'Bitcoin wallet connection failed before a provider could be selected.',
   );
+}
+
+export interface BitcoinWalletPaymentResult {
+  txid: string;
+  provider: BitcoinWalletProviderId;
+}
+
+/**
+ * Send a testnet payment (sats) to `recipientAddress` from the buyer's browser
+ * Bitcoin wallet and return the broadcast txid. Settle verifies it on-chain.
+ * Prefers `preferredProviderId` (the wallet the buyer connected with).
+ */
+export async function sendBitcoinWalletPayment(input: {
+  recipientAddress: string;
+  amountSats: bigint;
+  preferredProviderId?: BitcoinWalletProviderId | null;
+}): Promise<BitcoinWalletPaymentResult> {
+  if (!isPlausibleBitcoinAddress(input.recipientAddress) || input.amountSats <= 0n) {
+    throw new Error('Bitcoin payment requires a valid recipient address and a positive satoshi amount.');
+  }
+  const providers = await detectAvailableBitcoinWalletProviders();
+  const provider =
+    providers.find((candidate) => candidate.id === input.preferredProviderId) ?? providers[0];
+  if (!provider) {
+    throw new Error('No browser Bitcoin wallet was found. Install or enable Xverse, Leather, UniSat, or OKX.');
+  }
+  const amount = input.amountSats.toString();
+  bitcodeQaTelemetry('info', 'wallet-client', 'payment-start', { provider: provider.id, amountSats: amount });
+
+  let txid: string | null = null;
+  if (provider.id === 'leather') {
+    txid = (await sendLeatherTransfer({ recipients: [{ address: input.recipientAddress, amount }] })).txid;
+  } else if (provider.id === 'xverse') {
+    const request = await createXverseRequest(provider);
+    const response = await withWalletRequestTimeout(
+      request('sendTransfer', {
+        recipients: [{ address: input.recipientAddress, amount: Number(input.amountSats) }],
+      }),
+      provider.label,
+      120_000,
+    );
+    if (response.status === 'error') {
+      throw new Error(readString(response.error?.message) || 'Xverse payment was rejected or failed.');
+    }
+    txid = readString(asRecord(response.result)?.txid);
+  } else {
+    const windowRecord = readWindowRecord();
+    const injected =
+      provider.id === 'unisat'
+        ? asRecord(windowRecord?.unisat)
+        : asRecord(asRecord(windowRecord?.okxwallet)?.bitcoin);
+    if (typeof injected?.sendBitcoin !== 'function') {
+      throw new Error(`${provider.label} does not expose sendBitcoin in this browser.`);
+    }
+    const sendBitcoin = (injected.sendBitcoin as (to: string, sats: number) => Promise<unknown>).bind(injected);
+    const response = await withWalletRequestTimeout(
+      sendBitcoin(input.recipientAddress, Number(input.amountSats)),
+      provider.label,
+      120_000,
+    );
+    txid = readString(response) ?? readString(asRecord(response)?.txid);
+  }
+
+  if (!txid) throw new Error(`${provider.label} did not return a Bitcoin transaction id.`);
+  bitcodeQaTelemetry('info', 'wallet-client', 'payment-success', {
+    provider: provider.id,
+    txid: compactBitcodeAddress(txid),
+  });
+  return { txid, provider: provider.id };
 }

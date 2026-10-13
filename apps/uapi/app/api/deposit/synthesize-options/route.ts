@@ -17,6 +17,10 @@ import { createStreamingExecution } from '@bitcode/pipelines-generics';
 import { normalizeSourcePathList } from '@bitcode/asset-packs-pipelines-syntheses-domain/asset-packs-synthesis';
 import { isAssetPackRealInferenceEnabled } from '@bitcode/asset-packs-pipelines-syntheses-domain/runtime-inference-policy';
 import {
+  isBitcodeDemonstrationModeEnabled,
+  withDemonstrationDataset,
+} from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
+import {
   bitcodeServerTelemetry,
   compactBitcodeServerId,
 } from '@/lib/bitcode-server-telemetry';
@@ -52,7 +56,8 @@ export async function POST(request: Request) {
 
   // Real inference is the product default (host/Pipeliner). Explicit opt-out
   // BITCODE_ASSET_PACK_REAL_INFERENCE=0 remains for deterministic unit tests.
-  if (!isAssetPackRealInferenceEnabled()) {
+  // Demonstration mode replays synthesis, so the inference opt-out does not gate it.
+  if (!isAssetPackRealInferenceEnabled() && !isBitcodeDemonstrationModeEnabled()) {
     return NextResponse.json(
       {
         error:
@@ -154,7 +159,7 @@ export async function POST(request: Request) {
       created_at: startedAtIso,
       started_at: startedAtIso,
       updated_at: new Date().toISOString(),
-      context: {
+      context: withDemonstrationDataset({
         source: 'deposit-option-synthesis',
         workbench: 'deposit-option-synthesis',
         route: '/deposits',
@@ -170,7 +175,7 @@ export async function POST(request: Request) {
         permissibleSourceCount: permissibleSources.length,
         impermissibleSourceCount: impermissibleSources.length,
         hasObfuscations: Boolean(obfuscations),
-      },
+      }),
     },
     { onConflict: 'id' },
   );

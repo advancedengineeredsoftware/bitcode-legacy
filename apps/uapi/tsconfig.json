@@ -191,6 +191,12 @@
       "@bitcode/asset-packs-pipelines-syntheses-domain/runtime-inference-policy": [
         "../../packages/asset-packs-pipelines/syntheses/domain/src/runtime-inference-policy.ts"
       ],
+      "@bitcode/asset-packs-pipelines-syntheses-domain/demonstration": [
+        "../../packages/asset-packs-pipelines/syntheses/domain/src/demonstration/index.ts"
+      ],
+      "@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/agents/finish/read-finish-synthesize-run-agent": [
+        "../../packages/asset-packs-pipelines/syntheses/read/src/agents/finish/read-finish-synthesize-run-agent.ts"
+      ],
       "@bitcode/*": [
         "../../packages/*/src",
         "../../packages/*"

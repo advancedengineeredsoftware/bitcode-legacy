@@ -92,7 +92,8 @@
     "./agents/validation/asset-packs-validation-prompts": "./src/agents/validation/asset-packs-validation-prompts.ts",
     "./agents/validation/asset-packs-validation-prompts-read": "./src/agents/validation/asset-packs-validation-prompts-read.ts",
     "./agents/validation/asset-packs-validation-checks": "./src/agents/validation/asset-packs-validation-checks.ts",
-    "./ensure-checkout-source-files": "./src/ensure-checkout-source-files.ts"
+    "./ensure-checkout-source-files": "./src/ensure-checkout-source-files.ts",
+    "./demonstration": "./src/demonstration/index.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",
@@ -142,7 +143,8 @@
     "@bitcode/host-generics": "workspace:*",
     "@bitcode/asset-packs-pipelines-domain": "workspace:*",
     "@bitcode/generic-measurements-domain-data-pack-absolutes-catalog": "workspace:*",
-    "@bitcode/generic-measurements-domain-data-pack-material-identity": "workspace:*"
+    "@bitcode/generic-measurements-domain-data-pack-material-identity": "workspace:*",
+    "@bitcode/generic-artifacts-patch-kind": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

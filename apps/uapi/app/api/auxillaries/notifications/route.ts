@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { supabaseAdmin } from '@bitcode/supabase';
 import { createClient } from '@bitcode/supabase/ssr/server';
+import { isBitcodeDemonstrationModeEnabled } from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
 
 import {
   getMockOrbitalNotifications,
@@ -34,7 +35,8 @@ export async function GET(request: Request) {
   }
 
   const userId = await requireUserId();
-  if (!userId) {
+  // Demonstration mode withholds the account's real (pack) notifications.
+  if (!userId || isBitcodeDemonstrationModeEnabled()) {
     return NextResponse.json([]);
   }
 

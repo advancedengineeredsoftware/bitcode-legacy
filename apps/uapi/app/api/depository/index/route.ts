@@ -9,6 +9,7 @@
 import { NextResponse } from 'next/server';
 import { waitUntil } from '@vercel/functions';
 import { createClient } from '@bitcode/supabase/ssr/server';
+import { isBitcodeDemonstrationModeEnabled } from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
 import {
   indexDepositoryAssetPack,
   type DepositoryIndexPackInput,
@@ -53,6 +54,10 @@ export async function POST(request: Request) {
       { ok: false, error: 'Session required.', code: 'session_required' },
       { status: 401 },
     );
+  }
+  // Demonstration admissions never enter the real Depository search index.
+  if (isBitcodeDemonstrationModeEnabled()) {
+    return NextResponse.json({ ok: true, skipped: 'demonstration-dataset' });
   }
 
   let body: Record<string, unknown>;

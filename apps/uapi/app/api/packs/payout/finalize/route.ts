@@ -3,11 +3,13 @@
  *
  * Seller finalizes BTD vs ETH (pay-asset) split for a settled-read AssetPack.
  * Inverse treasury remainder: sellerBtdBps BTD + (10000-sellerBtdBps) ETH for seller.
+ * Authorized: the linked seller (`sellerUserId`); unlinked legacy rows: owner.
  */
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@bitcode/supabase/ssr/server';
 import { supabaseAdmin } from '@bitcode/supabase';
+import { isExecutionInActiveDataset } from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
 import {
   BITCODE_BTD_TOKEN_ID,
   computePayoutSplit,
@@ -70,11 +72,23 @@ export async function POST(request: Request) {
     .eq('id', settleRunId)
     .maybeSingle();
 
-  if (error || !row) {
+  if (error || !row || !isExecutionInActiveDataset(row)) {
     return NextResponse.json({ ok: false, error: 'Settle run not found.' }, { status: 404 });
   }
-  // Fail-closed: only the settle-run owner may finalize seller payout.
-  if (String(row.user_id || '') !== String(user.id)) {
+  const output = (row.output as Record<string, unknown> | null) || {};
+  const context = (row.context as Record<string, unknown> | null) || {};
+  const pending =
+    (output.pendingPayout as Record<string, unknown> | null) ||
+    (context.pendingPayout as Record<string, unknown> | null);
+
+  // Fail-closed: the seller (depositor of the settled DataPack) finalizes the
+  // split (V48 G4-5). Rows settled before seller linkage existed fall back to
+  // the settle-run owner. Non-authorized viewers see not-found.
+  const sellerUserId =
+    (typeof context.sellerUserId === 'string' && context.sellerUserId) ||
+    (pending && typeof pending.sellerUserId === 'string' ? pending.sellerUserId : null);
+  const authorizedUserId = sellerUserId || String(row.user_id || '');
+  if (authorizedUserId !== String(user.id)) {
     return NextResponse.json(
       { ok: false, error: 'Settle run not found.', code: 'settle_run_forbidden' },
       { status: 404 },
@@ -83,12 +97,6 @@ export async function POST(request: Request) {
   if (row.status !== 'completed') {
     return NextResponse.json({ ok: false, error: 'Settle run is not completed.' }, { status: 409 });
   }
-
-  const output = (row.output as Record<string, unknown> | null) || {};
-  const context = (row.context as Record<string, unknown> | null) || {};
-  const pending =
-    (output.pendingPayout as Record<string, unknown> | null) ||
-    (context.pendingPayout as Record<string, unknown> | null);
 
   if (!pending || pending.schema !== 'bitcode.settle.pending-payout') {
     return NextResponse.json(

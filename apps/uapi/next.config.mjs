@@ -468,6 +468,31 @@ let nextConfig = {
         'src',
         'depository-settled-demand-estimate.ts'
       ),
+      '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration': path.resolve(
+        __dirname,
+        '..',
+        '..',
+        'packages',
+        'asset-packs-pipelines',
+        'syntheses',
+        'domain',
+        'src',
+        'demonstration',
+        'index.ts'
+      ),
+      '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/agents/finish/read-finish-synthesize-run-agent': path.resolve(
+        __dirname,
+        '..',
+        '..',
+        'packages',
+        'asset-packs-pipelines',
+        'syntheses',
+        'read',
+        'src',
+        'agents',
+        'finish',
+        'read-finish-synthesize-run-agent.ts'
+      ),
       '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-deposits-asset-packs': path.resolve(
         __dirname,
         '..',

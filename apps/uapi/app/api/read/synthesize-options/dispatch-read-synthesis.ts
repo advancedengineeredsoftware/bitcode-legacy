@@ -19,6 +19,11 @@ import {
   isExecutionCancelledError,
 } from '@bitcode/api/pipelines/cancel';
 import { loadDepositorySearchAssets } from '@/lib/depository-settled-demand';
+import {
+  isBitcodeDemonstrationModeEnabled,
+  withDemonstrationDataset,
+} from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
+import { runDemonstrationReadSynthesis } from '@/lib/demonstration-synthesis';
 
 export type ReadSynthesisDispatchInput = {
   runId: string;
@@ -79,6 +84,10 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
       .from('executions')
       .update({
         ...row,
+        // Demonstration runs stay in the demonstration dataset on every write.
+        ...(row.context && typeof row.context === 'object'
+          ? { context: withDemonstrationDataset(row.context as Record<string, unknown>) }
+          : {}),
         updated_at: new Date().toISOString(),
       })
       .eq('id', runId)
@@ -140,56 +149,61 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
       emitStatus('depository: supply load failed (search will run empty / vector-only).');
     }
 
+    // Operator demonstration mode: curated paced replay replaces Host + SDIVF.
+    const demonstrationReplay = isBitcodeDemonstrationModeEnabled();
+
     // Optional Host provision (same path as deposit when available).
-    try {
-      await assertNotCancelled();
-      emitStatus(
-        `Provisioning source checkout for ${input.repositoryFullName}@${
-          input.sourceCommit || input.sourceBranch || 'HEAD'
-        }…`,
-      );
-      const { provisionDepositCheckout } = await import('@/lib/deposit-source-provisioning');
-      const provisioned = await provisionDepositCheckout({
-        repositoryFullName: input.repositoryFullName,
-        sourceBranch: input.sourceBranch,
-        sourceCommit: input.sourceCommit || undefined,
-        userId: input.userId,
-      } as any);
-      await assertNotCancelled();
-      if (provisioned?.sourceCatalog) {
-        pipelineInput.sourceCheckoutCatalog = provisioned.sourceCatalog;
-        pipelineInput.inventory = provisioned.sourceCatalog;
-        storeCrossPhaseArtifact(
-          execution,
-          'deposit',
-          'sourceCheckoutCatalog',
-          provisioned.sourceCatalog,
+    if (!demonstrationReplay) {
+      try {
+        await assertNotCancelled();
+        emitStatus(
+          `Provisioning source checkout for ${input.repositoryFullName}@${
+            input.sourceCommit || input.sourceBranch || 'HEAD'
+          }…`,
         );
-        storeCrossPhaseArtifact(
-          execution,
-          'read',
-          'sourceCheckoutCatalog',
-          provisioned.sourceCatalog,
+        const { provisionDepositCheckout } = await import('@/lib/deposit-source-provisioning');
+        const provisioned = await provisionDepositCheckout({
+          repositoryFullName: input.repositoryFullName,
+          sourceBranch: input.sourceBranch,
+          sourceCommit: input.sourceCommit || undefined,
+          userId: input.userId,
+        } as any);
+        await assertNotCancelled();
+        if (provisioned?.sourceCatalog) {
+          pipelineInput.sourceCheckoutCatalog = provisioned.sourceCatalog;
+          pipelineInput.inventory = provisioned.sourceCatalog;
+          storeCrossPhaseArtifact(
+            execution,
+            'deposit',
+            'sourceCheckoutCatalog',
+            provisioned.sourceCatalog,
+          );
+          storeCrossPhaseArtifact(
+            execution,
+            'read',
+            'sourceCheckoutCatalog',
+            provisioned.sourceCatalog,
+          );
+        }
+        if (provisioned?.workspace?.workspacePath) {
+          storeCrossPhaseArtifact(
+            execution,
+            'repository',
+            'workspacePath',
+            provisioned.workspace.workspacePath,
+          );
+        }
+        emitStatus(
+          provisioned?.sourceCatalog
+            ? 'Source checkout catalog ready; starting SDIVF read pipeline…'
+            : 'Source checkout optional; starting SDIVF read pipeline…',
+        );
+      } catch (provisionErr) {
+        if (isExecutionCancelledError(provisionErr)) throw provisionErr;
+        emitStatus(
+          'Host provision skipped (optional); continuing with empty catalog if needed.',
         );
       }
-      if (provisioned?.workspace?.workspacePath) {
-        storeCrossPhaseArtifact(
-          execution,
-          'repository',
-          'workspacePath',
-          provisioned.workspace.workspacePath,
-        );
-      }
-      emitStatus(
-        provisioned?.sourceCatalog
-          ? 'Source checkout catalog ready; starting SDIVF read pipeline…'
-          : 'Source checkout optional; starting SDIVF read pipeline…',
-      );
-    } catch (provisionErr) {
-      if (isExecutionCancelledError(provisionErr)) throw provisionErr;
-      emitStatus(
-        'Host provision skipped (optional); continuing with empty catalog if needed.',
-      );
     }
 
     await assertNotCancelled();
@@ -197,10 +211,24 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
       'Running SynthesizeAssetPacks (read mode): Setup (Need) → Discovery (Need-fits search) → Implementation → Validation → Finish…',
     );
 
-    const result = await runExecutionPipelineSDIVFSynthesizeReadAssetPacks(
-      pipelineInput,
-      execution as never,
-    );
+    const result = demonstrationReplay
+      ? await runDemonstrationReadSynthesis({
+          runId,
+          userId,
+          executionId: streamRunId,
+          execution,
+          repositoryFullName: input.repositoryFullName,
+          reference: input.sourceCommit || input.sourceBranch || 'HEAD',
+          sourceBranch: input.sourceBranch,
+          need: input.need,
+          relevantPaths: input.relevantPaths || [],
+          irrelevantPaths: input.irrelevantPaths || [],
+          emitStatus,
+        })
+      : await runExecutionPipelineSDIVFSynthesizeReadAssetPacks(
+          pipelineInput,
+          execution as never,
+        );
 
     await assertNotCancelled();
 
@@ -247,7 +275,10 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
         pipelineCore: 'synthesize-reads-asset-packs-pipeline',
         synthesisMode: 'read',
         repositoryFullName: input.repositoryFullName,
+        sourceBranch: input.sourceBranch,
+        sourceCommit: input.sourceCommit,
         optionCount,
+        ...(demonstrationReplay ? { synthesisReplay: 'demonstration' } : {}),
       },
     });
     try {

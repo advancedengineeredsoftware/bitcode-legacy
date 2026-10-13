@@ -18,6 +18,12 @@ import {
   type SettledDepositoryPackSummary,
 } from '@bitcode/asset-packs-pipelines-syntheses-domain';
 import type { DepositoryAsset } from '@bitcode/asset-packs-pipelines-syntheses-domain/depository-search';
+import {
+  isBitcodeDemonstrationModeEnabled,
+  scopeExecutionRowsToActiveDataset,
+  scopeExecutionsQueryToActiveDataset,
+} from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
+import { buildDemonstrationNetworkSupplyRows } from '@/lib/demonstration-network-supply';
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
@@ -239,6 +245,14 @@ export async function loadDepositorySearchAssets(limit = 120): Promise<Depositor
   // Cap raised (was 100) so lexical corpus better covers larger depositories while
   // vector RPC can still surface ids beyond the preload for hybrid merge.
   const cap = Math.min(Math.max(limit, 1), 200);
+  // Demonstration mode never reads the real Depository search index: its
+  // supply is demonstration admissions + network supply (executions path).
+  if (isBitcodeDemonstrationModeEnabled()) {
+    const packs = await loadSettledDepositoryPacks(cap);
+    return packs.map((pack) =>
+      settledPackToDepositoryAsset(pack as SettledDepositoryPackSummary & { coveredSourcePaths?: string[] }),
+    );
+  }
   try {
     const { data, error } = await supabaseAdmin
       .from('depository_search_documents')
@@ -297,26 +311,33 @@ export async function loadSettledDepositoryPacks(
   limit = 80,
 ): Promise<SettledDepositoryPackSummary[]> {
   try {
-    const { data, error } = await supabaseAdmin
-      .from('executions')
-      .select('id, created_at, status, type, output, context')
-      .or(
-        [
-          'context->>admissionState.eq.admitted-to-depository',
-          'context->>source.eq.deposit-option-review-admission',
-          // dual-compat: AssetPack → DataPack activity type ids
-          'type.eq.settled-assetpack',
-          'type.eq.settled-datapack',
-          'context->>settlementState.eq.settled',
-        ].join(','),
-      )
+    const { data, error } = await scopeExecutionsQueryToActiveDataset(
+      supabaseAdmin
+        .from('executions')
+        .select('id, created_at, status, type, output, context')
+        .or(
+          [
+            'context->>admissionState.eq.admitted-to-depository',
+            'context->>source.eq.deposit-option-review-admission',
+            // dual-compat: AssetPack → DataPack activity type ids
+            'type.eq.settled-assetpack',
+            'type.eq.settled-datapack',
+            'context->>settlementState.eq.settled',
+          ].join(','),
+        ),
+    )
       .order('created_at', { ascending: false })
       .limit(Math.min(Math.max(limit, 1), 100));
 
     if (error || !Array.isArray(data)) return [];
+    // Demonstration supply also includes the fixture network depositors.
+    const rows = [
+      ...scopeExecutionRowsToActiveDataset(data as Record<string, unknown>[]),
+      ...(isBitcodeDemonstrationModeEnabled() ? buildDemonstrationNetworkSupplyRows() : []),
+    ];
     const packs: SettledDepositoryPackSummary[] = [];
     const seen = new Set<string>();
-    for (const row of data) {
+    for (const row of rows) {
       const pack = packFromExecutionRow(row as Record<string, unknown>);
       if (!pack || seen.has(pack.id)) continue;
       seen.add(pack.id);

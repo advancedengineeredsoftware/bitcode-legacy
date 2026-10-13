@@ -1453,6 +1453,18 @@ export function depositPackLooksSettled(record: PackActivityRecord): boolean {
 }
 
 /**
+ * Viewer role flag stamped on settled rows by /api/packs/activity
+ * (undefined on legacy / unstamped rows — callers keep prior behavior).
+ */
+function viewerRole(
+  record: PackActivityRecord,
+  key: 'viewerIsBuyer' | 'viewerIsSeller' | 'viewerCanFinalizePayout',
+): boolean | undefined {
+  const value = (record.metadata || {})[key];
+  return typeof value === 'boolean' ? value : undefined;
+}
+
+/**
  * Match type filter including synthetic ownership lenses.
  * "My" filters assume the record set is already scoped to the signed-in user
  * (caller must not mix in foreign network rows).
@@ -1472,7 +1484,8 @@ export function matchesPackActivityTypeFilter(
     );
   }
   if (type === 'my-read-bought') {
-    return isSettledDataPackActivityType(record.type);
+    // Seller-lens rows (packs the viewer sold) are not purchases.
+    return isSettledDataPackActivityType(record.type) && viewerRole(record, 'viewerIsBuyer') !== false;
   }
   if (type === 'my-deposited-unsettled') {
     return (
@@ -1481,11 +1494,16 @@ export function matchesPackActivityTypeFilter(
   }
   if (type === 'my-deposited-settled') {
     return (
-      isDepositoryDataPackActivityType(record.type) && depositPackLooksSettled(record)
+      (isDepositoryDataPackActivityType(record.type) && depositPackLooksSettled(record)) ||
+      // Settled deliveries of DataPacks this viewer deposited (seller lens).
+      (isSettledDataPackActivityType(record.type) && viewerRole(record, 'viewerIsSeller') === true)
     );
   }
   if (type === 'needs-payout-review') {
-    return packActivityNeedsPayoutReview(record);
+    return (
+      packActivityNeedsPayoutReview(record) &&
+      viewerRole(record, 'viewerCanFinalizePayout') !== false
+    );
   }
 
   // dual-compat: filter type=settled-datapack matches stored settled-assetpack.

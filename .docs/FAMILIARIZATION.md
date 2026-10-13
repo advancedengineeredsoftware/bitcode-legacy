@@ -868,6 +868,33 @@ are core. Local vs staging-testnet vs production projects are documented in
 - **Inline:** Node process runs pipeline after dispatch (dev)
 - **Sandbox:** Vercel Sandbox box with host manifest + live runner template
  (`pipeline-hosts` asset-pack-host modules)
+- **Demonstration (operator config):** `BITCODE_DEMONSTRATION_MODE=1` replaces
+ only the deposit/read SDIVF host+pipeline step with a paced replay of a curated
+ catalog (`@bitcode/asset-packs-pipelines-syntheses-domain/demonstration`,
+ runner `apps/uapi/lib/demonstration-synthesis.ts`). Validation, projection,
+ read Finish, settle, PR delivery, and payouts stay live. Runbook:
+ `.docs/DEMONSTRATION.md`. All pack data is a separate **demonstration
+ dataset** (`context.dataset`, `demonstration-dataset.ts` helpers applied in
+ execution history, activity, packs activity, depository supply/demand,
+ holdings, settle/payout); only wallet + GitHub connections are real.
+
+### 8.2a Read settle checkout (payment + seller linkage)
+
+- Quote and settle share `apps/uapi/lib/read-settlement-checkout.ts`: server
+ rehydrate of the buyer's selection, per-option pricing (1:1 settle), pay-to
+ recipients (`BITCODE_SETTLEMENT_{ETH,BTC}_RECIPIENT`), payment-required policy.
+- Payments are verified on-chain by `@bitcode/btd/erc1155`
+ `pay-rail-verification` (Sepolia JSON-RPC, BTC testnet4 Esplora); one
+ checkout per txid (`context.paymentTxId`).
+- Read options may carry server-only `supplyProvenance` (admitted Depository
+ row → `sellerUserId`); settle rows store it so `/exchange` seller lenses and
+ `POST /api/packs/payout/finalize` authorize the **seller**, and entitled
+ patch material is stripped for viewers who are neither buyer nor seller.
+- Account holdings (header BTD | APs chip, wallet pane) add the projected
+ BitcodeERC1155 state from settle/admission rows
+ (`projectAccountHoldingsFromSettlements` in `@bitcode/btd`, read by the
+ auxillaries data route): APs on admission + purchase, seller BTD on
+ finalized payout splits.
 
 ### 8.3 Source-safety
 

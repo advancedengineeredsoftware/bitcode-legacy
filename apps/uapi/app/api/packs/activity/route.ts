@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { supabaseAdmin } from '@bitcode/supabase';
+import { createClient } from '@bitcode/supabase/ssr/server';
 
 import { GET as getActivity } from '@/app/api/activity/route';
 import { buildBitcodeActivityRecordFromExecutionHistory } from '@/components/bitcode/activity/BitcodeActivityModel/bitcode-activity-model';
@@ -12,6 +13,7 @@ import {
   queryPackActivityRecords,
   summarizePackActivityRecords,
   type PackActivityFilters,
+  type PackActivityRecord,
   type PackActivitySortDirection,
   type PackActivitySortKey,
   type PackActivityType,
@@ -20,6 +22,12 @@ import {
 import type { BitcodeActivityRecord } from '@/components/bitcode/activity/BitcodeActivityModel/bitcode-activity-model';
 import { resolveAbsoluteMeasurementFiltersFromParams } from '@/components/exchange/models/absolute-measurement-filters';
 import { isPacksMyTypeFilter } from '@/components/exchange/models/exchange-format';
+import {
+  isBitcodeDemonstrationModeEnabled,
+  scopeExecutionRowsToActiveDataset,
+  scopeExecutionsQueryToActiveDataset,
+} from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
+import { buildDemonstrationNetworkSupplyRows } from '@/lib/demonstration-network-supply';
 
 export const runtime = 'nodejs';
 
@@ -120,113 +128,145 @@ async function readBaseActivity(request: Request, limit: number) {
  */
 async function readGlobalDepositoryRecords(limit: number): Promise<BitcodeActivityRecord[]> {
   try {
-    const { data } = await supabaseAdmin
-      .from('executions')
-      .select('id, created_at, status, type, output, context')
-      .eq('context->>source', 'deposit-option-review-admission')
-      .eq('context->>admissionState', 'admitted-to-depository')
+    const { data } = await scopeExecutionsQueryToActiveDataset(
+      supabaseAdmin
+        .from('executions')
+        .select('id, created_at, status, type, output, context')
+        .eq('context->>source', 'deposit-option-review-admission')
+        .eq('context->>admissionState', 'admitted-to-depository'),
+    )
       .order('created_at', { ascending: false })
       .limit(Math.min(limit, 50));
-    return (data || []).map((row: Record<string, unknown>) => {
-      const output = (row.output as Record<string, unknown> | null) || {};
-      const context = (row.context as Record<string, unknown> | null) || {};
-      const assetPackTitle =
-        (typeof output.assetPackTitle === 'string' && output.assetPackTitle) ||
-        (typeof context.assetPackTitle === 'string' && context.assetPackTitle) ||
-        null;
-      const assetPackKind =
-        (typeof output.assetPackKind === 'string' && output.assetPackKind) ||
-        (typeof output.optionKind === 'string' && output.optionKind) ||
-        (typeof output.kind === 'string' && output.kind) ||
-        (typeof context.assetPackKind === 'string' && context.assetPackKind) ||
-        (typeof context.optionKind === 'string' && context.optionKind) ||
-        null;
-      const estimatedBtd =
-        typeof output.estimatedBtd === 'number'
-          ? output.estimatedBtd
-          : typeof context.estimatedBtd === 'number'
-            ? context.estimatedBtd
-            : null;
-      const estimatedBtdCells =
-        typeof output.estimatedBtdCells === 'number'
-          ? output.estimatedBtdCells
-          : typeof context.estimatedBtdCells === 'number'
-            ? context.estimatedBtdCells
-            : null;
-      // Flatten per-pack absolute measurements onto context+output so pack
-      // activity projection prefers catalog chips over any residual session
-      // aggregates still present on older admission rows.
-      const measurements =
-        (Array.isArray(output.measurements) && output.measurements) ||
-        (Array.isArray(output.absolutes) && output.absolutes) ||
-        (Array.isArray(context.measurements) && context.measurements) ||
-        [];
-      const summary =
-        typeof output.summary === 'string'
-          ? String(output.summary)
-          : assetPackTitle
-            ? `Admitted ${assetPackTitle} to the Depository.`
-            : null;
-      return buildBitcodeActivityRecordFromExecutionHistory({
-        ...row,
-        summary,
-        context: {
-          ...context,
-          source: 'deposit-option-review-admission',
-          admissionState: 'admitted-to-depository',
-          packActivityType: 'depository-assetpack',
-          activityType: 'depository-assetpack',
-          assetPackTitle,
-          assetPackKind,
-          optionKind: assetPackKind,
-          kind: assetPackKind,
-          optionId: context.optionId || output.optionId || null,
-          depositoryAssetPackId:
-            context.depositoryAssetPackId || output.depositoryAssetPackId || null,
-          compensationState:
-            context.compensationState || output.compensationState || null,
-          measurementRoot: context.measurementRoot || output.measurementRoot || null,
-          estimatedBtd,
-          estimatedBtdCells,
-          btdHonesty: 'estimate',
-          // Source-safe absolute catalog only — never patch / fileChanges.
-          measurements,
-        },
-        output: {
-          ...output,
-          packActivityType: 'depository-assetpack',
-          assetPackTitle,
-          assetPackKind,
-          optionKind: assetPackKind,
-          kind: assetPackKind,
-          estimatedBtd,
-          estimatedBtdCells,
-          btdHonesty: 'estimate',
-          measurements,
-          // Strip session-aggregate noise if present on legacy rows.
-          candidateCount: undefined,
-          admittedCount: undefined,
-          optionCount: undefined,
-          depositAdmission: undefined,
-        },
-      } as never);
-    });
+    return scopeExecutionRowsToActiveDataset((data || []) as Record<string, unknown>[]).map(
+      projectGlobalDepositoryRow,
+    );
   } catch {
     return [];
   }
 }
 
-/** Settled read deliveries (settle-asset-pack-pipeline) surface on /exchange as settled-assetpack rows. */
-async function readSettledAssetPackRecords(limit: number): Promise<BitcodeActivityRecord[]> {
+/** Admitted Depository execution row → network-scope pack activity record. */
+function projectGlobalDepositoryRow(row: Record<string, unknown>): BitcodeActivityRecord {
+  const output = (row.output as Record<string, unknown> | null) || {};
+  const context = (row.context as Record<string, unknown> | null) || {};
+  const assetPackTitle =
+    (typeof output.assetPackTitle === 'string' && output.assetPackTitle) ||
+    (typeof context.assetPackTitle === 'string' && context.assetPackTitle) ||
+    null;
+  const assetPackKind =
+    (typeof output.assetPackKind === 'string' && output.assetPackKind) ||
+    (typeof output.optionKind === 'string' && output.optionKind) ||
+    (typeof output.kind === 'string' && output.kind) ||
+    (typeof context.assetPackKind === 'string' && context.assetPackKind) ||
+    (typeof context.optionKind === 'string' && context.optionKind) ||
+    null;
+  const estimatedBtd =
+    typeof output.estimatedBtd === 'number'
+      ? output.estimatedBtd
+      : typeof context.estimatedBtd === 'number'
+        ? context.estimatedBtd
+        : null;
+  const estimatedBtdCells =
+    typeof output.estimatedBtdCells === 'number'
+      ? output.estimatedBtdCells
+      : typeof context.estimatedBtdCells === 'number'
+        ? context.estimatedBtdCells
+        : null;
+  // Flatten per-pack absolute measurements onto context+output so pack
+  // activity projection prefers catalog chips over any residual session
+  // aggregates still present on older admission rows.
+  const measurements =
+    (Array.isArray(output.measurements) && output.measurements) ||
+    (Array.isArray(output.absolutes) && output.absolutes) ||
+    (Array.isArray(context.measurements) && context.measurements) ||
+    [];
+  const summary =
+    typeof output.summary === 'string'
+      ? String(output.summary)
+      : assetPackTitle
+        ? `Admitted ${assetPackTitle} to the Depository.`
+        : null;
+  return buildBitcodeActivityRecordFromExecutionHistory({
+    ...row,
+    summary,
+    context: {
+      ...context,
+      source: 'deposit-option-review-admission',
+      admissionState: 'admitted-to-depository',
+      packActivityType: 'depository-assetpack',
+      activityType: 'depository-assetpack',
+      assetPackTitle,
+      assetPackKind,
+      optionKind: assetPackKind,
+      kind: assetPackKind,
+      optionId: context.optionId || output.optionId || null,
+      depositoryAssetPackId:
+        context.depositoryAssetPackId || output.depositoryAssetPackId || null,
+      compensationState:
+        context.compensationState || output.compensationState || null,
+      measurementRoot: context.measurementRoot || output.measurementRoot || null,
+      estimatedBtd,
+      estimatedBtdCells,
+      btdHonesty: 'estimate',
+      // Source-safe absolute catalog only — never patch / fileChanges.
+      measurements,
+    },
+    output: {
+      ...output,
+      packActivityType: 'depository-assetpack',
+      assetPackTitle,
+      assetPackKind,
+      optionKind: assetPackKind,
+      kind: assetPackKind,
+      estimatedBtd,
+      estimatedBtdCells,
+      btdHonesty: 'estimate',
+      measurements,
+      // Strip session-aggregate noise if present on legacy rows.
+      candidateCount: undefined,
+      admittedCount: undefined,
+      optionCount: undefined,
+      depositAdmission: undefined,
+    },
+  } as never);
+}
+
+/** Signed-in viewer id (fail-soft: anonymous network viewers get null). */
+async function readActivityViewerId(): Promise<string | null> {
   try {
-    const { data } = await supabaseAdmin
-      .from('executions')
-      .select('id, created_at, status, type, output, context')
-      .eq('context->>source', 'read-settle-asset-pack')
-      .eq('status', 'completed')
-      .order('created_at', { ascending: false })
-      .limit(Math.min(limit, 50));
-    return (data || []).map((row: Record<string, unknown>) => {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+    return data?.user?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Buyer (settle-row owner) ids by settle run id, for viewer entitlement. */
+type SettledRowOwners = Map<string, string>;
+
+/**
+ * Settled read deliveries (settle-asset-pack-pipeline) surface on /exchange as
+ * settled-assetpack rows. `sellerUserId` narrows to packs a seller sold.
+ */
+async function readSettledAssetPackRecords(
+  limit: number,
+  owners: SettledRowOwners,
+  options: { sellerUserId?: string } = {},
+): Promise<BitcodeActivityRecord[]> {
+  try {
+    let query = scopeExecutionsQueryToActiveDataset(
+      supabaseAdmin
+        .from('executions')
+        .select('id, user_id, created_at, status, type, output, context')
+        .eq('context->>source', 'read-settle-asset-pack')
+        .eq('status', 'completed'),
+    );
+    if (options.sellerUserId) query = query.eq('context->>sellerUserId', options.sellerUserId);
+    const { data } = await query.order('created_at', { ascending: false }).limit(Math.min(limit, 50));
+    return scopeExecutionRowsToActiveDataset((data || []) as Record<string, unknown>[]).map(
+      ({ user_id: ownerId, ...row }: Record<string, unknown>) => {
+      if (typeof ownerId === 'string') owners.set(String(row.id), ownerId);
       const output = (row.output as Record<string, unknown> | null) || {};
       const context = (row.context as Record<string, unknown> | null) || {};
       const packActivity =
@@ -317,6 +357,42 @@ async function readSettledAssetPackRecords(limit: number): Promise<BitcodeActivi
   }
 }
 
+function readSellerUserId(metadata: Record<string, unknown>): string | null {
+  const pending = metadata.pendingPayout;
+  const fromPending =
+    pending && typeof pending === 'object' && !Array.isArray(pending)
+      ? (pending as { sellerUserId?: unknown }).sellerUserId
+      : null;
+  const value = fromPending ?? metadata.sellerUserId;
+  return typeof value === 'string' && value ? value : null;
+}
+
+/**
+ * Settled rows: stamp viewer roles and enforce entitlement (V48 G4-6) —
+ * entitled patch bodies only for the buyer (settle-row owner) and the seller;
+ * payout finalize only for the seller (legacy unlinked rows: the owner).
+ */
+function applySettledViewerEntitlement(
+  record: PackActivityRecord,
+  viewerId: string | null,
+  viewerOwnedIds: ReadonlySet<string>,
+  settledOwners: SettledRowOwners,
+): PackActivityRecord {
+  if (record.type !== 'settled-assetpack') return record;
+  const metadata = { ...(record.metadata || {}) } as Record<string, unknown>;
+  const sellerUserId = readSellerUserId(metadata);
+  const ownerId = settledOwners.get(record.id) ?? (viewerOwnedIds.has(record.id) ? viewerId : null);
+  const viewerIsBuyer = Boolean(viewerId && ownerId === viewerId);
+  const viewerIsSeller = Boolean(viewerId && sellerUserId === viewerId);
+  metadata.viewerIsBuyer = viewerIsBuyer;
+  metadata.viewerIsSeller = viewerIsSeller;
+  metadata.viewerCanFinalizePayout = sellerUserId ? viewerIsSeller : viewerIsBuyer;
+  if (!viewerIsBuyer && !viewerIsSeller) {
+    delete metadata.entitledPatch;
+  }
+  return { ...record, metadata } as PackActivityRecord;
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const params = url.searchParams;
@@ -341,20 +417,44 @@ export async function GET(request: Request) {
   // account's base activity. Network depository/settled merges would include
   // other accounts' commodity rows and break the ownership lens.
   const mineOnly = isPacksMyTypeFilter(String(filters.type || ''));
+  const viewerId = await readActivityViewerId();
+  // Base activity is the viewer's own execution history (buyer of own settles).
+  const viewerOwnedIds = new Set(baseRecords.map((record) => String(record.id)));
+  const settledOwners: SettledRowOwners = new Map();
   let mergedRecords: BitcodeActivityRecord[];
   if (mineOnly) {
-    mergedRecords = baseRecords;
-  } else {
-    const globalRecords = await readGlobalDepositoryRecords(limit);
-    const settledRecords = await readSettledAssetPackRecords(limit);
-    const seenIds = new Set(baseRecords.map((record) => String(record.id)));
+    // Seller lens: packs this account deposited that buyers have settled.
+    const soldRecords = viewerId
+      ? await readSettledAssetPackRecords(limit, settledOwners, { sellerUserId: viewerId })
+      : [];
     mergedRecords = [
       ...baseRecords,
-      ...globalRecords.filter((record) => !seenIds.has(String(record.id))),
-      ...settledRecords.filter((record) => !seenIds.has(String(record.id))),
+      ...soldRecords.filter((record) => !viewerOwnedIds.has(String(record.id))),
+    ];
+  } else {
+    const globalRecords = await readGlobalDepositoryRecords(limit);
+    const settledRecords = await readSettledAssetPackRecords(limit, settledOwners);
+    // Demonstration network supply: catalog DataPacks other (fixture) depositors
+    // already admitted, so the Exchange is never empty at the start of a demo.
+    const networkSupply = isBitcodeDemonstrationModeEnabled()
+      ? buildDemonstrationNetworkSupplyRows(
+          [...baseRecords, ...globalRecords].map((record) => {
+            const payload = (record as { payload?: Record<string, unknown> }).payload ?? {};
+            const context = (payload.context as Record<string, unknown> | undefined) ?? {};
+            return String(context.assetPackTitle ?? payload.assetPackTitle ?? '');
+          }),
+        ).map(projectGlobalDepositoryRow)
+      : [];
+    mergedRecords = [
+      ...baseRecords,
+      ...globalRecords.filter((record) => !viewerOwnedIds.has(String(record.id))),
+      ...settledRecords.filter((record) => !viewerOwnedIds.has(String(record.id))),
+      ...networkSupply,
     ];
   }
-  const packRecords = mergedRecords.map(normalizePackActivityRecord);
+  const packRecords = mergedRecords
+    .map(normalizePackActivityRecord)
+    .map((record) => applySettledViewerEntitlement(record, viewerId, viewerOwnedIds, settledOwners));
   const query = queryPackActivityRecords(packRecords, {
     search: params.get('q') || params.get('search') || '',
     filters,

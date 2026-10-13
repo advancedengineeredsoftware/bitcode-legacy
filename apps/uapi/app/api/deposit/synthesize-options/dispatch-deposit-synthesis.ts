@@ -46,6 +46,11 @@ import {
   compactBitcodeServerId,
 } from '@/lib/bitcode-server-telemetry';
 import { bridgeHostTelemetryArtifactToExecutionStream } from '@/lib/deposit-host-telemetry-bridge';
+import {
+  isBitcodeDemonstrationModeEnabled,
+  withDemonstrationDataset,
+} from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
+import { runDemonstrationDepositSynthesis } from '@/lib/demonstration-synthesis';
 
 const DEPOSIT_OPTION_KINDS = [
   'capability-slice',
@@ -113,6 +118,10 @@ export async function runDepositOptionSynthesis(
         started_at: startedAtIso,
         updated_at: new Date().toISOString(),
         ...row,
+        // Demonstration runs stay in the demonstration dataset on every write.
+        ...(row.context && typeof row.context === 'object'
+          ? { context: withDemonstrationDataset(row.context as Record<string, unknown>) }
+          : {}),
       },
       { onConflict: 'id' },
     );
@@ -159,9 +168,11 @@ export async function runDepositOptionSynthesis(
     await emitStatus(`AssetPacksSynthesis (deposit lens) started for ${repositoryFullName}.`);
 
     // Preload depository supply BEFORE Discovery so relevants search has assets.
+    let depositorySupplyCount = 0;
     try {
       await assertNotCancelled();
       const searchAssets = await loadDepositorySearchAssets(120);
+      depositorySupplyCount = searchAssets.length;
       try {
         (execution as any).store?.('depository', 'settledAssets', searchAssets);
         (execution as any).store?.('deposit', 'settledDepositoryAssets', searchAssets);
@@ -197,8 +208,26 @@ export async function runDepositOptionSynthesis(
     let boundSandboxId: string | null = null;
     /** Host budget / partial recovery (sandbox only; null for local full runs). */
     let hostRecovery: DepositHostRecovery | null = null;
+    /** Operator demonstration mode: SDIVF replaced by a curated, paced replay. */
+    const demonstrationReplay = isBitcodeDemonstrationModeEnabled();
 
-    if (hostKind === 'sandbox') {
+    if (demonstrationReplay) {
+      await assertNotCancelled();
+      const demonstration = await runDemonstrationDepositSynthesis({
+        runId,
+        executionId: execution.id,
+        repositoryFullName,
+        reference,
+        accessToken: auth.accessToken || null,
+        permissibleSources,
+        impermissibleSources,
+        depositorySupplyCount,
+        emitStatus,
+      });
+      rawOptions = demonstration.options as Parameters<typeof validateDepositSynthesisOptions>[0];
+      sourceCatalog = demonstration.sourceCatalog;
+      inventoryPaths = sourceCatalog.paths;
+    } else if (hostKind === 'sandbox') {
       await assertNotCancelled();
       const sandboxImage = process.env.BITCODE_PIPELINE_SANDBOX_IMAGE?.trim() || null;
       bitcodeServerTelemetry('info', 'deposit-synthesize-options', 'sandbox-dispatch', {
@@ -619,6 +648,7 @@ export async function runDepositOptionSynthesis(
         inventoryPathCount: sourceCatalog.paths.length,
         inferenceProvider: result.inference.provider,
         inferenceModel: result.inference.model,
+        ...(demonstrationReplay ? { synthesisReplay: 'demonstration' } : {}),
         ...(isBudgetPartial
           ? {
               partial: true,

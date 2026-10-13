@@ -3,6 +3,16 @@ import { hydrateBitcodeProfile } from '@bitcode/orm';
 import { createJsonResponse } from '@bitcode/api/responses';
 import { supabaseAdmin } from '@bitcode/supabase';
 import { createClient } from '@bitcode/supabase/ssr/server';
+import {
+  projectAccountHoldingsFromSettlements,
+  type ProjectedAccountHoldings,
+  type ProjectedHoldingsExecutionRow,
+} from '@bitcode/btd';
+import {
+  isBitcodeDemonstrationModeEnabled,
+  scopeExecutionRowsToActiveDataset,
+  scopeExecutionsQueryToActiveDataset,
+} from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
 
 import {
   buildAnonymousAuxillaryData,
@@ -42,6 +52,11 @@ type AuxillaryRouteBuilderOptions = {
     userId: string;
     profile: unknown | null;
   }) => Promise<unknown | null>;
+  /**
+   * Opening BTD credited to an account before any settle activity (e.g. the
+   * configured demonstration account). Added to credited + projected BTD.
+   */
+  resolveOpeningBtd?: (input: { userId: string; profile: unknown | null }) => number;
 };
 
 async function getAuthenticatedUser() {
@@ -193,6 +208,66 @@ async function listRecentBtdAssetPacksForProfile(
       return summary;
     })
     .filter((entry): entry is AuxillaryBtdAssetPackSummary => Boolean(entry));
+}
+
+/** Source-safe columns only — never the full settle output (entitled bodies). */
+const PROJECTED_HOLDINGS_COLUMNS = 'id, user_id, created_at, status, context, pendingPayout:output->pendingPayout';
+
+/**
+ * Projected BitcodeERC1155 holdings for the account (V48 G4-5): admitted
+ * deposits + bought DataPacks (APs) and finalized seller payouts (BTD).
+ * Fail-soft to empty holdings.
+ */
+async function readProjectedAccountHoldings(userId: string): Promise<ProjectedAccountHoldings> {
+  const empty: ProjectedAccountHoldings = { btdBaseUnits: 0n, btd: 0, assetPacks: [] };
+  try {
+    const admin = supabaseAdmin as any;
+    // Holdings follow the active dataset (demonstration vs live).
+    const [owned, sold] = await Promise.all([
+      scopeExecutionsQueryToActiveDataset(
+        admin
+          .from('executions')
+          .select(PROJECTED_HOLDINGS_COLUMNS)
+          .eq('user_id', userId)
+          .in('context->>source', ['read-settle-asset-pack', 'deposit-option-review-admission']),
+      )
+        .order('created_at', { ascending: false })
+        .limit(200),
+      scopeExecutionsQueryToActiveDataset(
+        admin
+          .from('executions')
+          .select(PROJECTED_HOLDINGS_COLUMNS)
+          .eq('context->>sellerUserId', userId)
+          .eq('status', 'completed'),
+      ).limit(200),
+    ]);
+    const rows = scopeExecutionRowsToActiveDataset([
+      ...(Array.isArray(owned?.data) ? owned.data : []),
+      ...(Array.isArray(sold?.data) ? sold.data : []),
+    ] as ProjectedHoldingsExecutionRow[]);
+    return projectAccountHoldingsFromSettlements(rows, userId);
+  } catch {
+    return empty;
+  }
+}
+
+/** Merge ledger ownership events with projected holdings (distinct AssetPacks). */
+function mergeAssetPackSummaries(
+  ledger: AuxillaryBtdAssetPackSummary[],
+  projected: ProjectedAccountHoldings,
+): AuxillaryBtdAssetPackSummary[] {
+  const merged = new Map<string, AuxillaryBtdAssetPackSummary>();
+  for (const entry of ledger) merged.set(entry.assetPackId, entry);
+  for (const holding of projected.assetPacks) {
+    if (merged.has(holding.assetPackId)) continue;
+    merged.set(holding.assetPackId, {
+      assetPackId: holding.assetPackId,
+      ...(holding.label ? { label: holding.label } : {}),
+      ...(holding.acquiredAt ? { acquiredAt: holding.acquiredAt } : {}),
+      readRightState: holding.readRightState,
+    });
+  }
+  return [...merged.values()];
 }
 
 export function buildGetAuxillaryOnboardingRoute(options: AuxillaryRouteBuilderOptions = {}) {
@@ -355,7 +430,14 @@ export function buildGetAuxillaryDataRoute(options: AuxillaryRouteBuilderOptions
 
     const profile = hydrateBitcodeProfile(profileResult.data ?? null);
     const githubConnection = githubConnectionResult.data?.connection_data ?? null;
-    const btdBalance = typeof balanceResult.data?.balance === 'number' ? balanceResult.data.balance : 0;
+    // Demonstration holdings exclude the account's real credits / ledger rows.
+    const demonstration = isBitcodeDemonstrationModeEnabled();
+    const creditedBtd =
+      !demonstration && typeof balanceResult.data?.balance === 'number' ? balanceResult.data.balance : 0;
+    // Projected ERC1155 holdings move with settles (APs) and finalized payouts (BTD).
+    const projectedHoldings = await readProjectedAccountHoldings(user.id);
+    const openingBtd = Math.max(0, options.resolveOpeningBtd?.({ userId: user.id, profile }) ?? 0);
+    const btdBalance = creditedBtd + openingBtd + projectedHoldings.btd;
     const btcFeeBalance = readNumericProfileField(profile, 'btcFeeBalance', 'btc_fee_balance', 'btc_balance');
     const modelPreferences = preferencesResult.data?.preferences ?? null;
     const templatePreferences = templatePreferencesResult.data
@@ -365,8 +447,14 @@ export function buildGetAuxillaryDataRoute(options: AuxillaryRouteBuilderOptions
           auto_save_templates: Boolean(templatePreferencesResult.data.auto_save_templates),
         }
       : EMPTY_TEMPLATE_PREFERENCES;
-    const notificationRows = Array.isArray(notificationsResult.data) ? notificationsResult.data : [];
-    const recentBtdAssetPacks = await listRecentBtdAssetPacksForProfile(profile).catch(() => []);
+    const notificationRows =
+      !isBitcodeDemonstrationModeEnabled() && Array.isArray(notificationsResult.data)
+        ? notificationsResult.data
+        : [];
+    const recentBtdAssetPacks = mergeAssetPackSummaries(
+      demonstration ? [] : await listRecentBtdAssetPacksForProfile(profile).catch(() => []),
+      projectedHoldings,
+    );
     const walletConnectionStatus = options.resolveWalletConnectionStatus
       ? await options
           .resolveWalletConnectionStatus({

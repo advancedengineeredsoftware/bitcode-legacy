@@ -10,6 +10,12 @@ import { createJsonResponse } from '@bitcode/api/responses';
 import { supabaseAdmin } from '@bitcode/supabase';
 import { createClient } from '@bitcode/supabase/ssr/server';
 import {
+  isExecutionInActiveDataset,
+  scopeExecutionRowsToActiveDataset,
+  scopeExecutionsQueryToActiveDataset,
+  withDemonstrationDataset,
+} from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
+import {
   isUnpaidReadSynthesisExecution,
   redactUnpaidReadExecutionOutput,
 } from '@bitcode/asset-packs-pipelines-syntheses-domain/unpaid-option-disclosure';
@@ -639,6 +645,8 @@ export async function getExecutionHistoryRoute(request: Request) {
   } else if (requestedTypes.length > 1) {
     query = query.in('type', requestedTypes);
   }
+  // Demonstration mode reads only demonstration rows; live never sees them.
+  query = scopeExecutionsQueryToActiveDataset(query);
 
   const { data, error } = await query;
   if (error) {
@@ -648,7 +656,11 @@ export async function getExecutionHistoryRoute(request: Request) {
     );
   }
 
-  return createJsonResponse((data || []).map(normalizeExecutionHistoryRow));
+  return createJsonResponse(
+    scopeExecutionRowsToActiveDataset((data || []) as ExecutionHistoryRow[]).map((row) =>
+      normalizeExecutionHistoryRow(row),
+    ),
+  );
 }
 
 export async function postExecutionHistoryRoute(request: Request) {
@@ -670,10 +682,12 @@ export async function postExecutionHistoryRoute(request: Request) {
     (body.output as Record<string, unknown> | null | undefined) ||
     (body.output_data as Record<string, unknown> | null | undefined) ||
     null;
-  const context =
+  // Admissions / Need anchors recorded in demonstration mode join its dataset.
+  const context = withDemonstrationDataset(
     (body.context as Record<string, unknown> | null | undefined) ||
-    (body.metadata as Record<string, unknown> | null | undefined) ||
-    null;
+      (body.metadata as Record<string, unknown> | null | undefined) ||
+      null,
+  );
   const normalizedType = normalizeAgenticExecutionStorageType(
     typeof body.pipeline_type === 'string'
       ? body.pipeline_type
@@ -759,7 +773,7 @@ export async function getExecutionHistoryRunRoute(
     );
   }
 
-  if (!run || run.user_id !== userId) {
+  if (!run || run.user_id !== userId || !isExecutionInActiveDataset(run)) {
     return createJsonResponse({ error: 'Execution not found or access denied' }, 404);
   }
 

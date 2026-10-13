@@ -9,6 +9,7 @@
 "use client";
 
 import { formatSats } from "@/components/reads/models/read-format";
+import { useReadSettlementCheckout } from "./hooks/use-read-settlement-checkout";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Workflow } from "lucide-react";
 import { useReadRouteParams } from "./hooks/use-read-route-params";
@@ -27,11 +28,7 @@ import {
   deriveNeedAnchors,
   filterReadPipelineTableRuns,
 } from "@/components/reads/models/read-activity-ledger";
-import {
-  ReadsAssetPackOptions,
-  type ReadPayAsset,
-  type ReadSettleQuote,
-} from "@/components/reads/ReadsAssetPackOptions/ReadsAssetPackOptions";
+import { ReadsAssetPackOptions } from "@/components/reads/ReadsAssetPackOptions/ReadsAssetPackOptions";
 import { ReadsNeedComposePanel } from "@/components/reads/ReadsNeedComposePanel/ReadsNeedComposePanel";
 import { ReadsPipelinesMaster } from "@/components/reads/ReadsPipelinesMaster/ReadsPipelinesMaster";
 import { ReadsPipelineTelemetry } from "@/components/reads/ReadsPipelineTelemetry/ReadsPipelineTelemetry";
@@ -56,27 +53,6 @@ import {
 import { assessSelectedOptionsForSettle } from "@/components/reads/models/read-buyer-measurement-projection";
 import { useUserData } from "@/hooks/useUserData";
 import { isPlausibleEthereumAddress } from "@bitcode/auth/ethereum-wallet-client";
-
-function payAssetToNetwork(payAsset: ReadPayAsset): string {
-  if (payAsset === "BTC") return "btc-testnet";
-  if (payAsset === "SOL") return "solana-devnet";
-  return "ethereum-sepolia";
-}
-
-/** Aggregate needinesses from selected options for a single multi-rail quote. */
-function aggregateMeasurementsForQuote(
-  options: Array<{ measurements?: { needinesses?: unknown[]; absolutes?: unknown[] } }>,
-): { needinesses: unknown[]; absolutes: unknown[] } {
-  const needinesses: unknown[] = [];
-  const absolutes: unknown[] = [];
-  for (const opt of options) {
-    const n = opt.measurements?.needinesses;
-    const a = opt.measurements?.absolutes;
-    if (Array.isArray(n)) needinesses.push(...n);
-    if (Array.isArray(a)) absolutes.push(...a);
-  }
-  return { needinesses, absolutes };
-}
 
 export default function ReadPageClient() {
   const { selectedTransactionId, routeReadingStage, purchaseIntent } =
@@ -117,13 +93,6 @@ export default function ReadPageClient() {
     null,
   );
   const [isComposeOpen, setIsComposeOpen] = useState(false);
-  const [settleBusy, setSettleBusy] = useState(false);
-  const [settleError, setSettleError] = useState<string | null>(null);
-  const [settleMessage, setSettleMessage] = useState<string | null>(null);
-  const [payAsset, setPayAsset] = useState<ReadPayAsset>("ETH");
-  const [quote, setQuote] = useState<ReadSettleQuote | null>(null);
-  const [quoteBusy, setQuoteBusy] = useState(false);
-  const [quoteError, setQuoteError] = useState<string | null>(null);
 
   const selectedRun = useMemo(
     () => liveRuns.find((run) => run.id === selectedTransactionId) || null,
@@ -173,157 +142,18 @@ export default function ReadPageClient() {
     [selectedOptions],
   );
 
-  const fetchSettleQuote = useCallback(async () => {
-    if (selectedOptions.length === 0) {
-      setQuote(null);
-      setQuoteError(null);
-      return;
-    }
-    const gate = assessSelectedOptionsForSettle(selectedOptions);
-    if (!gate.allowed) {
-      setQuote(null);
-      setQuoteError(
-        gate.blockers[0] ||
-          "Measurement-only buy gate blocked quote (need-fit / safety).",
-      );
-      return;
-    }
-    setQuoteBusy(true);
-    setQuoteError(null);
-    try {
-      const measurements = aggregateMeasurementsForQuote(selectedOptions);
-      if (measurements.needinesses.length === 0) {
-        throw new Error(
-          "Selected options need needinesses measurements for BTD volume.",
-        );
-      }
-      const response = await fetch("/api/read/settle/quote", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ measurements }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload?.ok) {
-        throw new Error(
-          typeof payload?.error === "string"
-            ? payload.error
-            : "Quote failed.",
-        );
-      }
-      setQuote({
-        provider: String(payload.provider || "mock"),
-        needFitVolume: Number(payload.needFitVolume) || 0,
-        rawVolumeBaseUnits: String(payload.rawVolumeBaseUnits || "0"),
-        btdVolume: String(payload.btdVolume || "0"),
-        btdVolumeDisplay: String(payload.btdVolumeDisplay || "0"),
-        decay: Number(payload.decay) || 0,
-        decayMicro: Number(payload.decayMicro) || 0,
-        expiresAt: String(payload.expiresAt || ""),
-        options: Array.isArray(payload.options) ? payload.options : [],
-      });
-    } catch (err) {
-      setQuote(null);
-      setQuoteError(err instanceof Error ? err.message : "Quote failed.");
-    } finally {
-      setQuoteBusy(false);
-    }
-  }, [selectedOptions]);
-
-  useEffect(() => {
-    void fetchSettleQuote();
-  }, [fetchSettleQuote]);
-
-  const handleSettleSelected = useCallback(async () => {
-    if (selectedOptions.length === 0) return;
-    const gate = assessSelectedOptionsForSettle(selectedOptions);
-    if (!gate.allowed) {
-      setSettleError(
-        gate.blockers[0] ||
-          "Measurement-only buy gate blocked settle (need-fit / safety).",
-      );
-      return;
-    }
-    setSettleBusy(true);
-    setSettleError(null);
-    setSettleMessage(null);
-    try {
-      const railQuote = quote?.options.find((o) => o.payAsset === payAsset);
-      // V48-Gate5-F01: send indexes only — server rehydrates fullOptions.
-      const response = await fetch("/api/read/settle", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          synthesisRunId: synthesis.runId,
-          selectedIndexes: synthesis.selectedIndexes,
-          need: need.trim() || null,
-          relevantPaths,
-          irrelevantPaths,
-          repositoryFullName:
-            repositoryContext?.selectedRepository?.fullName || null,
-          repository: {
-            fullName: repositoryContext?.selectedRepository?.fullName || null,
-            owner: repositoryContext?.selectedRepository?.owner || null,
-            name: repositoryContext?.selectedRepository?.name || null,
-            branch: repositoryContext?.selectedBranch || null,
-            commit: repositoryContext?.selectedCommit || null,
-          },
-          payAsset,
-          buyerEthereumAddress: buyerEthereumAddress || null,
-          paymentObservation: {
-            schema: "bitcode.settle-asset-pack.payment-observation",
-            network: payAssetToNetwork(payAsset),
-            status: "observed-projection",
-            amountSats:
-              payAsset === "BTC" && railQuote?.payAmount
-                ? Number(railQuote.payAmount)
-                : null,
-            txId: null,
-            payAmount: railQuote?.payAmount ?? null,
-            payAsset,
-          },
-        }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok || !payload?.ok) {
-        throw new Error(
-          typeof payload?.error === "string"
-            ? payload.error
-            : "Settlement failed.",
-        );
-      }
-      const runIds = Array.isArray(payload.settleRunIds)
-        ? payload.settleRunIds.join(", ")
-        : payload.settleRunId;
-      setSettleMessage(
-        `Settled ${selectedOptions.length} option(s) paying ${payAsset}. ` +
-          `BTD escrow + co-own on Packs; seller finalizes split there` +
-          `${runIds ? ` (run ${runIds})` : ""}.`,
-      );
-      void Promise.resolve(refreshLiveRuns() as unknown);
-    } catch (err) {
-      setSettleError(
-        err instanceof Error ? err.message : "Settlement failed.",
-      );
-    } finally {
-      setSettleBusy(false);
-    }
-  }, [
-    buyerEthereumAddress,
+  const checkout = useReadSettlementCheckout({
+    synthesisRunId: synthesis.runId,
+    selectedIndexes: synthesis.selectedIndexes,
+    selectedOptions,
     need,
-    payAsset,
-    quote?.options,
     relevantPaths,
     irrelevantPaths,
+    repositoryContext,
+    buyerEthereumAddress,
+    connectedWalletProvider: walletConnectionStatus?.provider ?? null,
     refreshLiveRuns,
-    repositoryContext?.selectedBranch,
-    repositoryContext?.selectedCommit,
-    repositoryContext?.selectedRepository?.fullName,
-    repositoryContext?.selectedRepository?.name,
-    repositoryContext?.selectedRepository?.owner,
-    selectedOptions,
-    synthesis.selectedIndexes,
-    synthesis.runId,
-  ]);
+  });
 
   const [pipelineFilters, setPipelineFilters] = useState<TransactionFilters>({
     ...DEFAULT_TRANSACTION_FILTERS,
@@ -349,20 +179,15 @@ export default function ReadPageClient() {
     closeUrlDetail();
     setIsComposeOpen(false);
     synthesis.reset();
-    setSettleError(null);
-    setSettleMessage(null);
-    setQuote(null);
-    setQuoteError(null);
-    setPayAsset("ETH");
-  }, [closeUrlDetail, synthesis.reset]);
+    checkout.reset();
+  }, [checkout.reset, closeUrlDetail, synthesis.reset]);
 
   const openComposeDetail = useCallback(() => {
     closeUrlDetail();
     synthesis.reset();
-    setSettleError(null);
-    setSettleMessage(null);
+    checkout.reset();
     setIsComposeOpen(true);
-  }, [closeUrlDetail, synthesis.reset]);
+  }, [checkout.reset, closeUrlDetail, synthesis.reset]);
 
   const telemetry = useReadPipelineTelemetry(
     selectedRun ||
@@ -622,16 +447,18 @@ export default function ReadPageClient() {
               envelope={synthesis.envelope}
               selectedIndexes={synthesis.selectedIndexes}
               onToggleSelect={synthesis.toggleSelect}
-              onSettleSelected={() => void handleSettleSelected()}
-              settleBusy={settleBusy}
-              settleError={settleError}
-              settleMessage={settleMessage}
-              payAsset={payAsset}
-              onPayAssetChange={setPayAsset}
-              quote={quote}
-              quoteBusy={quoteBusy}
-              quoteError={quoteError}
-              onRefreshQuote={() => void fetchSettleQuote()}
+              onSettleSelected={() => void checkout.payAndSettle()}
+              settleBusy={checkout.busy}
+              settleError={checkout.settleError}
+              checkoutPhase={checkout.phase}
+              receipts={checkout.receipts}
+              pendingPaymentTxId={checkout.pendingPaymentTxId}
+              payAsset={checkout.payAsset}
+              onPayAssetChange={checkout.setPayAsset}
+              quote={checkout.quote}
+              quoteBusy={checkout.quoteBusy}
+              quoteError={checkout.quoteError}
+              onRefreshQuote={() => void checkout.refreshQuote()}
               buyerEthereumAddress={buyerEthereumAddress}
               measurementGateAllowed={settleMeasurementGate.allowed}
               measurementGateCaution={settleMeasurementGate.caution}
