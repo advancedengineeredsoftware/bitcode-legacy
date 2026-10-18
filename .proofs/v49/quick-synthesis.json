@@ -1,0 +1,155 @@
+{
+  "artifactId": "v49-quick-synthesis",
+  "schemaId": "bitcode.v49.quickSynthesis.v1",
+  "version": "V49",
+  "currentTarget": "V48",
+  "artifactPath": ".proofs/v49/quick-synthesis.json",
+  "sourceSafetyVerdict": "source-safe-quick-synthesis",
+  "pipelineNames": [
+    "SynthesizeDepositAssetPacksQuick",
+    "SynthesizeReadAssetPacksQuick"
+  ],
+  "modes": [
+    "rich",
+    "quick",
+    "demonstration"
+  ],
+  "modelCallsPerRun": 1,
+  "predicateResults": [
+    {
+      "id": "quick-pipelines-use-quick-primitives",
+      "sourcePath": "packages/asset-packs-pipelines/syntheses/quick/src/deposit.ts",
+      "passed": true
+    },
+    {
+      "id": "single-model-call-invariant-enforced",
+      "sourcePath": "packages/asset-packs-pipelines/syntheses/quick/src/quick-synthesize-asset-packs-agent.ts",
+      "passed": true
+    },
+    {
+      "id": "one-call-proven-by-tests",
+      "sourcePath": "packages/asset-packs-pipelines/syntheses/quick/src/__tests__/quick-synthesis.test.ts",
+      "passed": true
+    },
+    {
+      "id": "gather-is-a-tool-without-model-calls",
+      "sourcePath": "packages/asset-packs-pipelines/syntheses/quick/src/quick-synthesis-source-tool.ts",
+      "passed": true
+    },
+    {
+      "id": "prompt-composed-from-prompt-parts",
+      "sourcePath": "packages/asset-packs-pipelines/syntheses/quick/src/quick-synthesis-prompts.ts",
+      "passed": true
+    },
+    {
+      "id": "absolutes-honesty-profile-law",
+      "sourcePath": "packages/asset-packs-pipelines/syntheses/domain/src/profile-absolutes.ts",
+      "passed": true
+    },
+    {
+      "id": "read-attributions-and-benchmarks-restricted",
+      "sourcePath": "packages/asset-packs-pipelines/syntheses/quick/src/quick-synthesis-options.ts",
+      "passed": true
+    },
+    {
+      "id": "mode-resolution-law",
+      "sourcePath": "packages/asset-packs-pipelines/syntheses/domain/src/synthesis-pipeline-mode.ts",
+      "passed": true
+    },
+    {
+      "id": "routes-accept-synthesis-pipeline",
+      "sourcePath": "apps/uapi/app/api/deposit/synthesize-options/route.ts",
+      "passed": true
+    },
+    {
+      "id": "dispatchers-branch-on-mode",
+      "sourcePath": "apps/uapi/app/api/deposit/synthesize-options/dispatch-deposit-synthesis.ts",
+      "passed": true
+    },
+    {
+      "id": "read-dispatch-has-no-pre-pipeline-clone",
+      "sourcePath": "apps/uapi/app/api/read/synthesize-options/dispatch-read-synthesis.ts",
+      "passed": true
+    },
+    {
+      "id": "website-runners-read-live-checkout",
+      "sourcePath": "apps/uapi/lib/quick-synthesis.ts",
+      "passed": true
+    },
+    {
+      "id": "toggle-flagged-and-tested",
+      "sourcePath": "apps/uapi/components/bitcode/routes/BitcodeSynthesisPipelineToggle/BitcodeSynthesisPipelineToggle.tsx",
+      "passed": true
+    },
+    {
+      "id": "living-ci-runs-quick-tests",
+      "sourcePath": "scripts/run-bitcode-local-ci.mjs",
+      "passed": true
+    },
+    {
+      "id": "spec-carries-quick-law",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49.md",
+      "passed": true
+    },
+    {
+      "id": "package-json-exposes-gate3",
+      "sourcePath": "package.json",
+      "passed": true
+    },
+    {
+      "id": "package-exports-gate3",
+      "sourcePath": "scripts/specifying/src/index.js",
+      "passed": true
+    },
+    {
+      "id": "generator-checker-test-exist",
+      "sourcePath": "scripts/generate-v49-quick-synthesis.mjs",
+      "passed": true
+    }
+  ],
+  "sourceRoots": {
+    "spec": ".specifications/BITCODE_SPEC_V49.md:70e42ad460249fd97e1a0f0f",
+    "quickPackage": "packages/asset-packs-pipelines/syntheses/quick/package.json:86537e75c7ee228f6a1a483f",
+    "quickSchema": "packages/asset-packs-pipelines/syntheses/quick/src/quick-synthesis-schema.ts:200dfd93965a36f835774c6e",
+    "quickPrompts": "packages/asset-packs-pipelines/syntheses/quick/src/quick-synthesis-prompts.ts:f58f9551ea459be6af52a7a5",
+    "quickGatherTool": "packages/asset-packs-pipelines/syntheses/quick/src/quick-synthesis-source-tool.ts:edc6afc62ca4e97114517d6f",
+    "quickCallCounter": "packages/asset-packs-pipelines/syntheses/quick/src/quick-synthesis-llm-calls.ts:1ab673b45613a0ce9e76766d",
+    "quickOptions": "packages/asset-packs-pipelines/syntheses/quick/src/quick-synthesis-options.ts:ad9a612c4335aad978f766a7",
+    "quickAgent": "packages/asset-packs-pipelines/syntheses/quick/src/quick-synthesize-asset-packs-agent.ts:a6f5c097944110d132428ed0",
+    "quickDeposit": "packages/asset-packs-pipelines/syntheses/quick/src/deposit.ts:e6c125b49cc6f0ac2edc590f",
+    "quickRead": "packages/asset-packs-pipelines/syntheses/quick/src/read.ts:550b2f8ee2c69cb5b4f4ae52",
+    "quickTest": "packages/asset-packs-pipelines/syntheses/quick/src/__tests__/quick-synthesis.test.ts:f539c63cef82c334a9e163f5",
+    "modeResolution": "packages/asset-packs-pipelines/syntheses/domain/src/synthesis-pipeline-mode.ts:e2700375986dd910315d72cc",
+    "modeTest": "packages/asset-packs-pipelines/syntheses/domain/src/__tests__/synthesis-pipeline-mode.test.ts:1bf3a17aca8bde8d6e41eab6",
+    "profileAbsolutes": "packages/asset-packs-pipelines/syntheses/domain/src/profile-absolutes.ts:b917fe6e511f280186783031",
+    "uapiRunners": "apps/uapi/lib/quick-synthesis.ts:22b1c1e1036149bb970dc844",
+    "depositRoute": "apps/uapi/app/api/deposit/synthesize-options/route.ts:cae4f82d5b9dad0fb0a13803",
+    "readRoute": "apps/uapi/app/api/read/synthesize-options/route.ts:be289ed466d719d93f1ae7c5",
+    "depositDispatch": "apps/uapi/app/api/deposit/synthesize-options/dispatch-deposit-synthesis.ts:40901106000952656b8810db",
+    "readDispatch": "apps/uapi/app/api/read/synthesize-options/dispatch-read-synthesis.ts:4490bc5c71b7a5c801c42b42",
+    "toggle": "apps/uapi/components/bitcode/routes/BitcodeSynthesisPipelineToggle/BitcodeSynthesisPipelineToggle.tsx:8bef691366e208f129d39e65",
+    "preference": "apps/uapi/components/bitcode/pipeline/models/synthesis-pipeline-preference.ts:c3a5d0871dfa50424c5eb54f",
+    "preferenceTest": "apps/uapi/tests/synthesisPipelinePreference.test.tsx:8d4d84a86bb5bcb56a5030ff",
+    "synthesizeButton": "apps/uapi/components/bitcode/routes/ProductSynthesizeDataPackOptionsButton/ProductSynthesizeDataPackOptionsButton.tsx:8fdff0a2e233d04c9e14fc36",
+    "localCi": "scripts/run-bitcode-local-ci.mjs:db8199fcfa2a40d8c43942ab",
+    "packageJson": "package.json:51f31c071416a346eabb14cd",
+    "protocolIndex": "scripts/specifying/src/index.js:6a0f51697b352996084df592",
+    "protocolTypes": "scripts/specifying/src/index.d.ts:f06e3c371b31ed424354ca10",
+    "generator": "scripts/generate-v49-quick-synthesis.mjs:7738da67dd94577f2c616f55",
+    "checker": "scripts/check-v49-gate3-quick-synthesis.mjs:dabce58aed464d17a2d61c17",
+    "protocolTest": "scripts/specifying/test/v49-quick-synthesis.test.js:235f33d135ebf95eb62ffdbd"
+  },
+  "artifactRoot": "v49-quick-synthesis:dd152a127a522ee39ff1fc98",
+  "coverage": {
+    "requiredPredicateCount": 18,
+    "passedPredicateCount": 18,
+    "failedPredicateIds": [],
+    "singleModelCallEnforced": true,
+    "sourceSafeMetadataOnly": true,
+    "protectedSourceVisible": false,
+    "rawPromptVisible": false,
+    "rawProviderResponseVisible": false,
+    "valueBearingMainnetEnabled": false
+  },
+  "passed": true
+}

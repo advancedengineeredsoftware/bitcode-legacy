@@ -109,6 +109,51 @@ export async function listGitHubRepositoryTreePaths(input: {
   }
 }
 
+/** Files larger than this are skipped (quick synthesis budgets bodies anyway). */
+const MAX_FILE_BYTES = 400_000;
+
+/**
+ * Raw text bodies for `paths` at `ref` (quick synthesis Gather). Reads run with
+ * bounded concurrency; missing, oversized, or failed files are omitted.
+ */
+export async function readGitHubRepositoryFileTexts(input: {
+  token: string;
+  repositoryFullName: string;
+  ref: string;
+  paths: string[];
+  concurrency?: number;
+}): Promise<Array<{ path: string; content: string }>> {
+  const parts = splitFullName(input.repositoryFullName);
+  if (!parts) return [];
+  const results: Array<{ path: string; content: string } | null> = new Array(input.paths.length).fill(null);
+  let next = 0;
+  const worker = async () => {
+    while (next < input.paths.length) {
+      const index = next;
+      next += 1;
+      const path = input.paths[index];
+      try {
+        const res = await githubGet(
+          input.token,
+          `/repos/${parts[0]}/${parts[1]}/contents/${path
+            .split('/')
+            .map(encodeURIComponent)
+            .join('/')}?ref=${encodeURIComponent(input.ref)}`,
+          'application/vnd.github.raw+json',
+        );
+        if (!res.ok) continue;
+        const content = await res.text();
+        if (content.length > 0 && content.length <= MAX_FILE_BYTES) results[index] = { path, content };
+      } catch {
+        /* fail-soft: omit this file */
+      }
+    }
+  };
+  const lanes = Math.max(1, Math.min(input.concurrency ?? 8, input.paths.length));
+  await Promise.all(Array.from({ length: lanes }, worker));
+  return results.filter((entry): entry is { path: string; content: string } => entry !== null);
+}
+
 /** Primary language GitHub reports for the repository. */
 export async function readGitHubRepositoryLanguage(input: {
   token: string;

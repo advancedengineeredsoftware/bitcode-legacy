@@ -5,6 +5,7 @@
  */
 "use client";
 
+import { synthesisPipelineRequestField } from "@/components/bitcode/pipeline/models/synthesis-pipeline-preference";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RepositoryContextState } from "@/components/bitcode/pipeline/models/repository-context";
 import type { MeasurementReadingLike } from "@/components/reads/models/read-buyer-measurement-projection";
@@ -208,6 +209,7 @@ export function useReadOptionSynthesis(input: {
           irrelevantPaths,
           permissibleSources: relevantPaths,
           impermissibleSources: irrelevantPaths,
+          ...synthesisPipelineRequestField(),
         }),
       });
       const payload = await response.json().catch(() => null);

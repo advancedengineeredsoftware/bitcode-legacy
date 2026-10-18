@@ -635,6 +635,18 @@ export function buildLocalCiSteps(repoRoot, mode) {
       '--forceExit',
     ]),
   );
+  add('gate-test-quick-synthesis', () =>
+    runPnpm(repoRoot, 'Gate test: quick synthesis (one model call)', [
+      '--filter',
+      '@bitcode/asset-packs-pipelines-syntheses-quick',
+      'exec',
+      'jest',
+      '--config',
+      'jest.config.cjs',
+      '--runInBand',
+      '--forceExit',
+    ]),
+  );
   add('gate-test-reading-telemetry', () =>
     runPnpm(repoRoot, 'Gate test: reading operational telemetry', [
       '--filter',

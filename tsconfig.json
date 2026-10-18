@@ -23,6 +23,8 @@
       "@bitcode/generic-pipelines-execution-pipeline-simple/*": ["packages/generic-pipelines/execution-pipeline-simple/src/*"],
       "@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-deposits-asset-packs": ["packages/asset-packs-pipelines/syntheses/deposit/src/index.ts"],
       "@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs": ["packages/asset-packs-pipelines/syntheses/read/src/index.ts"],
+      "@bitcode/asset-packs-pipelines-syntheses-quick": ["packages/asset-packs-pipelines/syntheses/quick/src/index.ts"],
+      "@bitcode/asset-packs-pipelines-syntheses-quick/*": ["packages/asset-packs-pipelines/syntheses/quick/src/*"],
       "@bitcode/asset-packs-pipelines-execution-pipeline-simple-settle-asset-pack": ["packages/asset-packs-pipelines/settle/src/index.ts"],
       "@bitcode/generic-llms": ["packages/generic-llms/registry/src/index.ts"],
       "@bitcode/generic-llms/defaults": ["packages/generic-llms/defaults/src/index.ts"],

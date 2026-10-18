@@ -46,11 +46,13 @@ import {
   compactBitcodeServerId,
 } from '@/lib/bitcode-server-telemetry';
 import { bridgeHostTelemetryArtifactToExecutionStream } from '@/lib/deposit-host-telemetry-bridge';
-import {
-  isBitcodeDemonstrationModeEnabled,
-  withDemonstrationDataset,
-} from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
+import { withDemonstrationDataset } from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
 import { runDemonstrationDepositSynthesis } from '@/lib/demonstration-synthesis';
+import {
+  resolveSynthesisPipelineMode,
+  type RequestableSynthesisPipeline,
+} from '@bitcode/asset-packs-pipelines-syntheses-domain/synthesis-pipeline-mode';
+import { runQuickDepositSynthesis } from '@/lib/quick-synthesis';
 
 const DEPOSIT_OPTION_KINDS = [
   'capability-slice',
@@ -76,6 +78,8 @@ export type DepositSynthesisDispatchInput = {
   execution: { id: string; get?: Function; findUp?: Function };
   startedAt: number;
   startedAtIso: string;
+  /** Per-run override of BITCODE_SYNTHESIS_PIPELINE (V49 quick synthesis law Q-1). */
+  synthesisPipeline?: RequestableSynthesisPipeline | null;
 };
 
 /**
@@ -104,6 +108,7 @@ export async function runDepositOptionSynthesis(
     startedAt,
     startedAtIso,
   } = input;
+  const synthesisPipeline = resolveSynthesisPipelineMode({ requested: input.synthesisPipeline });
 
   const emitStatus = (message: string, extra: Record<string, unknown> = {}) =>
     ExecutionStreamAdapter.emitEvent(execution.id, 'status' as never, { message, ...extra });
@@ -209,7 +214,7 @@ export async function runDepositOptionSynthesis(
     /** Host budget / partial recovery (sandbox only; null for local full runs). */
     let hostRecovery: DepositHostRecovery | null = null;
     /** Operator demonstration mode: SDIVF replaced by a curated, paced replay. */
-    const demonstrationReplay = isBitcodeDemonstrationModeEnabled();
+    const demonstrationReplay = synthesisPipeline === 'demonstration';
 
     if (demonstrationReplay) {
       await assertNotCancelled();
@@ -226,6 +231,23 @@ export async function runDepositOptionSynthesis(
       });
       rawOptions = demonstration.options as Parameters<typeof validateDepositSynthesisOptions>[0];
       sourceCatalog = demonstration.sourceCatalog;
+      inventoryPaths = sourceCatalog.paths;
+    } else if (synthesisPipeline === 'quick') {
+      // V49 quick synthesis: one model call over the live checkout (no Host clone).
+      await assertNotCancelled();
+      const quick = await runQuickDepositSynthesis({
+        runId,
+        execution: execution as never,
+        repositoryFullName,
+        reference,
+        accessToken: auth.accessToken || null,
+        obfuscations,
+        permissibleSources,
+        impermissibleSources,
+        emitStatus,
+      });
+      rawOptions = quick.options as Parameters<typeof validateDepositSynthesisOptions>[0];
+      sourceCatalog = quick.sourceCatalog;
       inventoryPaths = sourceCatalog.paths;
     } else if (hostKind === 'sandbox') {
       await assertNotCancelled();
@@ -648,6 +670,7 @@ export async function runDepositOptionSynthesis(
         inventoryPathCount: sourceCatalog.paths.length,
         inferenceProvider: result.inference.provider,
         inferenceModel: result.inference.model,
+        synthesisPipeline,
         ...(demonstrationReplay ? { synthesisReplay: 'demonstration' } : {}),
         ...(isBudgetPartial
           ? {

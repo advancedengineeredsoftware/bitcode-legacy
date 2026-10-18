@@ -395,6 +395,7 @@ packages under `packages/asset-packs-pipelines/*`.
  ↑
 @bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-deposits-asset-packs  # packages/.../syntheses/deposit
 @bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs     # packages/.../syntheses/read
+@bitcode/asset-packs-pipelines-syntheses-quick     # packages/.../syntheses/quick (QUICK: one model call)
 @bitcode/asset-packs-pipelines-execution-pipeline-simple-settle-asset-pack               # packages/.../settle
 @bitcode/asset-packs-pipelines-domain              # all-3 shared
 @bitcode/asset-packs-pipelines-syntheses-domain    # both synths (agents/phases/tools)
@@ -590,7 +591,8 @@ homes, no compatibility package aliases, no “compatibility remains for callers
 | --- | --- |
 | `asset-packs-pipelines/domain` | **All-3** shared: commodity, disclosure, settlement-rights library, BTD helpers, org-policy |
 | `asset-packs-pipelines/syntheses/domain` | **Both synths**: agents/phases/tools, depository multi-query search, supply index, synthesis helpers |
-| `asset-packs-pipelines/*` | Product ExecutionPipeline packages (SDIVF synthesize deposits/reads, Simple settle) |
+| `asset-packs-pipelines/syntheses/quick` | **Quick synths** (V49): QUICK deposit/read pipelines — gather tool → exactly one model call → profile absolutes + relatives → real validation/Finish; selected by `BITCODE_SYNTHESIS_PIPELINE` or the per-run `synthesisPipeline` field |
+| `asset-packs-pipelines/*` | Product ExecutionPipeline packages (SDIVF synthesize deposits/reads, QUICK synthesize deposits/reads, Simple settle) |
 | `pipeline-hosts` | DataPack host orchestration barrel over `host-generics` + `generic-hosts/*` |
 | `btd` | BTD measurement, journal, authority, settlement, interface contracts |
 | `specifying` (`@bitcode/specifying` under `scripts/specifying/`) | Metadevelopment specifying machine: gate proof generators, canon posture, promotion helpers. **Not** product core (that lives in `packages/*`); monorepo is protocol canon |

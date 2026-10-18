@@ -17,6 +17,10 @@ import {
   isBitcodeDemonstrationModeEnabled,
   withDemonstrationDataset,
 } from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
+import {
+  parseRequestedSynthesisPipeline,
+  type RequestableSynthesisPipeline,
+} from '@bitcode/asset-packs-pipelines-syntheses-domain/synthesis-pipeline-mode';
 import { runReadOptionSynthesis } from './dispatch-read-synthesis';
 
 export const runtime = 'nodejs';
@@ -95,7 +99,20 @@ export async function POST(request: Request) {
   }
   if (!evaluation) {
     return NextResponse.json(
-      { error: 'need (reader instruction) is required.', code: 'evaluation_required' },
+      { error: 'evaluation (reader instruction) is required.', code: 'evaluation_required' },
+      { status: 400 },
+    );
+  }
+
+  let synthesisPipeline: RequestableSynthesisPipeline | null;
+  try {
+    synthesisPipeline = parseRequestedSynthesisPipeline(body.synthesisPipeline);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : 'Invalid synthesisPipeline.',
+        code: 'invalid_synthesis_pipeline',
+      },
       { status: 400 },
     );
   }
@@ -162,6 +179,7 @@ export async function POST(request: Request) {
       relevantPaths,
       irrelevantPaths,
       execution: execution || undefined,
+      synthesisPipeline,
     }),
   );
 

@@ -29,6 +29,10 @@ import {
   parseSynthesizeOptionsSteering,
   type SynthesizeOptionsBody,
 } from './parse-synthesize-options-body';
+import {
+  parseRequestedSynthesisPipeline,
+  type RequestableSynthesisPipeline,
+} from '@bitcode/asset-packs-pipelines-syntheses-domain/synthesis-pipeline-mode';
 import { runDepositOptionSynthesis } from './dispatch-deposit-synthesis';
 
 export const runtime = 'nodejs';
@@ -73,6 +77,21 @@ export async function POST(request: Request) {
     body = (await request.json()) as SynthesizeOptionsBody;
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  let synthesisPipeline: RequestableSynthesisPipeline | null;
+  try {
+    synthesisPipeline = parseRequestedSynthesisPipeline(
+      (body as { synthesisPipeline?: unknown }).synthesisPipeline,
+    );
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : 'Invalid synthesisPipeline.',
+        code: 'invalid_synthesis_pipeline',
+      },
+      { status: 400 },
+    );
   }
 
   const steering = parseSynthesizeOptionsSteering(body);
@@ -214,6 +233,7 @@ export async function POST(request: Request) {
       execution,
       startedAt,
       startedAtIso,
+      synthesisPipeline,
     }),
   );
 

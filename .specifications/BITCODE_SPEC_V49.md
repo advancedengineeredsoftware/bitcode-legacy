@@ -1726,6 +1726,22 @@ pipeline pills and logs render unchanged; each row carries
 2–4 options, same option kinds, same patch law (create|modify with full bodies,
 no delete ops) as rich synthesis.
 
+### Q-4a Realization map (binding paths)
+
+| Concern | Path |
+|---|---|
+| Mode resolution + request parse | `syntheses/domain/src/synthesis-pipeline-mode.ts` (`resolveSynthesisPipelineMode`, `parseRequestedSynthesisPipeline`) |
+| Profile absolutes (shared with demonstration) | `syntheses/domain/src/profile-absolutes.ts` (`measureProfileDataPackAbsolutes`) |
+| Quick package | `syntheses/quick/src/` — schema, prompts, Gather tool (`quickSynthesisGatherSourceTool`), call counter (`countLlmCallsFromExecutionTree`), options projection, agent (`executeQuickSynthesis`), `deposit.ts`, `read.ts` |
+| Website runners | `apps/uapi/lib/quick-synthesis.ts` (GitHub REST loader via `readGitHubRepositoryFileTexts`) |
+| Dispatch seams | `dispatch-deposit-synthesis.ts`, `dispatch-read-synthesis.ts` (`context.synthesisPipeline`) |
+| Toggle | `components/bitcode/routes/BitcodeSynthesisPipelineToggle`, `components/bitcode/pipeline/models/synthesis-pipeline-preference.ts` (rendered by `ProductSynthesizeDataPackOptionsButton`) |
+| Living CI | `gate-test-quick-synthesis` |
+
+Read options carry the call's validated `sourceAttributions` (admitted supply
+ids only) and `benchmarkIds` (declared ids only); Gate 4 and Gate 5 consume
+them.
+
 ### Q-5 Invariants
 
 - **Exactly one model call** per quick run: the execution tree contains exactly
@@ -1747,8 +1763,10 @@ Gate 3 closes when both quick pipelines exist on `factoryExecutionPipelineQuick`
 + `factoryQuickAgent`; mode resolution and the request field/UI toggle exist;
 both dispatchers branch on the resolved mode; tests prove one model call per
 run, schema validation, deterministic absolutes honesty, and shared post-run
-validation; the read provisioning call-shape defect in read dispatch is
-repaired; `.proofs/v49/quick-synthesis.json` is generated; and
+validation; the read dispatcher's pre-pipeline `provisionDepositCheckout`
+call (wrong argument shape, always skipped, and contrary to the no-clone-
+during-initialization law) is removed so rich read Setup clones on the Host
+like deposit; `.proofs/v49/quick-synthesis.json` is generated; and
 `check:v49-gate3` passes.
 
 ## V49 settlement completion law (Gate 4)

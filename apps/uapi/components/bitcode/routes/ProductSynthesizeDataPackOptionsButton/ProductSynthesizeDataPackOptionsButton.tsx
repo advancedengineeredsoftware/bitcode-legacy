@@ -12,6 +12,7 @@
 import React from 'react';
 
 import BitcodeQuantumChromeButton from '@/components/bitcode/layout/BitcodeQuantumChromeButton/BitcodeQuantumChromeButton';
+import BitcodeSynthesisPipelineToggle from '@/components/bitcode/routes/BitcodeSynthesisPipelineToggle/BitcodeSynthesisPipelineToggle';
 
 export const SYNTHESIZE_ASSET_PACK_OPTIONS_LABEL = 'Synthesize DataPack Options';
 export const SYNTHESIZING_ASSET_PACK_OPTIONS_LABEL =
@@ -40,6 +41,8 @@ export function ProductSynthesizeDataPackOptionsButton({
     : SYNTHESIZE_ASSET_PACK_OPTIONS_LABEL;
 
   return (
+    <>
+    <BitcodeSynthesisPipelineToggle disabled={isDisabled} />
     <BitcodeQuantumChromeButton
       type="button"
       disabled={isDisabled}
@@ -62,6 +65,7 @@ export function ProductSynthesizeDataPackOptionsButton({
     >
       {label}
     </BitcodeQuantumChromeButton>
+    </>
   );
 }
 

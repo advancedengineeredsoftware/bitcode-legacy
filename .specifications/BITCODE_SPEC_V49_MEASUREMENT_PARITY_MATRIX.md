@@ -132,6 +132,6 @@ zero.
 | R-05 | Manifest parser fail-closed | absent | parser tests | spec closed; source gap | Gate 5 |
 | R-06 | Runner medians, budget, `not_run` on exhaustion | absent | fixture repo test | spec closed; source gap | Gate 5 |
 | R-07 | Reading formula + statuses | absent | unit tests | spec closed; source gap | Gate 5 |
-| R-08 | Quick Evaluation-inferred rows are `estimated` | absent | quick tests | spec closed; source gap | Gate 3 |
+| R-08 | Quick Evaluation-inferred rows are `estimated` | quick read rows `estimated` via `measureQuickReadRelatives` | quick tests | implemented; promotion pending | Gate 3 |
 | R-09 | Option card Absolute / Relative sections incl. benchmark rows | needinesses section | component tests | spec closed; source gap | Gates 2, 5 |
 | R-10 | Settlement BTD from relatives only | from needinesses only | btd tests | implemented; promotion pending | Gate 2 |

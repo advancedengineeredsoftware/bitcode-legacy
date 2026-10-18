@@ -103,7 +103,13 @@ complete MVP:
 ## Implementation-revealed refinements (from the V49 opening audit)
 
 - Read dispatch calls `provisionDepositCheckout` with the wrong argument shape
-  and always falls into the "host provision skipped" path; Gate 3 repairs it.
+  and always falls into the "host provision skipped" path. Gate 3 removes the
+  call rather than "fixing" it: cloning before the pipeline violates the
+  no-clone-during-initialization law, and rich read Setup already clones on
+  the Host.
+- `StepExecution.llms` delegates to the parent AgentExecution, so tracked
+  `llm:*` nodes sit beside (not under) the step; the quick one-call count walks
+  the whole QUICK pipeline execution.
 - `verificationSignals` for `test-pass-rate` / `buildability` are read but never
   set; the Gate 5 runner is the future source (deferred beyond V49 scope).
 - 46 frozen historical gate scripts reference Need vocabulary; they stay

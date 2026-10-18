@@ -4,6 +4,7 @@
  */
 "use client";
 
+import { synthesisPipelineRequestField } from "@/components/bitcode/pipeline/models/synthesis-pipeline-preference";
 import { useCallback, useEffect, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
 import { trackProductEvent } from "@/lib/product-analytics";
 import { writeDepositRouteStage } from "@/components/deposits/models/deposit-route-model";
@@ -526,6 +527,7 @@ export function useDepositSynthesisLifecycle(input: {
             depositoryDemandSignals,
             readingDemandSignals,
             existingDepositorySignals,
+            ...synthesisPipelineRequestField(),
           }),
         });
         const payload = await response.json().catch(() => null);

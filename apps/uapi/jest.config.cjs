@@ -128,6 +128,7 @@ module.exports = {
     '^@bitcode/mcp-generics$': '<rootDir>/../../packages/mcp-generics/src/index.ts',
     '^@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-deposits-asset-packs$': '<rootDir>/../../packages/asset-packs-pipelines/syntheses/deposit/src/index.ts',
     '^@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs$': '<rootDir>/../../packages/asset-packs-pipelines/syntheses/read/src/index.ts',
+    '^@bitcode/asset-packs-pipelines-syntheses-quick$': '<rootDir>/../../packages/asset-packs-pipelines/syntheses/quick/src/index.ts',
     '^@bitcode/asset-packs-pipelines-execution-pipeline-simple-settle-asset-pack$': '<rootDir>/../../packages/asset-packs-pipelines/settle/src/index.ts',
     '^@bitcode/generic-pipelines-execution-pipeline-simple$': '<rootDir>/../../packages/generic-pipelines/execution-pipeline-simple/src/index.ts',
     '^@bitcode/generic-agents-ptrr$': '<rootDir>/../../packages/generic-agents/PTRR/src/index.ts',
@@ -177,6 +178,7 @@ module.exports = {
     '<rootDir>/tests/searchRelevantAssetPackEvidence.test.ts',
     '<rootDir>/tests/assetPackInstructionsRoute.test.ts',
     '<rootDir>/tests/RunDetailsView.mapping.test.tsx',
+    '<rootDir>/tests/synthesisPipelinePreference.test.tsx',
     '<rootDir>/tests/usePipelineExecution.test.tsx',
     // BTD and auxillaries coverage
     '<rootDir>/tests/userDataRoute.test.ts',

@@ -39,6 +39,8 @@
     "./depository-reembed": "./src/depository-reembed.ts",
     "./unpaid-option-disclosure": "./src/unpaid-option-disclosure.ts",
     "./postprocess": "./src/postprocess.ts",
+    "./profile-absolutes": "./src/profile-absolutes.ts",
+    "./synthesis-pipeline-mode": "./src/synthesis-pipeline-mode.ts",
     "./preprocess": "./src/preprocess.ts",
     "./resolve-source-checkout-catalog": "./src/resolve-source-checkout-catalog.ts",
     "./resolve-measure-source-set": "./src/resolve-measure-source-set.ts",

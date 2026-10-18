@@ -33,6 +33,9 @@
       "@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs": [
         "../../packages/asset-packs-pipelines/syntheses/read/src/index.ts"
       ],
+      "@bitcode/asset-packs-pipelines-syntheses-quick": [
+        "../../packages/asset-packs-pipelines/syntheses/quick/src/index.ts"
+      ],
       "@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-deposits-asset-packs": [
         "../../packages/asset-packs-pipelines/syntheses/deposit/src/index.ts"
       ],

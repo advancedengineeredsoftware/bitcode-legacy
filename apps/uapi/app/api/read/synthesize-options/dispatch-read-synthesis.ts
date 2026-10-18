@@ -2,7 +2,9 @@
  * Background read option synthesis (deposit dispatch twin).
  *
  * Same host/stream/cancel shape as deposit: early emitStatus, preload depository
- * supply for Discovery search, optional Host provision, then SDIVF read pipeline.
+ * supply for Discovery search, then the resolved synthesis pipeline (rich SDIVF,
+ * quick one-call, or demonstration replay). No clone during initialization:
+ * rich read Setup clones on the Host (deposit law).
  * Product deltas only: Evaluation (not Obfuscations), evaluation-fits search, relatives.
  *
  * Cooperative cancel: polls executions.status between stages (same law as deposit).
@@ -19,11 +21,14 @@ import {
   isExecutionCancelledError,
 } from '@bitcode/api/pipelines/cancel';
 import { loadDepositorySearchAssets } from '@/lib/depository-settled-demand';
+import { withDemonstrationDataset } from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
 import {
-  isBitcodeDemonstrationModeEnabled,
-  withDemonstrationDataset,
-} from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
+  resolveSynthesisPipelineMode,
+  type RequestableSynthesisPipeline,
+} from '@bitcode/asset-packs-pipelines-syntheses-domain/synthesis-pipeline-mode';
 import { runDemonstrationReadSynthesis } from '@/lib/demonstration-synthesis';
+import { resolveGitHubAccessTokenForUser } from '@/lib/github-repository-rest';
+import { runQuickReadSynthesis, toQuickDepositorySupplyRows } from '@/lib/quick-synthesis';
 
 export type ReadSynthesisDispatchInput = {
   runId: string;
@@ -41,6 +46,8 @@ export type ReadSynthesisDispatchInput = {
    * When omitted, a new Execution is created bound to runId.
    */
   execution?: { id: string; get?: Function; findUp?: Function; store?: Function };
+  /** Per-run override of BITCODE_SYNTHESIS_PIPELINE (V49 quick synthesis law Q-1). */
+  synthesisPipeline?: RequestableSynthesisPipeline | null;
 };
 
 export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput): Promise<void> {
@@ -135,8 +142,9 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
 
     // Preload depository supply so Discovery evaluation-fits search has assets.
     await assertNotCancelled();
+    let searchAssets: Awaited<ReturnType<typeof loadDepositorySearchAssets>> = [];
     try {
-      const searchAssets = await loadDepositorySearchAssets(120);
+      searchAssets = await loadDepositorySearchAssets(120);
       storeCrossPhaseArtifact(execution, 'depository', 'settledAssets', searchAssets);
       storeCrossPhaseArtifact(execution, 'deposit', 'settledDepositoryAssets', searchAssets);
       storeCrossPhaseArtifact(execution, 'pipeline', 'depositoryAssets', searchAssets);
@@ -149,76 +157,40 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
       emitStatus('depository: supply load failed (search will run empty / vector-only).');
     }
 
-    // Operator demonstration mode: curated paced replay replaces Host + SDIVF.
-    const demonstrationReplay = isBitcodeDemonstrationModeEnabled();
-
-    // Optional Host provision (same path as deposit when available).
-    if (!demonstrationReplay) {
-      try {
-        await assertNotCancelled();
-        emitStatus(
-          `Provisioning source checkout for ${input.repositoryFullName}@${
-            input.sourceCommit || input.sourceBranch || 'HEAD'
-          }…`,
-        );
-        const { provisionDepositCheckout } = await import('@/lib/deposit-source-provisioning');
-        const provisioned = await provisionDepositCheckout({
-          repositoryFullName: input.repositoryFullName,
-          sourceBranch: input.sourceBranch,
-          sourceCommit: input.sourceCommit || undefined,
-          userId: input.userId,
-        } as any);
-        await assertNotCancelled();
-        if (provisioned?.sourceCatalog) {
-          pipelineInput.sourceCheckoutCatalog = provisioned.sourceCatalog;
-          pipelineInput.inventory = provisioned.sourceCatalog;
-          storeCrossPhaseArtifact(
-            execution,
-            'deposit',
-            'sourceCheckoutCatalog',
-            provisioned.sourceCatalog,
-          );
-          storeCrossPhaseArtifact(
-            execution,
-            'read',
-            'sourceCheckoutCatalog',
-            provisioned.sourceCatalog,
-          );
-        }
-        if (provisioned?.workspace?.workspacePath) {
-          storeCrossPhaseArtifact(
-            execution,
-            'repository',
-            'workspacePath',
-            provisioned.workspace.workspacePath,
-          );
-        }
-        emitStatus(
-          provisioned?.sourceCatalog
-            ? 'Source checkout catalog ready; starting SDIVF read pipeline…'
-            : 'Source checkout optional; starting SDIVF read pipeline…',
-        );
-      } catch (provisionErr) {
-        if (isExecutionCancelledError(provisionErr)) throw provisionErr;
-        emitStatus(
-          'Host provision skipped (optional); continuing with empty catalog if needed.',
-        );
-      }
-    }
+    const synthesisPipeline = resolveSynthesisPipelineMode({ requested: input.synthesisPipeline });
+    // Operator demonstration mode: curated paced replay replaces SDIVF.
+    const demonstrationReplay = synthesisPipeline === 'demonstration';
 
     await assertNotCancelled();
     emitStatus(
-      'Running SynthesizeAssetPacks (read mode): Setup (Evaluation) → Discovery (Evaluation-fits search) → Implementation → Validation → Finish…',
+      synthesisPipeline === 'quick'
+        ? 'Running SynthesizeReadAssetPacksQuick: gather → one model call → measure → Finish…'
+        : 'Running SynthesizeAssetPacks (read mode): Setup (Evaluation) → Discovery (Evaluation-fits search) → Implementation → Validation → Finish…',
     );
 
-    const result = demonstrationReplay
+    const reference = input.sourceCommit || input.sourceBranch || 'HEAD';
+    const result = synthesisPipeline === 'quick'
+      ? await runQuickReadSynthesis({
+          runId,
+          execution,
+          repositoryFullName: input.repositoryFullName,
+          reference,
+          accessToken: await resolveGitHubAccessTokenForUser(userId),
+          sourceBranch: input.sourceBranch,
+          evaluation: input.evaluation,
+          relevantPaths: input.relevantPaths || [],
+          irrelevantPaths: input.irrelevantPaths || [],
+          depositorySupply: toQuickDepositorySupplyRows(searchAssets),
+          emitStatus,
+        })
+      : demonstrationReplay
       ? await runDemonstrationReadSynthesis({
           runId,
           userId,
           executionId: streamRunId,
           execution,
           repositoryFullName: input.repositoryFullName,
-          reference: input.sourceCommit || input.sourceBranch || 'HEAD',
+          reference,
           sourceBranch: input.sourceBranch,
           evaluation: input.evaluation,
           relevantPaths: input.relevantPaths || [],
@@ -278,6 +250,7 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
         sourceBranch: input.sourceBranch,
         sourceCommit: input.sourceCommit,
         optionCount,
+        synthesisPipeline,
         ...(demonstrationReplay ? { synthesisReplay: 'demonstration' } : {}),
       },
     });

@@ -140,6 +140,7 @@ let nextConfig = {
     '@bitcode/asset-packs-pipelines-execution-pipeline-simple-settle-asset-pack',
     '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-deposits-asset-packs',
     '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs',
+    '@bitcode/asset-packs-pipelines-syntheses-quick',
     '@bitcode/generic-pipelines-execution-pipeline-simple',
     '@bitcode/generic-pipelines-execution-pipeline-sdivf',
     '@bitcode/pipelines-generics',
@@ -687,7 +688,7 @@ let nextConfig = {
         'finish',
         'asset-packs-ledgerize-agent.ts'
       ),
-      '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs': path.resolve(
+      '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs$': path.resolve(
         __dirname,
         '..',
         '..',
@@ -695,6 +696,17 @@ let nextConfig = {
         'asset-packs-pipelines',
         'syntheses',
         'read',
+        'src',
+        'index.ts'
+      ),
+      '@bitcode/asset-packs-pipelines-syntheses-quick$': path.resolve(
+        __dirname,
+        '..',
+        '..',
+        'packages',
+        'asset-packs-pipelines',
+        'syntheses',
+        'quick',
         'src',
         'index.ts'
       ),
@@ -708,6 +720,17 @@ let nextConfig = {
         'read',
         'src',
         'read-evaluation.ts'
+      ),
+      '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-relative-measurements': path.resolve(
+        __dirname,
+        '..',
+        '..',
+        'packages',
+        'asset-packs-pipelines',
+        'syntheses',
+        'read',
+        'src',
+        'read-relative-measurements.ts'
       ),
       '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-evaluation-review-resynthesis': path.resolve(
         __dirname,
