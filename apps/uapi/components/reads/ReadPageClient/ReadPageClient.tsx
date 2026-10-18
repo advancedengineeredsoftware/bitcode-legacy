@@ -2,7 +2,7 @@
  * Reads experience page client — deposit-parity orchestration for /reads.
  *
  * Compact header + pipelines table; New (+) opens compose/detail mode with
- * shared DepositSourceSelection (SHA), Need (+ relevant/irrelevant paths),
+ * shared DepositSourceSelection (SHA), Evaluation (+ relevant/irrelevant paths),
  * options, settle. Master-detail matches /deposits and /exchange (table → detail + Back).
  */
 
@@ -25,11 +25,11 @@ import { ProductDetailStage } from "@/components/bitcode/routes/ProductRouteEntr
 import DepositSourceSelection from "@/components/deposits/DepositSourceSelection/DepositSourceSelection";
 import { deriveRepositoryAnchors } from "@/components/deposits/models/deposit-activity-ledger";
 import {
-  deriveNeedAnchors,
+  deriveEvaluationAnchors,
   filterReadPipelineTableRuns,
 } from "@/components/reads/models/read-activity-ledger";
 import { ReadsAssetPackOptions } from "@/components/reads/ReadsAssetPackOptions/ReadsAssetPackOptions";
-import { ReadsNeedComposePanel } from "@/components/reads/ReadsNeedComposePanel/ReadsNeedComposePanel";
+import { ReadsEvaluationComposePanel } from "@/components/reads/ReadsEvaluationComposePanel/ReadsEvaluationComposePanel";
 import { ReadsPipelinesMaster } from "@/components/reads/ReadsPipelinesMaster/ReadsPipelinesMaster";
 import { ReadsPipelineTelemetry } from "@/components/reads/ReadsPipelineTelemetry/ReadsPipelineTelemetry";
 import { ReadsRouteStateAside } from "@/components/reads/ReadsRouteStateAside/ReadsRouteStateAside";
@@ -83,13 +83,13 @@ export default function ReadPageClient() {
 
   const [repositoryContext, setRepositoryContext] =
     useState<RepositoryContextState | null>(null);
-  const [need, setNeed] = useState("");
+  const [evaluation, setEvaluation] = useState("");
   const [relevantPaths, setRelevantPaths] = useState<string[]>([]);
   const [irrelevantPaths, setIrrelevantPaths] = useState<string[]>([]);
-  const [needAnchorName, setNeedAnchorName] = useState("");
-  const [isNeedAnchorPopoverOpen, setIsNeedAnchorPopoverOpen] = useState(false);
-  const [isAnchoringNeed, setIsAnchoringNeed] = useState(false);
-  const [needAnchorMessage, setNeedAnchorMessage] = useState<string | null>(
+  const [evaluationAnchorName, setEvaluationAnchorName] = useState("");
+  const [isEvaluationAnchorPopoverOpen, setIsEvaluationAnchorPopoverOpen] = useState(false);
+  const [isAnchoringEvaluation, setIsAnchoringEvaluation] = useState(false);
+  const [evaluationAnchorMessage, setEvaluationAnchorMessage] = useState<string | null>(
     null,
   );
   const [isComposeOpen, setIsComposeOpen] = useState(false);
@@ -104,7 +104,7 @@ export default function ReadPageClient() {
 
   const synthesis = useReadOptionSynthesis({
     repositoryContext,
-    need,
+    evaluation,
     relevantPaths,
     irrelevantPaths,
     refreshLiveRuns,
@@ -113,7 +113,7 @@ export default function ReadPageClient() {
     activeRunStatus: selectedRun?.status ?? null,
     onRunDispatched: (runId) => {
       // Leave compose (deposit openRunDetail twin): hide synthesize CTA and
-      // lock Need/source for this run detail. Attach run id via replace so
+      // lock Evaluation/source for this run detail. Attach run id via replace so
       // searchParams update without a full remount (stageKey stays workbench).
       setIsComposeOpen(false);
       attachLiveReadRun(runId);
@@ -146,7 +146,7 @@ export default function ReadPageClient() {
     synthesisRunId: synthesis.runId,
     selectedIndexes: synthesis.selectedIndexes,
     selectedOptions,
-    need,
+    evaluation,
     relevantPaths,
     irrelevantPaths,
     repositoryContext,
@@ -166,7 +166,7 @@ export default function ReadPageClient() {
     () => deriveRepositoryAnchors(liveRuns),
     [liveRuns],
   );
-  const needAnchors = useMemo(() => deriveNeedAnchors(liveRuns), [liveRuns]);
+  const evaluationAnchors = useMemo(() => deriveEvaluationAnchors(liveRuns), [liveRuns]);
   const pipelineTableRuns = useMemo(
     () => filterReadPipelineTableRuns(liveRuns),
     [liveRuns],
@@ -212,8 +212,8 @@ export default function ReadPageClient() {
   });
   const {
     handleRecordActivity,
-    handleAnchorNeed,
-    handleDeleteNeedAnchor,
+    handleAnchorEvaluation,
+    handleDeleteEvaluationAnchor,
   } = useReadActivityRecording({
     repositoryContext,
     selectedRun,
@@ -221,13 +221,13 @@ export default function ReadPageClient() {
     setLiveRuns,
     refreshLiveRuns,
     openReadRouteTransaction: openReadRouteTransaction,
-    need,
-    needAnchorName,
+    evaluation,
+    evaluationAnchorName,
     relevantPaths,
     irrelevantPaths,
-    setIsAnchoringNeed,
-    setNeedAnchorMessage,
-    setIsNeedAnchorPopoverOpen,
+    setIsAnchoringEvaluation,
+    setEvaluationAnchorMessage,
+    setIsEvaluationAnchorPopoverOpen,
   });
 
   const sessionRows = buildReadSessionRows(readRouteSession);
@@ -261,7 +261,7 @@ export default function ReadPageClient() {
           {
             label: "Stage",
             description:
-              "Where this reading session sits: compose a Need, synthesize options, or settle selected AssetPacks.",
+              "Where this reading session sits: compose an Evaluation, synthesize options, or settle selected AssetPacks.",
             value: isComposeOpen
               ? "compose"
               : readRouteSession.activeStepId.replace(/-/g, " "),
@@ -314,7 +314,7 @@ export default function ReadPageClient() {
           open={isReadDetailOpen}
           /*
            * Stable workbench key for compose + synthesize. Do not key by run id —
-           * that remounts Need/source and replays entrance on every synthesize.
+           * that remounts Evaluation/source and replays entrance on every synthesize.
            */
           stageKey={
             isComposeOpen || synthesis.status === "running" || Boolean(synthesis.runId)
@@ -324,7 +324,7 @@ export default function ReadPageClient() {
                 : "reads-detail"
           }
           testId="reads-run-configuration"
-          // Full-width stack: repository + Need as full rows, then
+          // Full-width stack: repository + Evaluation as full rows, then
           // route-state panels as one 3-col row (never main|aside columns).
           className="grid min-w-0 gap-4 phone:gap-5"
           dataAttrs={{
@@ -365,14 +365,14 @@ export default function ReadPageClient() {
                   repositoryAnchors={repositoryAnchors}
                   disabled={isConfigLocked}
                   heading="Select the repository you are reading"
-                  description="One connected repository, branch, and commit form the source package measured against your Need."
+                  description="One connected repository, branch, and commit form the source package measured against your Evaluation."
                   descriptionLocked="Source package for this read run — locked while reviewing run detail."
                   ariaLabel="Repository source selector"
                 />
               </div>
-              <ReadsNeedComposePanel
-                need={need}
-                onNeedChange={setNeed}
+              <ReadsEvaluationComposePanel
+                evaluation={evaluation}
+                onEvaluationChange={setEvaluation}
                 relevantPaths={relevantPaths}
                 onRelevantPathsChange={setRelevantPaths}
                 irrelevantPaths={irrelevantPaths}
@@ -388,18 +388,18 @@ export default function ReadPageClient() {
                 )}
                 isConfigLocked={isConfigLocked}
                 isRunReviewLocked={isRunReviewLocked}
-                needAnchors={needAnchors}
-                needAnchorName={needAnchorName}
-                onNeedAnchorNameChange={setNeedAnchorName}
-                isNeedAnchorPopoverOpen={isNeedAnchorPopoverOpen}
-                onNeedAnchorPopoverOpenChange={setIsNeedAnchorPopoverOpen}
-                isAnchoringNeed={isAnchoringNeed}
-                needAnchorMessage={needAnchorMessage}
-                onAnchorNeed={() => {
-                  void handleAnchorNeed();
+                evaluationAnchors={evaluationAnchors}
+                evaluationAnchorName={evaluationAnchorName}
+                onEvaluationAnchorNameChange={setEvaluationAnchorName}
+                isEvaluationAnchorPopoverOpen={isEvaluationAnchorPopoverOpen}
+                onEvaluationAnchorPopoverOpenChange={setIsEvaluationAnchorPopoverOpen}
+                isAnchoringEvaluation={isAnchoringEvaluation}
+                evaluationAnchorMessage={evaluationAnchorMessage}
+                onAnchorEvaluation={() => {
+                  void handleAnchorEvaluation();
                 }}
-                onDeleteNeedAnchor={(id) => {
-                  void handleDeleteNeedAnchor(id);
+                onDeleteEvaluationAnchor={(id) => {
+                  void handleDeleteEvaluationAnchor(id);
                 }}
               />
             </div>

@@ -3,8 +3,8 @@
  *
  * Hierarchy: measurement-generics carrier → product attach helpers here.
  *
- * Deposit: measurements = { absolutes, materialIdentity?, needinesses: [] omitted or empty }
- * Read: measurements = { absolutes, needinesses, materialIdentity? }
+ * Deposit: measurements = { absolutes, materialIdentity?, relatives: [] omitted or empty }
+ * Read: measurements = { absolutes, relatives, materialIdentity? }
  *
  * Quantity absolute kinds are tool-authoritative (static analysis + material identity).
  * Quality absolute kinds may be judgment grounded in tool counts when real
@@ -99,16 +99,16 @@ export function resolvePackAbsolutes(pack: unknown): AbsoluteLike[] {
 }
 
 /** Read-pipeline only. Deposit packs do not use this. */
-export function resolvePackNeedinesses(pack: unknown): AbsoluteLike[] {
+export function resolvePackRelatives(pack: unknown): AbsoluteLike[] {
   if (!pack || typeof pack !== 'object') return [];
   const p = pack as Record<string, unknown>;
   const nested = p.measurements;
   if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
-    const n = (nested as { needinesses?: unknown }).needinesses;
+    const n = (nested as { relatives?: unknown }).relatives;
     if (Array.isArray(n)) return n as AbsoluteLike[];
   }
   if (Array.isArray(nested)) {
-    return (nested as AbsoluteLike[]).filter((m) => m?.category === 'neediness');
+    return (nested as AbsoluteLike[]).filter((m) => m?.category === 'relative');
   }
   return [];
 }
@@ -133,7 +133,7 @@ export function resolvePackMaterialIdentity(
 }
 
 export type AttachMeasurementsOpts = {
-  withNeedinesses?: AbsoluteLike[];
+  withRelatives?: AbsoluteLike[];
   materialIdentity?: DataPackMaterialIdentity | null;
   measureReport?: DataPackMeasureReport | null;
 };
@@ -172,9 +172,9 @@ export function attachDepositAbsolutes(
 }
 
 /**
- * Attach nested absolutes (+ optional needinesses + material identity + report).
+ * Attach nested absolutes (+ optional relatives + material identity + report).
  * Default: deposit legal shape { absolutes, materialIdentity?, measureReport? }.
- * Read: pass `{ withNeedinesses: readings }` after measuring *-fit.
+ * Read: pass `{ withRelatives: readings }` after measuring *-fit.
  */
 export function attachNestedAbsolutes(
   pack: Record<string, unknown>,
@@ -183,10 +183,10 @@ export function attachNestedAbsolutes(
 ): void {
   const materialIdentity = opts?.materialIdentity ?? null;
   const measureReport = opts?.measureReport ?? null;
-  if (opts?.withNeedinesses) {
+  if (opts?.withRelatives) {
     pack.measurements = {
       absolutes,
-      needinesses: opts.withNeedinesses,
+      relatives: opts.withRelatives,
       ...(materialIdentity ? { materialIdentity } : {}),
       ...(measureReport ? { measureReport } : {}),
     };
@@ -275,7 +275,7 @@ export function hasRequiredAbsolutes(pack: unknown): boolean {
 
 /**
  * True when measurements is the deposit legal shape: absolutes required;
- * materialIdentity / measureReport optional; needinesses absent or empty.
+ * materialIdentity / measureReport optional; relatives absent or empty.
  */
 export function hasDepositAbsolutesOnlyShape(pack: unknown): boolean {
   if (!pack || typeof pack !== 'object') return false;
@@ -288,8 +288,8 @@ export function hasDepositAbsolutesOnlyShape(pack: unknown): boolean {
     if (k === 'absolutes' || k === 'materialIdentity' || k === 'measureReport') {
       continue;
     }
-    if (k === 'needinesses') {
-      const n = bag.needinesses;
+    if (k === 'relatives') {
+      const n = bag.relatives;
       if (Array.isArray(n) && n.length > 0) return false;
       continue;
     }

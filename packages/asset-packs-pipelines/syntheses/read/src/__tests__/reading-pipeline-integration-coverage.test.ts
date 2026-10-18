@@ -10,13 +10,13 @@ import {
   summarizeReadFitsFindingRuntime,
 } from '../read-fits-finding-runtime';
 import {
-  acceptReadNeed,
+  acceptReadEvaluation,
   admitReadFitsFinding,
-  synthesizeReadNeedForPipelineInput,
-} from '../read-need';
+  synthesizeReadEvaluationForPipelineInput,
+} from '../read-evaluation';
 import {
   READ_FITS_FINDING_SYNTHESIS,
-  READ_NEED_COMPREHENSION_SYNTHESIS,
+  READ_EVALUATION_COMPREHENSION_SYNTHESIS,
 } from '../reading-pipeline-contract';
 import {
   buildReadingPipelineObservabilityInventory,
@@ -38,7 +38,7 @@ const readInput = {
   sourceRevision,
   targetArtifactKinds: ['asset-pack', 'fit-provenance', 'settlement-proof', 'pull-request'],
   closureCriteria: [
-    'ReadNeedComprehensionSynthesis returns an accepted source-constrained Need.',
+    'ReadEvaluationComprehensionSynthesis returns an accepted source-constrained Evaluation.',
     'ReadFitsFindingSynthesis finds more than one qualifying Depository fit above threshold.',
     'AssetPack preview remains source-safe before BTC settlement.',
     'Settlement transfers BTD rights before full source-bearing pull-request delivery.',
@@ -51,7 +51,7 @@ function depositoryAsset(assetId: string, title: string): DepositoryAsset {
     assetId,
     title,
     summary:
-      'Source-safe Reading integration deposit for accepted Need comprehension, many-fit Depository search, AssetPack preview, BTC settlement, BTD rights transfer, and pull-request delivery.',
+      'Source-safe Reading integration deposit for accepted Evaluation comprehension, many-fit Depository search, AssetPack preview, BTC settlement, BTD rights transfer, and pull-request delivery.',
     artifactKind: 'asset-pack',
     repositoryFullName: sourceRevision.repositoryFullName,
     sourceBranch: sourceRevision.branch,
@@ -62,7 +62,7 @@ function depositoryAsset(assetId: string, title: string): DepositoryAsset {
         unitId: `${assetId}:unit-1`,
         unitKind: 'asset-pack',
         text:
-          'Reading Need Finding Fits Depository search AssetPack preview BTC settlement BTD rights transfer pull request delivery telemetry ledger database storage reconciliation.',
+          'Reading Evaluation Finding Fits Depository search AssetPack preview BTC settlement BTD rights transfer pull request delivery telemetry ledger database storage reconciliation.',
         unitHash: `sha256:${assetId}-unit`,
       },
     ],
@@ -77,22 +77,22 @@ function depositoryAsset(assetId: string, title: string): DepositoryAsset {
 }
 
 describe('Reading pipeline integration coverage', () => {
-  it('runs the deterministic commercial Reading spine across Need synthesis, Finding Fits, preview, settlement, and observability contracts', async () => {
-    const need = acceptReadNeed(
-      synthesizeReadNeedForPipelineInput(readInput),
+  it('runs the deterministic commercial Reading spine across Evaluation synthesis, Finding Fits, preview, settlement, and observability contracts', async () => {
+    const evaluation = acceptReadEvaluation(
+      synthesizeReadEvaluationForPipelineInput(readInput),
       '2026-05-25T00:00:00.000Z',
     );
 
-    expect(need.inferenceReceipt).toMatchObject({
-      schema: 'bitcode.read-need-comprehension-synthesis.inference-receipt',
-      pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
+    expect(evaluation.inferenceReceipt).toMatchObject({
+      schema: 'bitcode.read-evaluation-comprehension-synthesis.inference-receipt',
+      pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
       reviewState: 'accepted',
       mode: 'deterministic-fallback',
       phaseIds: [
-        'ReadNeedComprehensionSynthesis.request',
-        'ReadNeedComprehensionSynthesis.comprehend',
-        'ReadNeedComprehensionSynthesis.measure',
-        'ReadNeedComprehensionSynthesis.review',
+        'ReadEvaluationComprehensionSynthesis.request',
+        'ReadEvaluationComprehensionSynthesis.comprehend',
+        'ReadEvaluationComprehensionSynthesis.measure',
+        'ReadEvaluationComprehensionSynthesis.review',
       ],
       sourceSafety: {
         protectedSourceVisible: false,
@@ -101,15 +101,15 @@ describe('Reading pipeline integration coverage', () => {
         credentialsSerialized: false,
       },
     });
-    expect(need.inferenceReceipt?.ptrrStepIds).toHaveLength(16);
-    expect(need.inferenceReceipt?.thinkingsGenerationIds).toHaveLength(48);
-    expect(need.reviewState).toBe('accepted');
-    expect(need.sourceConstraints.protectedSourceDisclosure).toBe('forbidden_before_settlement');
+    expect(evaluation.inferenceReceipt?.ptrrStepIds).toHaveLength(16);
+    expect(evaluation.inferenceReceipt?.thinkingsGenerationIds).toHaveLength(48);
+    expect(evaluation.reviewState).toBe('accepted');
+    expect(evaluation.sourceConstraints.protectedSourceDisclosure).toBe('forbidden_before_settlement');
 
     const search = await runDepositorySearchForPipelineInput({
       ...readInput,
-      acceptedReadNeed: need,
-      requireAcceptedReadNeed: true,
+      acceptedReadEvaluation: evaluation,
+      requireAcceptedReadEvaluation: true,
       depositoryAssets: [
         depositoryAsset('reading-fit-integration-1', 'Reading pipeline fit one'),
         depositoryAsset('reading-fit-integration-2', 'Reading pipeline fit two'),
@@ -117,7 +117,7 @@ describe('Reading pipeline integration coverage', () => {
     });
     const fitResult = buildDepositoryFitResultEvidence(search);
     const readFitsRuntime = buildReadFitsFindingRuntime({
-      admission: admitReadFitsFinding({ acceptedReadNeed: need, requireAcceptedReadNeed: true }),
+      admission: admitReadFitsFinding({ acceptedReadEvaluation: evaluation, requireAcceptedReadEvaluation: true }),
       result: search,
       fitResult,
     });
@@ -155,7 +155,7 @@ describe('Reading pipeline integration coverage', () => {
     });
 
     const previewBoundary = buildAssetPackPreviewBoundary({
-      need,
+      evaluation,
       fitResult,
       pullRequestTarget: 'https://github.com/octocat/Spoon-Knife/pull/505',
       createdAt: '2026-05-25T00:00:00.000Z',
@@ -223,7 +223,7 @@ describe('Reading pipeline integration coverage', () => {
     });
 
     const observabilityCoverage = summarizeReadingPipelineObservabilityCoverage([
-      { pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS },
+      { pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS },
       { pipelineName: READ_FITS_FINDING_SYNTHESIS, phaseId: 'ReadFitsFindingSynthesis.discovery' },
       { pipelineName: READ_FITS_FINDING_SYNTHESIS, agentId: 'ReadFitsFindingSynthesis.discovery.finding-fits' },
       { pipelineName: READ_FITS_FINDING_SYNTHESIS, ptrrStepId: 'ReadFitsFindingSynthesis.discovery.finding-fits.try' },

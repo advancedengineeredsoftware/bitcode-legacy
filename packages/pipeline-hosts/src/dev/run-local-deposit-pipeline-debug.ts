@@ -124,7 +124,7 @@ const manifest = {
     impermissibleSources: ['**/.env*', '**/secrets/**', '**/*credential*'],
     demandContext: ['library-api', 'type-safety'],
   },
-  requireAcceptedReadNeed: false,
+  requireAcceptedReadEvaluation: false,
   deliveryMechanismTemplate: 'pull-request',
 };
 

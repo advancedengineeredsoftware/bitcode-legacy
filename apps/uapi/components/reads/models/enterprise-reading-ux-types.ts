@@ -5,7 +5,7 @@
 
 export type EnterpriseReadingStepId =
   | 'request-read'
-  | 'review-synthesized-need'
+  | 'review-synthesized-evaluation'
   | 'request-fit'
   | 'review-synthesized-asset-pack'
   | 'buy-asset-pack-settle';
@@ -15,7 +15,7 @@ export type ProductEnterpriseReadingStepState = 'complete' | 'current' | 'blocke
 export type ProductEnterpriseReadingFailureKind =
   | 'none'
   | 'read_request_invalid'
-  | 'need_review_required'
+  | 'evaluation_review_required'
   | 'fits_finding_failed'
   | 'asset_pack_preview_blocked'
   | 'settlement_blocked'
@@ -24,8 +24,8 @@ export type ProductEnterpriseReadingFailureKind =
 
 export type ProductEnterpriseReadingSourceSafeField =
   | 'read_request_summary'
-  | 'read_need_measurements'
-  | 'need_feedback_history'
+  | 'read_evaluation_measurements'
+  | 'evaluation_feedback_history'
   | 'depository_candidate_counts'
   | 'selected_fit_ids'
   | 'asset_pack_measurements'
@@ -65,8 +65,8 @@ export type EnterpriseReadingUxStateInput = {
   routeReadingStage?: EnterpriseReadingStepId | null;
   hasRepositorySource?: boolean;
   hasReadMeasurement?: boolean;
-  hasSynthesizedNeed?: boolean;
-  hasAcceptedNeed?: boolean;
+  hasSynthesizedEvaluation?: boolean;
+  hasAcceptedEvaluation?: boolean;
   findingFitsRunning?: boolean;
   hasSourceSafePreview?: boolean;
   hasSettlementReadback?: boolean;
@@ -88,7 +88,7 @@ export type EnterpriseReadingRouteState = {
   restartRequested: boolean;
   restartRestoresActiveStage: true;
   retryRequested: boolean;
-  retryPreservesNeedLineage: true;
+  retryPreservesEvaluationLineage: true;
   retryPreservesSettlementBoundary: true;
   failureKind: ProductEnterpriseReadingFailureKind;
   failureStateSourceSafe: true;
@@ -116,7 +116,7 @@ export type EnterpriseReadingUxState = {
     terminalOwnsTransactionAuthority: true;
     conversationMayHandoffIntent: true;
     transactionRouteRequiredForRecovery: true;
-    acceptedNeedRequiredBeforeFindingFits: true;
+    acceptedEvaluationRequiredBeforeFindingFits: true;
     sourceSafePreviewRequiredBeforeSettlement: true;
     deliveryRequiresSettlementUnlock: true;
     restartRestoresReadingStage: true;
@@ -144,31 +144,31 @@ export const PRODUCT_ENTERPRISE_READING_STEPS: ProductEnterpriseReadingStepDefin
     label: '1. Request Read',
     lowDetailGuidance: 'Frame repository, branch, commit, and the reader request.',
     expandableDetail:
-      'Reading captures source anchors, enterprise intent, constraints, disclosure posture, target artifact kinds, and the measured Read posture that can be reviewed before Need synthesis.',
+      'Reading captures source anchors, enterprise intent, constraints, disclosure posture, target artifact kinds, and the measured Read posture that can be reviewed before Evaluation synthesis.',
     primaryAction: 'Record read posture',
     sourceSafeVisibleFields: ['read_request_summary', 'proof_roots'],
     forbiddenFields: PRODUCT_ENTERPRISE_READING_FORBIDDEN_FIELDS,
   },
   {
-    id: 'review-synthesized-need',
+    id: 'review-synthesized-evaluation',
     ordinal: 2,
-    label: '2. Review synthesized Need',
-    lowDetailGuidance: 'Review Bitcode Need comprehension before any Depository search.',
+    label: '2. Review synthesized Evaluation',
+    lowDetailGuidance: 'Review Bitcode Evaluation comprehension before any Depository search.',
     expandableDetail:
-      'The reviewed Need exposes requirements, measurements, constraints, target artifact kinds, proof expectations, and feedback lineage; Finding Fits remains blocked until the Need is accepted.',
-    primaryAction: 'Accept or resynthesize Need',
-    sourceSafeVisibleFields: ['read_need_measurements', 'need_feedback_history', 'proof_roots'],
+      'The reviewed Evaluation exposes requirements, measurements, constraints, target artifact kinds, proof expectations, and feedback lineage; Finding Fits remains blocked until the Evaluation is accepted.',
+    primaryAction: 'Accept or resynthesize Evaluation',
+    sourceSafeVisibleFields: ['read_evaluation_measurements', 'evaluation_feedback_history', 'proof_roots'],
     forbiddenFields: PRODUCT_ENTERPRISE_READING_FORBIDDEN_FIELDS,
   },
   {
     id: 'request-fit',
     ordinal: 3,
     label: '3. Request Finding Fits',
-    lowDetailGuidance: 'Run Finding Fits only from an accepted Need.',
+    lowDetailGuidance: 'Run Finding Fits only from an accepted Evaluation.',
     expandableDetail:
-      'Reading hands the accepted Need, deposit/source anchors, proof roots, measurement roots, and source-safe search posture to ReadFitsFindingSynthesis without exposing protected deposit source.',
+      'Reading hands the accepted Evaluation, deposit/source anchors, proof roots, measurement roots, and source-safe search posture to ReadFitsFindingSynthesis without exposing protected deposit source.',
     primaryAction: 'Request Finding Fits',
-    sourceSafeVisibleFields: ['read_need_measurements', 'depository_candidate_counts', 'proof_roots'],
+    sourceSafeVisibleFields: ['read_evaluation_measurements', 'depository_candidate_counts', 'proof_roots'],
     forbiddenFields: PRODUCT_ENTERPRISE_READING_FORBIDDEN_FIELDS,
   },
   {

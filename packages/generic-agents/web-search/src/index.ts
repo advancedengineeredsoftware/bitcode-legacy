@@ -57,7 +57,7 @@ export const BitcodeReadSynthesisWebSearchResultSchema = z.object({
 }).describe('BitcodeReadSynthesisWebSearchResult');
 
 export const BitcodeReadSynthesisWebSearchPlanSchema = z.object({
-  normalizedNeed: z.string(),
+  normalizedEvaluation: z.string(),
   plannedQueries: z.array(z.string()),
   preferredSourceClasses: z.array(z.string()),
   sourceSelectionRationale: z.array(z.string()),

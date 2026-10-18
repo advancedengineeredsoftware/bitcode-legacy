@@ -16,7 +16,7 @@ function promptText(prompt: { get: (k: string) => unknown }, key: string): strin
 }
 
 describe('asset-packs product prompts (core)', () => {
-  it('deposit patch-plan identity names deposit; read names Need and hits', () => {
+  it('deposit patch-plan identity names deposit; read names Evaluation and hits', () => {
     const deposit = createDepositSynthesisPrompt();
     const read = createReadSynthesisPrompt();
     const dId = promptText(deposit as any, 'agent:identity');
@@ -24,30 +24,30 @@ describe('asset-packs product prompts (core)', () => {
     const rReq = promptText(read as any, 'agent:requirements');
     expect(dId.toLowerCase()).toContain('deposit');
     expect(dId.toLowerCase()).toContain('obfuscation');
-    expect(rId.toLowerCase()).toContain('need');
+    expect(rId.toLowerCase()).toContain('evaluation');
     expect(rId.toLowerCase()).toContain('read');
     expect(rId.toLowerCase()).not.toMatch(/obfuscation/);
     expect(rReq).toMatch(/depositoryHits/);
-    expect(rReq).toMatch(/acceptanceCriteria|Need/i);
+    expect(rReq).toMatch(/acceptanceCriteria|Evaluation/i);
   });
 
-  it('commercial-nl prompts split deposit vs Need-first read', () => {
+  it('commercial-nl prompts split deposit vs Evaluation-first read', () => {
     const d = promptText(createDepositCommercialNlPrompt() as any, 'agent:identity');
     const r = promptText(createReadCommercialNlPrompt() as any, 'agent:identity');
     expect(d.toLowerCase()).toContain('deposit');
-    expect(r.toLowerCase()).toContain('need');
+    expect(r.toLowerCase()).toContain('evaluation');
     expect(r.toLowerCase()).toContain('read');
   });
 
-  it('validation prompts split deposit vs Need-first read (STAB-4)', () => {
+  it('validation prompts split deposit vs Evaluation-first read (STAB-4)', () => {
     const d = promptText(createDepositValidationPrompt() as any, 'agent:identity');
     const r = promptText(createReadValidationPrompt() as any, 'agent:identity');
     const rReq = promptText(createReadValidationPrompt() as any, 'agent:requirements');
     expect(d.toLowerCase()).toContain('deposit');
     expect(r.toLowerCase()).toContain('read');
-    expect(r.toLowerCase()).toContain('need');
+    expect(r.toLowerCase()).toContain('evaluation');
     expect(r.toLowerCase()).not.toMatch(/obfuscation/);
-    expect(rReq).toMatch(/needinesses|-\*fit|\*-fit|need/i);
+    expect(rReq).toMatch(/relatives|-\*fit|\*-fit|evaluation/i);
     expect(rReq).toMatch(/depositoryHits|acceptanceCriteria/i);
   });
 

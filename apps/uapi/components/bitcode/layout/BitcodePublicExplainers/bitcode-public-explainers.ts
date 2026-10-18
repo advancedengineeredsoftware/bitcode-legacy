@@ -35,11 +35,11 @@ export const BITCODE_PUBLIC_EXPLAINERS = {
     kicker: 'Demand path',
     title: 'Read',
     summary:
-      'Express a Reading, review a synthesized Need, request needs-fits scores, inspect a source-safe DataPack preview, and settle for knowledge delivery.',
+      'Express a Reading, review a synthesized Evaluation, request needs-fits scores, inspect a source-safe DataPack preview, and settle for knowledge delivery.',
     detail:
       'Use /reads for the buyer path. You measure demand first, then compare fits and pack previews that expose measurements and proof roots — not protected source — until BTC settlement and BTD rights transfer unlock delivery.',
     points: [
-      'Separates Need review from finding fits and settlement',
+      'Separates Evaluation review from finding fits and settlement',
       'DataPack preview remains source-safe until paid read rights',
       'Quotes and delivery posture stay tied to proof readback',
     ],

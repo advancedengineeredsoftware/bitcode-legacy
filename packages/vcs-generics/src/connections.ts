@@ -270,7 +270,7 @@ export class VCSConnections {
             // GitHub's own API error text, e.g. installation suspended/
             // uninstalled — no tokens/secrets) so a stuck-Invalid connection
             // is diagnosable from the connection status alone, without
-            // needing server logs.
+            // evaluationing server logs.
             await this.recordRegenerationDiagnostic(connection.id, reason);
             // Fall back to OAuth token if available
             accessToken = readString(connectionData.oauth_token);

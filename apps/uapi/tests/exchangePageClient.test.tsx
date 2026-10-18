@@ -11,7 +11,7 @@ import {
 import ExchangePageClient from "@/components/exchange/ExchangePageClient/ExchangePageClient";
 
 const mockReplace = jest.fn();
-let mockQuery = "q=rollback&type=read-need-fit-preview";
+let mockQuery = "q=rollback&type=read-evaluation-fit-preview";
 
 jest.mock("next/navigation", () => ({
   usePathname: () => "/exchange",
@@ -24,7 +24,7 @@ const basePackPayload = {
   records: [
     {
       id: "pack-activity-1",
-      type: "read-need-fit-preview",
+      type: "read-evaluation-fit-preview",
       scope: "network",
       title: "Auth rollback proof pack",
       description: "Source-safe AssetPack preview.",
@@ -92,7 +92,7 @@ const basePackPayload = {
   ],
   detail: {
     id: "pack-activity-1",
-    type: "read-need-fit-preview",
+    type: "read-evaluation-fit-preview",
     title: "Auth rollback proof pack",
     description: "Source-safe AssetPack preview.",
     timestamp: "2026-05-28T10:00:00.000Z",
@@ -169,7 +169,7 @@ const basePackPayload = {
   },
   summary: {
     total: 1,
-    types: { "read-need-fit-preview": 1 },
+    types: { "read-evaluation-fit-preview": 1 },
     states: { completed: 1 },
     repositories: ["octocat/Spoon-Knife"],
     settlementReady: 1,
@@ -187,7 +187,7 @@ const basePackPayload = {
 describe("ExchangePageClient", () => {
   beforeEach(() => {
     mockReplace.mockReset();
-    mockQuery = "q=rollback&type=read-need-fit-preview";
+    mockQuery = "q=rollback&type=read-evaluation-fit-preview";
     global.fetch = jest.fn(async () => ({
       ok: true,
       json: async () => JSON.parse(JSON.stringify(basePackPayload)),
@@ -237,7 +237,7 @@ describe("ExchangePageClient", () => {
 
   it("opens rich master-detail for a selected AssetPack with Back", async () => {
     mockQuery =
-      "q=rollback&type=read-need-fit-preview&detailId=pack-activity-1";
+      "q=rollback&type=read-evaluation-fit-preview&detailId=pack-activity-1";
     render(<ExchangePageClient />);
 
     expect(await screen.findByTestId("packs-run-detail")).toBeInTheDocument();
@@ -277,7 +277,7 @@ describe("ExchangePageClient", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Back to Exchange" }));
     expect(mockReplace).toHaveBeenCalledWith(
-      "/exchange?q=rollback&type=read-need-fit-preview",
+      "/exchange?q=rollback&type=read-evaluation-fit-preview",
       { scroll: false },
     );
   });
@@ -328,7 +328,7 @@ describe("ExchangePageClient", () => {
       within(screen.getByRole("table")).getByText("Auth rollback proof pack"),
     );
     expect(mockReplace).toHaveBeenCalledWith(
-      "/exchange?q=rollback&type=read-need-fit-preview&detailId=pack-activity-1",
+      "/exchange?q=rollback&type=read-evaluation-fit-preview&detailId=pack-activity-1",
       { scroll: false },
     );
 

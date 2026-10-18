@@ -217,25 +217,25 @@ const PHASE_SPECIFICS: Record<string, ModeVariants> = {
   setup: {
     deposit:
       'Setup clones the selected repository into an isolated workspace and turns the depositor’s Obfuscations into structured withhold guidance that later packing must honor.',
-    read: 'Setup admits the reader’s Need and prepares the run so later stages can search and synthesize Need-fitting packs — not depositor obfuscation packing.',
+    read: 'Setup admits the reader’s Evaluation and prepares the run so later stages can search and synthesize Evaluation-fitting packs — not depositor obfuscation packing.',
     any: 'Setup admits the request, comprehends inputs, and provisions the workspace before discovery or implementation.',
   },
   discovery: {
     deposit:
       'Discovery runs three deposit lenses — codebase comprehension, depository demand guidance, and inherent regurgitation — so Implementation packs only novel, source-safe knowledge.',
-    read: 'Discovery searches the depository and comprehends candidate sources that could fit the reader’s Need before synthesis.',
+    read: 'Discovery searches the depository and comprehends candidate sources that could fit the reader’s Evaluation before synthesis.',
     any: 'Discovery builds source-safe understanding of the workspace and depository before implementation.',
   },
   implementation: {
     deposit:
       'Implementation synthesizes 2–4 distinct, measured DataPack options with source-safe patch descriptors — never raw source — for depositor selection.',
-    read: 'Implementation synthesizes the Need-fitting AssetPack as a measured, source-safe patch for the reader to review and settle.',
+    read: 'Implementation synthesizes the Evaluation-fitting AssetPack as a measured, source-safe patch for the reader to review and settle.',
     any: 'Implementation produces measured, source-safe pack artifacts for review.',
   },
   validation: {
     deposit:
       'Validation fail-closes on quality, distinctness, source-safety, and obfuscation compliance before any Finish upload of deposit options.',
-    read: 'Validation fail-closes on Need-fit quality and source-safety before Finish upload of reading packs (absolutes were measured in Implementation).',
+    read: 'Validation fail-closes on Evaluation-fit quality and source-safety before Finish upload of reading packs (absolutes were measured in Implementation).',
     any: 'Validation fail-closes quality and source-safety before finish and upload.',
   },
   finish: {
@@ -252,7 +252,7 @@ const AGENT_SPECIFICS: Array<[match: string, copy: ModeVariants]> = [
     {
       deposit:
         'Input Comprehension turns the depositor’s free-text Obfuscations into structured withhold guidance (paths, concepts, honor notes) that later packing must honor.',
-      read: 'Input Comprehension turns the reader’s Need into structured guidance that discovery and synthesis use to find and pack Need-fitting knowledge.',
+      read: 'Input Comprehension turns the reader’s Evaluation into structured guidance that discovery and synthesis use to find and pack Evaluation-fitting knowledge.',
       any: 'Input Comprehension turns free-text request inputs into structured guidance for the rest of the run.',
     },
   ],
@@ -270,7 +270,7 @@ const AGENT_SPECIFICS: Array<[match: string, copy: ModeVariants]> = [
     {
       deposit:
         'Codebase Comprehension builds a source-safe knowledge map of the cloned tree so deposit packing describes capability without quoting protected source.',
-      read: 'Codebase Comprehension builds a source-safe knowledge map of candidate material so Need-fit synthesis stays descriptive, not source-leaking.',
+      read: 'Codebase Comprehension builds a source-safe knowledge map of candidate material so Evaluation-fit synthesis stays descriptive, not source-leaking.',
       any: 'Codebase Comprehension builds a source-safe knowledge map of the workspace without quoting source.',
     },
   ],
@@ -279,7 +279,7 @@ const AGENT_SPECIFICS: Array<[match: string, copy: ModeVariants]> = [
     {
       deposit:
         'Depository Search frames what reading demand this repository’s knowledge would satisfy so deposit packs are aimed at real reader needs.',
-      read: 'Depository Search finds and ranks depository candidates that could fit the reader’s Need before synthesis.',
+      read: 'Depository Search finds and ranks depository candidates that could fit the reader’s Evaluation before synthesis.',
       any: 'Depository Search reasons about depository demand and candidate alignment in a source-safe way.',
     },
   ],
@@ -297,7 +297,7 @@ const AGENT_SPECIFICS: Array<[match: string, copy: ModeVariants]> = [
     {
       deposit:
         'Asset Pack Synthesis authors 2–4 distinct, measured DataPack options with source-safe patch descriptors for the depositor to choose among.',
-      read: 'Asset Pack Synthesis authors the Need-fitting AssetPack as a measured, source-safe patch for the reader to review and settle.',
+      read: 'Asset Pack Synthesis authors the Evaluation-fitting AssetPack as a measured, source-safe patch for the reader to review and settle.',
       any: 'Asset Pack Synthesis authors measured, source-safe pack options for review.',
     },
   ],
@@ -306,7 +306,7 @@ const AGENT_SPECIFICS: Array<[match: string, copy: ModeVariants]> = [
     {
       deposit:
         'Measure Absolutes scores already-synthesized deposit options with honest volume measurements so selection and pricing rest on measured, source-safe absolutes.',
-      read: 'Measure Absolutes scores the synthesized reading pack with honest volume measurements so Need-fit review rests on measured, source-safe absolutes.',
+      read: 'Measure Absolutes scores the synthesized reading pack with honest volume measurements so Evaluation-fit review rests on measured, source-safe absolutes.',
       any: 'Measure Absolutes scores already-synthesized packs with honest volume measurements without altering the patch.',
     },
   ],
@@ -315,7 +315,7 @@ const AGENT_SPECIFICS: Array<[match: string, copy: ModeVariants]> = [
     {
       deposit:
         'Validation judges deposit options fail-closed on honesty, distinctness, source-safety, and obfuscation compliance before Finish upload.',
-      read: 'Validation judges the Need-fitting pack fail-closed on quality and source-safety before Finish upload.',
+      read: 'Validation judges the Evaluation-fitting pack fail-closed on quality and source-safety before Finish upload.',
       any: 'Validation judges synthesized artifacts fail-closed on quality and source-safety before finish.',
     },
   ],

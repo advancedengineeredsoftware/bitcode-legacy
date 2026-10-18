@@ -1,6 +1,6 @@
 export type ConversationWritingWorkspaceMode =
   | 'read_request'
-  | 'need_feedback'
+  | 'evaluation_feedback'
   | 'assetpack_review_note'
   | 'product_handoff_summary';
 
@@ -40,14 +40,14 @@ export const CONVERSATION_WRITING_WORKSPACE_MODES: Array<{
     label: 'Read Request',
     shortLabel: 'Request',
     draftScope: 'reader-authored request for technical knowledge',
-    placeholder: 'Draft the Read Request the Need comprehension pipeline should understand.',
+    placeholder: 'Draft the Read Request the Evaluation comprehension pipeline should understand.',
   },
   {
-    id: 'need_feedback',
-    label: 'Need Feedback',
-    shortLabel: 'Need',
-    draftScope: 'reader feedback for synthesized Need revision',
-    placeholder: 'Draft feedback for the synthesized Need before asking Bitcode to revise it.',
+    id: 'evaluation_feedback',
+    label: 'Evaluation Feedback',
+    shortLabel: 'Evaluation',
+    draftScope: 'reader feedback for synthesized Evaluation revision',
+    placeholder: 'Draft feedback for the synthesized Evaluation before asking Bitcode to revise it.',
   },
   {
     id: 'assetpack_review_note',

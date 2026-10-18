@@ -2,7 +2,7 @@
  * Background orchestration for POST /api/deposit/synthesize-options.
  *
  * Runs after the route returns runId: auth + host wiring → SDIVF pipeline
- * (or sandbox host) → fail-closed option validation → neediness grounding →
+ * (or sandbox host) → fail-closed option validation → relative grounding →
  * persist execution row.
  *
  * **No clone during initialization.** Cloning is Setup on the Host
@@ -20,7 +20,7 @@ import {
   type AssetPacksSynthesisResult,
   type AssetPacksSynthesisSourceInventory,
 } from '@bitcode/asset-packs-pipelines-syntheses-domain/asset-packs-synthesis';
-import { groundOptionNeedinessFromSettledDepository } from '@bitcode/asset-packs-pipelines-syntheses-domain';
+import { groundOptionRelativeFromSettledDepository } from '@bitcode/asset-packs-pipelines-syntheses-domain';
 import { executionPipelineSDIVFSynthesizeDepositAssetPacks } from '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-deposits-asset-packs';
 import { buildRealDepositAssetPackOptionSynthesis } from '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-deposits-asset-packs/deposit-option-real-synthesis';
 import {
@@ -594,7 +594,7 @@ export async function runDepositOptionSynthesis(
     );
 
     const settledPacks = await loadSettledDepositoryPacks(80);
-    const groundedOptions = groundOptionNeedinessFromSettledDepository(
+    const groundedOptions = groundOptionRelativeFromSettledDepository(
       rawSynthesis.options,
       settledPacks,
     );

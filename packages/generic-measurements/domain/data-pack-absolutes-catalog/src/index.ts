@@ -7,7 +7,7 @@
  * `DATA_PACK_ABSOLUTES_CATALOG` is the full catalogue.
  *
  * `policyRole` remains operational metadata (gate / penalty / flag / weighted)
- * and does **not** remove a kind from Σ. learning-gain is excluded (BTD / need-fit).
+ * and does **not** remove a kind from Σ. learning-gain is excluded (BTD / evaluation-fit).
  *
  * SSOT for UI options: DATA_PACK_ABSOLUTE_KIND_SELECT_OPTIONS.
  */

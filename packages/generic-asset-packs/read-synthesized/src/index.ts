@@ -5,8 +5,8 @@
  *
  * Law:
  * - Built from shared synthesis base (same patch + absolutes shape as deposit).
- * - Includes **needinesses** (*-fit) and commercial **BTD / BTC** quote fields.
- * - need-fit composite is derived (not a raw measure-agent target).
+ * - Includes **relatives** (*-fit) and commercial **BTD / BTC** quote fields.
+ * - evaluation-fit composite is derived (not a raw measure-agent target).
  * - After selection, settle is 1:1 SettleAssetPack (not this package).
  *
  * Hierarchy:
@@ -26,8 +26,8 @@ export const READ_SYNTHESIZED_ASSET_PACK_SCHEMA =
 
 /** Source-safe BTD quote / mint projection attached on read options. */
 export interface ReadSynthesizedBtdDetails {
-  /** needFitVolume ∈ [0,1] from needinesses-weighted scalar. */
-  needFitVolume?: number | null;
+  /** evaluationFitVolume ∈ [0,1] from relatives-weighted scalar. */
+  evaluationFitVolume?: number | null;
   /** Fungible BTD base units (string for JSON safety) when projected. */
   amountBaseUnits?: string | null;
   quoteRoot?: string | null;
@@ -47,13 +47,13 @@ export interface ReadSynthesizedAssetPack extends Omit<SynthesisAssetPack, 'iden
   identity: Omit<SynthesisAssetPack['identity'], 'schema'> & {
     schema: typeof READ_SYNTHESIZED_ASSET_PACK_SCHEMA;
   };
-  /** Nested absolutes + needinesses (*-fit). */
+  /** Nested absolutes + relatives (*-fit). */
   measurements: {
     absolutes: SynthesisMeasurementReading[];
-    needinesses: SynthesisMeasurementReading[];
+    relatives: SynthesisMeasurementReading[];
   };
-  /** Derived need-fit composite (weighted mean of needinesses). */
-  needFit?: number | null;
+  /** Derived evaluation-fit composite (weighted mean of relatives). */
+  evaluationFit?: number | null;
   selectable?: boolean;
   settleable?: boolean;
   kind?: string | null;
@@ -66,7 +66,7 @@ export interface ReadSynthesizedAssetPack extends Omit<SynthesisAssetPack, 'iden
 export function buildReadSynthesizedAssetPack(
   input: BuildSynthesisAssetPackInput & {
     kind?: string | null;
-    needFit?: number | null;
+    evaluationFit?: number | null;
     selectable?: boolean;
     settleable?: boolean;
     btd?: ReadSynthesizedBtdDetails | null;
@@ -82,10 +82,10 @@ export function buildReadSynthesizedAssetPack(
     },
     measurements: {
       absolutes: [...base.measurements.absolutes],
-      needinesses: [...base.measurements.needinesses],
+      relatives: [...base.measurements.relatives],
     },
     kind: input.kind ?? null,
-    needFit: input.needFit ?? null,
+    evaluationFit: input.evaluationFit ?? null,
     selectable: input.selectable ?? true,
     settleable: input.settleable ?? true,
     btd: input.btd ?? null,

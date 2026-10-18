@@ -173,7 +173,7 @@ export interface BtdReadReceiptInput {
   assetPackId: string;
   readId: string;
   readRequestId: string;
-  acceptedNeedRoot: string;
+  acceptedEvaluationRoot: string;
   findingFitsResultRoot: string;
   readerWalletId: string;
   depositorWalletId: string;
@@ -199,7 +199,7 @@ export interface BtdReadReceipt {
   assetPackId: string;
   readId: string;
   readRequestId: string;
-  acceptedNeedRoot: string;
+  acceptedEvaluationRoot: string;
   findingFitsResultRoot: string;
   readerWalletId: string;
   depositorWalletId: string;
@@ -413,7 +413,7 @@ export function buildBtdReadReceipt(input: BtdReadReceiptInput): BtdReadReceipt 
     ]);
   const receiptRoot = buildBtdReceiptStableId('btd-read-receipt-root', [
     receiptId,
-    input.acceptedNeedRoot,
+    input.acceptedEvaluationRoot,
     input.findingFitsResultRoot,
     input.sourceSafePreviewRoot,
     paidUnlockRoot ?? 'unpaid',
@@ -426,7 +426,7 @@ export function buildBtdReadReceipt(input: BtdReadReceiptInput): BtdReadReceipt 
     assetPackId: assertNonEmptyString(input.assetPackId, 'assetPackId'),
     readId: assertNonEmptyString(input.readId, 'readId'),
     readRequestId: assertNonEmptyString(input.readRequestId, 'readRequestId'),
-    acceptedNeedRoot: assertNonEmptyString(input.acceptedNeedRoot, 'acceptedNeedRoot'),
+    acceptedEvaluationRoot: assertNonEmptyString(input.acceptedEvaluationRoot, 'acceptedEvaluationRoot'),
     findingFitsResultRoot: assertNonEmptyString(input.findingFitsResultRoot, 'findingFitsResultRoot'),
     readerWalletId: assertNonEmptyString(input.readerWalletId, 'readerWalletId'),
     depositorWalletId: assertNonEmptyString(input.depositorWalletId, 'depositorWalletId'),
@@ -455,7 +455,7 @@ export function assertBtdReadReceipt(receipt: BtdReadReceipt): BtdReadReceipt {
   assertCommonAssetPackReceiptFields(receipt);
   assertNonEmptyString(receipt.readId, 'readId');
   assertNonEmptyString(receipt.readRequestId, 'readRequestId');
-  assertNonEmptyString(receipt.acceptedNeedRoot, 'acceptedNeedRoot');
+  assertNonEmptyString(receipt.acceptedEvaluationRoot, 'acceptedEvaluationRoot');
   assertNonEmptyString(receipt.findingFitsResultRoot, 'findingFitsResultRoot');
   assertNonEmptyString(receipt.readerWalletId, 'readerWalletId');
   assertNonEmptyString(receipt.depositorWalletId, 'depositorWalletId');

@@ -8,7 +8,7 @@
  * - MeasurementOutputSchema is honest volume-only (0..1) with optional magnitude
  *
  * Edges (clamps, categories, null inputs): edges/measure-agent.edges.test.ts
- * Specializations (Absolutes / Needinesses): their packages.
+ * Specializations (Absolutes / Relatives): their packages.
  */
 // @ts-nocheck
 import {

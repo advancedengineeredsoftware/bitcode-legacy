@@ -1,16 +1,16 @@
 /**
- * Discovery wave-2 agent: search-depository-for-read-need-fits.
+ * Discovery wave-2 agent: search-depository-for-read-evaluation-fits.
  *
  * Runs **after** parallel codebase comprehension + inherent regurgitation so
  * queries can use wave-1 grounding (especially comprehend-codebase).
  *
- * Read purpose: find Depository AssetPacks that **fit the accepted Need**
+ * Read purpose: find Depository AssetPacks that **fit the accepted Evaluation**
  * (fits-finding). Deposit relevance search is a different product agent.
  *
- * Plan: synthesize Need-fit search queries from wave-1 comprehension, Need
+ * Plan: synthesize Evaluation-fit search queries from wave-1 comprehension, Evaluation
  * (Setup), sourceCheckoutCatalog, and related signals.
  * Try: call depository-asset-pack-search (embeddings policy + lexical rank).
- * Refine/Retry: source-safe Need-fit guidance for Implementation.
+ * Refine/Retry: source-safe Evaluation-fit guidance for Implementation.
  */
 
 import { factoryPTRRAgent } from '@bitcode/agent-generics';
@@ -29,13 +29,13 @@ const DepositorySearchInputSchema = z.object({
   repository: z.any().optional(),
   inventory: z.any().optional(),
   sourceCheckoutCatalog: z.any().optional(),
-  need: z.any().optional(),
+  evaluation: z.any().optional(),
   expressedRead: z.string().optional(),
 });
 
-const NeedFitGuidanceSchema = z.object({
+const EvaluationFitGuidanceSchema = z.object({
   summary: z.string(),
-  needFitTopics: z.array(z.string()).optional(),
+  evaluationFitTopics: z.array(z.string()).optional(),
   candidateFitNotes: z.array(z.string()).optional(),
   gapTopics: z.array(z.string()).optional(),
   readabilityNotes: z.array(z.string()).optional(),
@@ -44,43 +44,43 @@ const NeedFitGuidanceSchema = z.object({
 });
 
 const DepositorySearchOutputSchema = z.object({
-  guidance: NeedFitGuidanceSchema,
+  guidance: EvaluationFitGuidanceSchema,
   searchQueries: z.array(z.string()).optional(),
 });
 
-export type ReadNeedFitGuidance = z.infer<typeof NeedFitGuidanceSchema>;
+export type ReadEvaluationFitGuidance = z.infer<typeof EvaluationFitGuidanceSchema>;
 
 const IDENTITY = part(
-  'You are Discovery search-depository-for-read-need-fits. You run after codebase ' +
+  'You are Discovery search-depository-for-read-evaluation-fits. You run after codebase ' +
     'comprehension and inherent regurgitation. Search the Bitcode Depository for settled ' +
-    'AssetPacks that **fit the accepted Need** for this read synthesis run. Build search ' +
-    'queries from wave-1 comprehension signals, the Need / expressed Read, and ' +
-    'sourceCheckoutCatalog. Be source-safe. This is Need-fit (fits-finding) search — not ' +
+    'AssetPacks that **fit the accepted Evaluation** for this read synthesis run. Build search ' +
+    'queries from wave-1 comprehension signals, the Evaluation / expressed Read, and ' +
+    'sourceCheckoutCatalog. Be source-safe. This is Evaluation-fit (fits-finding) search — not ' +
     'deposit relevance search.',
 );
 
 const REQUIREMENTS = part(
-  'From the Need (or expressedRead), repository coordinates, sourceCheckoutCatalog, and ' +
-    'wave-1 discovery signals, derive: summary (how Depository supply may fit this Need), ' +
-    'needFitTopics, candidateFitNotes, gapTopics (Need facets under-served by supply), ' +
+  'From the Evaluation (or expressedRead), repository coordinates, sourceCheckoutCatalog, and ' +
+    'wave-1 discovery signals, derive: summary (how Depository supply may fit this Evaluation), ' +
+    'evaluationFitTopics, candidateFitNotes, gapTopics (Evaluation facets under-served by supply), ' +
     'readabilityNotes, and searchQueries (3-12 short query terms/phrases for vector/lexical ' +
-    'Depository search targeting Need-fits). Return ONLY {"guidance": {...}, "searchQueries": [...]} ' +
+    'Depository search targeting Evaluation-fits). Return ONLY {"guidance": {...}, "searchQueries": [...]} ' +
     'or {"guidance": {..., "searchQueries": [...]}}.',
 );
 
 const PLAN = part(
-  'Plan: use wave-1 codebase comprehension and inherent regurgitation plus the accepted Need ' +
+  'Plan: use wave-1 codebase comprehension and inherent regurgitation plus the accepted Evaluation ' +
     'and sourceCheckoutCatalog to synthesize Depository search queries that retrieve AssetPacks ' +
-    'that **fit the Need** (fits-finding).',
+    'that **fit the Evaluation** (fits-finding).',
 );
 const TRY = part(
-  'Try: produce Need-fit guidance and the searchQueries list the Depository search tool will run.',
+  'Try: produce Evaluation-fit guidance and the searchQueries list the Depository search tool will run.',
 );
 const REFINE = part(
-  'Refine: ensure queries and guidance are Need-grounded, comprehension-grounded, and source-safe.',
+  'Refine: ensure queries and guidance are Evaluation-grounded, comprehension-grounded, and source-safe.',
 );
 const RETRY = part(
-  'Retry: return minimal Need-fit guidance and broad Need-derived searchQueries rather than failing.',
+  'Retry: return minimal Evaluation-fit guidance and broad Evaluation-derived searchQueries rather than failing.',
 );
 
 function createPrompt(): Prompt {
@@ -99,13 +99,13 @@ function createPrompt(): Prompt {
 
 const prompt = createPrompt();
 
-export const ReadDepositorySearchForNeedFitsAgent = factoryPTRRAgent<
+export const ReadDepositorySearchForEvaluationFitsAgent = factoryPTRRAgent<
   z.infer<typeof DepositorySearchInputSchema>,
   z.infer<typeof DepositorySearchOutputSchema>
 >({
-  name: 'ReadDepositorySearchForNeedFitsAgent',
+  name: 'ReadDepositorySearchForEvaluationFitsAgent',
   description:
-    'Discovery wave-2: search Depository for Need-fitting AssetPacks; query plan after codebase comprehension.',
+    'Discovery wave-2: search Depository for Evaluation-fitting AssetPacks; query plan after codebase comprehension.',
   outputSchema: DepositorySearchOutputSchema,
   tools: ['depository-asset-pack-search'],
   prompt,
@@ -127,28 +127,28 @@ function findValue(execution: any, namespace: string, key: string): any {
   return execution?.findUp?.(namespace, key);
 }
 
-function resolveNeed(execution: any, input: any): unknown {
+function resolveEvaluation(execution: any, input: any): unknown {
   return (
-    input?.need ??
-    input?.readNeed ??
-    findValue(execution, 'setup', 'need') ??
-    findValue(execution, 'setup', 'readNeed') ??
-    findValue(execution, 'pipeline', 'need') ??
+    input?.evaluation ??
+    input?.readEvaluation ??
+    findValue(execution, 'setup', 'evaluation') ??
+    findValue(execution, 'setup', 'readEvaluation') ??
+    findValue(execution, 'pipeline', 'evaluation') ??
     findValue(execution, 'pipeline', 'expressedRead') ??
     input?.expressedRead ??
     null
   );
 }
 
-function needToText(need: unknown): string {
-  if (typeof need === 'string') return need;
-  if (need && typeof need === 'object') {
+function evaluationToText(evaluation: unknown): string {
+  if (typeof evaluation === 'string') return evaluation;
+  if (evaluation && typeof evaluation === 'object') {
     return [
-      (need as any).summary,
-      (need as any).title,
-      (need as any).text,
-      (need as any).expressedRead,
-      (need as any).need,
+      (evaluation as any).summary,
+      (evaluation as any).title,
+      (evaluation as any).text,
+      (evaluation as any).expressedRead,
+      (evaluation as any).evaluation,
     ]
       .filter(Boolean)
       .join(' ');
@@ -156,15 +156,15 @@ function needToText(need: unknown): string {
   return '';
 }
 
-/** Need-first query plan — full phrase + tokens; paths secondary. */
-function defaultQueriesFromNeed(input: {
+/** Evaluation-first query plan — full phrase + tokens; paths secondary. */
+function defaultQueriesFromEvaluation(input: {
   catalog?: any;
-  need?: unknown;
+  evaluation?: unknown;
   expressedRead?: string | null;
   repository?: any;
 }): string[] {
   return buildDepositorySearchQueryPlan({
-    needText: needToText(input.need),
+    evaluationText: evaluationToText(input.evaluation),
     expressedRead: input.expressedRead,
     repositoryFullName:
       input.repository?.fullName ||
@@ -172,23 +172,23 @@ function defaultQueriesFromNeed(input: {
       input.repository?.name ||
       null,
     paths: Array.isArray(input.catalog?.paths) ? input.catalog.paths : [],
-    product: 'read-need-fits',
+    product: 'read-evaluation-fits',
     maxTerms: 12,
   });
 }
 
-export default async function runReadDepositorySearchForNeedFitsAgent(input: any, execution: any) {
+export default async function runReadDepositorySearchForEvaluationFitsAgent(input: any, execution: any) {
   const repository =
     input?.repository ??
     findValue(execution, 'pipeline', 'repository') ??
     findValue(execution, 'deposit', 'repository') ??
     {};
   const catalog = resolveSourceCheckoutCatalog(execution, input?.sourceCheckoutCatalog);
-  const need = resolveNeed(execution, input);
+  const evaluation = resolveEvaluation(execution, input);
   const expressedRead =
     (typeof input?.expressedRead === 'string' && input.expressedRead) ||
     findValue(execution, 'pipeline', 'expressedRead') ||
-    (typeof need === 'string' ? need : null);
+    (typeof evaluation === 'string' ? evaluation : null);
   const settledAssets =
     input?.depositoryAssets ??
     findValue(execution, 'depository', 'settledAssets') ??
@@ -205,23 +205,23 @@ export default async function runReadDepositorySearchForNeedFitsAgent(input: any
     );
   } catch {}
 
-  const raw = await ReadDepositorySearchForNeedFitsAgent(
+  const raw = await ReadDepositorySearchForEvaluationFitsAgent(
     {
       ...input,
       repository,
       sourceCheckoutCatalog: catalogForPrompt,
       inventoryPaths: catalogForPrompt?.paths ?? catalog?.paths,
-      need,
+      evaluation,
       expressedRead,
     },
     execution,
   );
   const result = (raw as any)?.finalOutput ?? (raw as any)?.output ?? raw;
 
-  let guidance: ReadNeedFitGuidance = (result as any)?.guidance ?? {
+  let guidance: ReadEvaluationFitGuidance = (result as any)?.guidance ?? {
     summary:
-      'No Need-fit guidance derived; frame synthesized packs from the accepted Need and checkout until Depository hits exist.',
-    needFitTopics: [],
+      'No Evaluation-fit guidance derived; frame synthesized packs from the accepted Evaluation and checkout until Depository hits exist.',
+    evaluationFitTopics: [],
     candidateFitNotes: [],
     gapTopics: [],
     readabilityNotes: [],
@@ -230,9 +230,9 @@ export default async function runReadDepositorySearchForNeedFitsAgent(input: any
   const modelQueries = asTerms(
     (result as any)?.searchQueries ?? (guidance as any)?.searchQueries,
   );
-  const fallbackQueries = defaultQueriesFromNeed({
+  const fallbackQueries = defaultQueriesFromEvaluation({
     catalog: catalogForPrompt || catalog,
-    need,
+    evaluation,
     expressedRead,
     repository,
   });
@@ -255,7 +255,7 @@ export default async function runReadDepositorySearchForNeedFitsAgent(input: any
     const assets = prepareDepositoryAssetsForSearch(
       Array.isArray(settledAssets) ? settledAssets : [],
     );
-    // Need-fit: do not hard-filter the corpus by absolute kinds (Need may not
+    // Evaluation-fit: do not hard-filter the corpus by absolute kinds (Evaluation may not
     // name them). Still normalize facets onto assets and enrich query terms so
     // hybrid re-rank + lexical can exploit measured material.
     const absHints = absoluteKindQueryHints(assets, 4);
@@ -266,9 +266,9 @@ export default async function runReadDepositorySearchForNeedFitsAgent(input: any
       queryTerms: mergedQueries,
       // Multi-query fan-out: each planned query retrieves independently, then union.
       queries: mergedQueries,
-      needText: needToText(need),
+      evaluationText: evaluationToText(evaluation),
       expressedRead: typeof expressedRead === 'string' ? expressedRead : null,
-      product: 'read-need-fits',
+      product: 'read-evaluation-fits',
       paths: catalogForPrompt?.paths ?? catalog?.paths ?? [],
       assets,
       maxResults: 16,
@@ -290,7 +290,7 @@ export default async function runReadDepositorySearchForNeedFitsAgent(input: any
       queries: toolResult?.queries,
       vectorStore: toolResult?.vectorStore,
       embeddingPolicy: toolResult?.embeddingPolicy,
-      product: 'read-need-fits',
+      product: 'read-evaluation-fits',
       telemetry: toolResult?.telemetry || null,
     });
     try {
@@ -319,10 +319,10 @@ export default async function runReadDepositorySearchForNeedFitsAgent(input: any
     } else {
       guidance = { ...guidance, searchQueries };
     }
-    if (toolResult?.hits?.length && !guidance.needFitTopics?.length) {
+    if (toolResult?.hits?.length && !guidance.evaluationFitTopics?.length) {
       guidance = {
         ...guidance,
-        needFitTopics: toolResult.hits
+        evaluationFitTopics: toolResult.hits
           .map((h: any) => h.title)
           .filter(Boolean)
           .slice(0, 8),
@@ -335,7 +335,7 @@ export default async function runReadDepositorySearchForNeedFitsAgent(input: any
   // Shared discovery keys so Validation / Implementation dual-read the same store.
   storeCrossPhaseArtifact(execution, 'discovery', 'depositorySearch', guidance);
   storeCrossPhaseArtifact(execution, 'discovery', 'depositorySearchQueries', searchQueries);
-  storeCrossPhaseArtifact(execution, 'discovery', 'depositorySearchProduct', 'read-need-fits');
+  storeCrossPhaseArtifact(execution, 'discovery', 'depositorySearchProduct', 'read-evaluation-fits');
 
   return { ...(input || {}), success: true, guidance, searchQueries, toolResult };
 }

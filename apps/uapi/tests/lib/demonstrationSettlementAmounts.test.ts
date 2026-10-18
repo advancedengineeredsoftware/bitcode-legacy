@@ -2,7 +2,7 @@
  * @jest-environment node
  *
  * Demonstration settlement amounts: every catalog read DataPack — even at the
- * strongest possible need-fit — settles for less than 0.000009 Sepolia ETH, so
+ * strongest possible evaluation-fit — settles for less than 0.000009 Sepolia ETH, so
  * demos spend tiny testnet amounts. Live mode keeps the standard mock board.
  */
 
@@ -11,8 +11,8 @@ import { quoteReadSettlementSelection, resolveSettlementSpotBoard } from '@/lib/
 
 const MAX_DEMO_WEI = 9_000_000_000_000n; // 0.000009 ETH
 
-/** A Need that strongly matches every pack's core signals at once. */
-const EVERYTHING_NEED =
+/** An Evaluation that strongly matches every pack's core signals at once. */
+const EVERYTHING_EVALUATION =
   'retry backoff timeout flaky webhook hmac signature duplicate replay audit tamper integrity ' +
   'text-to-sql generation eval evaluation benchmark accuracy migration ddl lock downtime schema ' +
   'rate limit throttle quota token bucket';
@@ -27,7 +27,7 @@ describe('demonstration settlement amounts', () => {
   it('prices every catalog read pack under 0.000009 ETH', () => {
     for (const language of ['TypeScript', 'Python']) {
       const options = buildDemonstrationReadImplementationOptions({
-        need: EVERYTHING_NEED,
+        evaluation: EVERYTHING_EVALUATION,
         catalogPaths: [],
         repositoryLanguage: language,
         optionCount: 6,

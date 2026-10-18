@@ -11,4 +11,4 @@
 import { PromptPart } from '../../parts/PromptPart';
 
 export const PROMPTPART_SPECIFIC_AGENT_ASSETPACKSYNTHESIZEARTIFACTS_PTRRRETRY_PURPOSE: PromptPart =
-  'PTRR Retry Step: recover incomplete synthesis by rebuilding from accepted Need evidence, query/ranking/provenance roots, fit deposit ids, and validation blockers; if search evidence is insufficient, return blocked readiness rather than fabricating an AssetPack.' as PromptPart;
+  'PTRR Retry Step: recover incomplete synthesis by rebuilding from accepted Evaluation evidence, query/ranking/provenance roots, fit deposit ids, and validation blockers; if search evidence is insufficient, return blocked readiness rather than fabricating an AssetPack.' as PromptPart;

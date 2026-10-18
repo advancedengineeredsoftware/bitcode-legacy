@@ -121,7 +121,7 @@ const manifest = {
     impermissibleSources: ['**/.env*', '**/secrets/**', '**/*credential*'],
     demandContext: ['library-api', 'type-safety'],
   },
-  requireAcceptedReadNeed: false,
+  requireAcceptedReadEvaluation: false,
 };
 
 const manifestPath = join(hostDir, 'manifest.json');

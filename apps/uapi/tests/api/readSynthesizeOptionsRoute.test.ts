@@ -2,7 +2,7 @@
  * @jest-environment node
  *
  * MVP-E2E L1-R1: POST /api/read/synthesize-options fail-closed contracts
- * (session, real inference, repository, Need). Full pipeline dispatch is
+ * (session, real inference, repository, Evaluation). Full pipeline dispatch is
  * covered by deposit twin + L2 spine; this suite locks the thin route gate.
  */
 
@@ -72,7 +72,7 @@ describe('POST /api/read/synthesize-options (MVP-E2E L1-R1)', () => {
     const response = await POST(
       requestFor({
         repositoryFullName: 'acme/demo',
-        need: 'Add retries to payment webhooks',
+        evaluation: 'Add retries to payment webhooks',
       }),
     );
     expect(response.status).toBe(401);
@@ -87,7 +87,7 @@ describe('POST /api/read/synthesize-options (MVP-E2E L1-R1)', () => {
     const response = await POST(
       requestFor({
         repositoryFullName: 'acme/demo',
-        need: 'Add retries to payment webhooks',
+        evaluation: 'Add retries to payment webhooks',
       }),
     );
     expect(response.status).toBe(422);
@@ -101,7 +101,7 @@ describe('POST /api/read/synthesize-options (MVP-E2E L1-R1)', () => {
     const response = await POST(
       requestFor({
         repositoryFullName: 'not-a-repo',
-        need: 'Add retries',
+        evaluation: 'Add retries',
       }),
     );
     expect(response.status).toBe(400);
@@ -115,12 +115,12 @@ describe('POST /api/read/synthesize-options (MVP-E2E L1-R1)', () => {
     const response = await POST(
       requestFor({
         repositoryFullName: 'acme/demo',
-        need: '   ',
+        evaluation: '   ',
       }),
     );
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual(
-      expect.objectContaining({ code: 'need_required' }),
+      expect.objectContaining({ code: 'evaluation_required' }),
     );
   });
 
@@ -132,7 +132,7 @@ describe('POST /api/read/synthesize-options (MVP-E2E L1-R1)', () => {
     const response = await POST(
       requestFor({
         repositoryFullName: 'acme/payments',
-        instructions: 'Honor Need: session refresh for OAuth clients',
+        instructions: 'Honor Evaluation: session refresh for OAuth clients',
         relevantPaths: ['src/auth/'],
         irrelevantPaths: ['vendor/'],
       }),
@@ -155,9 +155,9 @@ describe('POST /api/read/synthesize-options (MVP-E2E L1-R1)', () => {
         irrelevantPathCount: 1,
       }),
     );
-    // Never persist full Need body in input metadata (length only).
-    expect(row.input.need).toBeUndefined();
-    expect(row.input.needLength).toBeGreaterThan(0);
+    // Never persist full Evaluation body in input metadata (length only).
+    expect(row.input.evaluation).toBeUndefined();
+    expect(row.input.evaluationLength).toBeGreaterThan(0);
     expect(response.status).toBeGreaterThanOrEqual(200);
   });
 });

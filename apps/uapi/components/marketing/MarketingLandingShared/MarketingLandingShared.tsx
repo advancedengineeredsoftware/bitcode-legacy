@@ -84,7 +84,7 @@ export const productPillars = [
 ] as const;
 
 /**
- * Marketing depot measurements: per-metric Absolutes + Needinesses (small bars),
+ * Marketing depot measurements: per-metric Absolutes + Relatives (small bars),
  * then Packs' BTD Volume as the standout summary axis (display value ≠ 0–100 bar).
  */
 /** Marketing upper-depot demo only — short set so hero | panel heights match production. */
@@ -99,11 +99,11 @@ export const measurementAbsoluteItems = [
   { label: 'computational usage', value: 78 },
 ] as const;
 
-export const measurementNeedinessItems = [
+export const measurementRelativeItems = [
   { label: 'language fit', value: 94, detail: 'static' },
   { label: 'domain fit', value: 88, detail: 'static' },
   { label: 'interface fit', value: 82, detail: 'static' },
-  // Dynamic Need-inferred fits (several rows signal many are synthesized & measured).
+  // Dynamic Evaluation-inferred fits (several rows signal many are synthesized & measured).
   { label: 'need 1 fit', value: 79, detail: 'dynamic' },
   { label: 'need 2 fit', value: 74, detail: 'dynamic' },
   { label: 'need 3 fit', value: 71, detail: 'dynamic' },
@@ -116,7 +116,7 @@ export const measurementFinalFit = {
   value: 431,
   /** Marketing bar fill only — volume is not a percentage axis. */
   barPercent: 86,
-  detail: 'BTD volume — weighted scalar over needinesses-fits for the settled DataPack',
+  detail: 'BTD volume — weighted scalar over relatives-fits for the settled DataPack',
 } as const;
 
 export const measureCardAxes = [
@@ -166,10 +166,10 @@ export const previewRows = [
   },
   {
     key: "Buyer's View",
-    valueParts: ['measurements', 'needs-fittings', 'knowledge volume'],
+    valueParts: ['measurements', 'evaluation-fittings', 'knowledge volume'],
     bulletTone: 'orange' as PreviewValueTone,
     valueTones: {
-      'needs-fittings': 'orange',
+      'evaluation-fittings': 'orange',
     } satisfies Partial<Record<string, PreviewValueTone>>,
     accentClassName: 'from-orange-400/18 via-amber-300/8 to-transparent',
     Icon: Squares2X2Icon,

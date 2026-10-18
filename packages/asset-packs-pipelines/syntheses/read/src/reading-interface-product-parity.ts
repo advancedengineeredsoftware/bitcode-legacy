@@ -1,7 +1,7 @@
 /**
  * Reading interface product parity — source-safe contracts that bind product
  * workspace, Conversation, API, MCP, ChatGPT App, and package consumers to one
- * Reading authority spine (accepted Need → fits → preview → settlement → rights).
+ * Reading authority spine (accepted Evaluation → fits → preview → settlement → rights).
  *
  * Product vocabulary only: no legacy product surface aliases or handoff ids.
  */
@@ -21,7 +21,7 @@ import type { AssetPackPreviewBoundary } from '@bitcode/asset-packs-pipelines-sy
 import type { AssetPackSettlementRightsDeliveryBoundary } from '@bitcode/asset-packs-pipelines-domain/asset-pack-settlement-rights-delivery';
 import type { ReadingOperationalTelemetryRepairReadback } from './reading-operational-telemetry-repair-readback';
 import type { ReadFitsFindingRuntime } from './read-fits-finding-runtime';
-import type { ReadNeedReviewResynthesisRuntime } from './read-need-review-resynthesis';
+import type { ReadEvaluationReviewResynthesisRuntime } from './read-evaluation-review-resynthesis';
 
 export const READING_INTERFACE_PRODUCT_PARITY_SURFACES = [
   'product',
@@ -36,7 +36,7 @@ export type ReadingInterfaceProductParitySurface =
   (typeof READING_INTERFACE_PRODUCT_PARITY_SURFACES)[number];
 
 export const READING_INTERFACE_PRODUCT_PARITY_STAGE_IDS = [
-  'accepted-need-gate',
+  'accepted-evaluation-gate',
   'finding-fits-request',
   'source-safe-preview',
   'settlement-unlock',
@@ -66,8 +66,8 @@ export interface ReadingInterfaceProductParitySourceSafety {
 }
 
 export interface ReadingInterfaceProductStageContract {
-  acceptedNeedRequired: true;
-  findingFitsRequiresAcceptedNeed: true;
+  acceptedEvaluationRequired: true;
+  findingFitsRequiresAcceptedEvaluation: true;
   sourceSafePreviewOnlyBeforeSettlement: true;
   settlementUnlockRequiredForSource: true;
   btdRightsRequiredForDelivery: true;
@@ -77,8 +77,8 @@ export interface ReadingInterfaceProductStageContract {
 }
 
 export interface ReadingInterfaceProductNoBypassReadback {
-  acceptedNeedGate: 'denied_without_accepted_need';
-  findingFitsRequest: 'denied_without_accepted_need';
+  acceptedEvaluationGate: 'denied_without_accepted_evaluation';
+  findingFitsRequest: 'denied_without_accepted_evaluation';
   sourceSafePreview: 'source_safe_metadata_only_before_settlement';
   settlementUnlock: 'required_before_source_delivery';
   btdRightsDelivery: 'required_before_source_delivery';
@@ -106,7 +106,7 @@ export interface ReadingInterfaceProductParityRow {
     assetPackRightsContractRoot: string | null;
     telemetryHookRoot: string | null;
     consumerUxRowRoot: string | null;
-    readNeedRuntimeRoot: string | null;
+    readEvaluationRuntimeRoot: string | null;
     readFitsRuntimeRoot: string | null;
     previewBoundaryRoot: string | null;
     settlementBoundaryRoot: string | null;
@@ -157,7 +157,7 @@ export interface ReadingInterfaceProductParity {
     readLicenseAssetPackRightsRegistryRoot: string;
     telemetryHookRegistryRoot: string;
     consumerUxProofRoot: string;
-    readNeedRuntimeRoot: string | null;
+    readEvaluationRuntimeRoot: string | null;
     readFitsRuntimeRoot: string | null;
     previewBoundaryRoot: string | null;
     settlementBoundaryRoot: string | null;
@@ -170,7 +170,7 @@ export interface ReadingInterfaceProductParity {
 }
 
 export interface ReadingInterfaceProductParityInput {
-  readNeedRuntime?: ReadNeedReviewResynthesisRuntime | null;
+  readEvaluationRuntime?: ReadEvaluationReviewResynthesisRuntime | null;
   readFitsRuntime?: ReadFitsFindingRuntime | null;
   previewBoundary?: AssetPackPreviewBoundary | null;
   settlementBoundary?: AssetPackSettlementRightsDeliveryBoundary | null;
@@ -192,8 +192,8 @@ const SOURCE_SAFETY: ReadingInterfaceProductParitySourceSafety = {
 };
 
 const STAGE_CONTRACT: ReadingInterfaceProductStageContract = {
-  acceptedNeedRequired: true,
-  findingFitsRequiresAcceptedNeed: true,
+  acceptedEvaluationRequired: true,
+  findingFitsRequiresAcceptedEvaluation: true,
   sourceSafePreviewOnlyBeforeSettlement: true,
   settlementUnlockRequiredForSource: true,
   btdRightsRequiredForDelivery: true,
@@ -203,8 +203,8 @@ const STAGE_CONTRACT: ReadingInterfaceProductStageContract = {
 };
 
 const NO_BYPASS_READBACK: ReadingInterfaceProductNoBypassReadback = {
-  acceptedNeedGate: 'denied_without_accepted_need',
-  findingFitsRequest: 'denied_without_accepted_need',
+  acceptedEvaluationGate: 'denied_without_accepted_evaluation',
+  findingFitsRequest: 'denied_without_accepted_evaluation',
   sourceSafePreview: 'source_safe_metadata_only_before_settlement',
   settlementUnlock: 'required_before_source_delivery',
   btdRightsDelivery: 'required_before_source_delivery',
@@ -212,7 +212,7 @@ const NO_BYPASS_READBACK: ReadingInterfaceProductNoBypassReadback = {
 };
 
 const VISIBLE_BEFORE_SETTLEMENT = [
-  'accepted Need status',
+  'accepted Evaluation status',
   'Finding Fits admission state',
   'source-safe AssetPack measurements',
   'fit reasons',
@@ -376,7 +376,7 @@ export function buildReadingInterfaceProductParity(
   const telemetryRegistry = buildBtdInterfaceTelemetryProofHookRegistry();
   const consumerUxProof = buildBtdInterfaceConsumerUxRegressionProof();
 
-  const readNeedRuntimeRoot = input.readNeedRuntime?.proofRoots.runtimeRoot ?? null;
+  const readEvaluationRuntimeRoot = input.readEvaluationRuntime?.proofRoots.runtimeRoot ?? null;
   const readFitsRuntimeRoot = input.readFitsRuntime?.proofRoots.runtimeRoot ?? null;
   const previewBoundaryRoot = input.previewBoundary?.proofRoots.boundaryRoot ?? null;
   const settlementBoundaryRoot = input.settlementBoundary?.proofRoots.boundaryRoot ?? null;
@@ -407,7 +407,7 @@ export function buildReadingInterfaceProductParity(
       assetPackRightsContractRoot,
       telemetryHookRoot: telemetryHook?.hookRoot ?? null,
       consumerUxRowRoot: consumerUxRow?.rowRoot ?? null,
-      readNeedRuntimeRoot,
+      readEvaluationRuntimeRoot,
       readFitsRuntimeRoot,
       previewBoundaryRoot,
       settlementBoundaryRoot,
@@ -497,7 +497,7 @@ export function buildReadingInterfaceProductParity(
       readLicenseAssetPackRightsRegistryRoot: rightsRegistry.registryRoot,
       telemetryHookRegistryRoot: telemetryRegistry.registryRoot,
       consumerUxProofRoot: consumerUxProof.proofRoot,
-      readNeedRuntimeRoot,
+      readEvaluationRuntimeRoot,
       readFitsRuntimeRoot,
       previewBoundaryRoot,
       settlementBoundaryRoot,

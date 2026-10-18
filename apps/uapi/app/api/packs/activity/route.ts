@@ -34,7 +34,7 @@ export const runtime = 'nodejs';
 const PACK_ACTIVITY_TYPES = new Set<PackActivityType>([
   'deposit-option',
   'depository-assetpack',
-  'read-need-fit-preview',
+  'read-evaluation-fit-preview',
   'settled-assetpack',
   'settlement',
   'compensation',

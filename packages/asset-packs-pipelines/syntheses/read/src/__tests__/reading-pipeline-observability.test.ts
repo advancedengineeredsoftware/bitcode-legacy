@@ -1,6 +1,6 @@
 import {
   READ_FITS_FINDING_SYNTHESIS,
-  READ_NEED_COMPREHENSION_SYNTHESIS,
+  READ_EVALUATION_COMPREHENSION_SYNTHESIS,
 } from '../reading-pipeline-contract';
 import {
   buildReadingPipelineObservabilityInventory,
@@ -13,7 +13,7 @@ describe('Reading pipeline observability projection', () => {
     const inventory = buildReadingPipelineObservabilityInventory();
 
     expect(inventory.pipelineNames).toEqual([
-      READ_NEED_COMPREHENSION_SYNTHESIS,
+      READ_EVALUATION_COMPREHENSION_SYNTHESIS,
       READ_FITS_FINDING_SYNTHESIS,
     ]);
     expect(inventory.telemetryLevels).toEqual([
@@ -118,7 +118,7 @@ describe('Reading pipeline observability projection', () => {
   it('summarizes coverage from projected live stream events', () => {
     const coverage = summarizeReadingPipelineObservabilityCoverage([
       {
-        pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
+        pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
       },
       {
         pipelineName: READ_FITS_FINDING_SYNTHESIS,
@@ -158,8 +158,8 @@ describe('Reading pipeline observability projection', () => {
     ]);
 
     expect(coverage.pipelineNames).toEqual([
+      READ_EVALUATION_COMPREHENSION_SYNTHESIS,
       READ_FITS_FINDING_SYNTHESIS,
-      READ_NEED_COMPREHENSION_SYNTHESIS,
     ]);
     expect(coverage.missingRequiredLevels).toEqual([]);
     expect(coverage.promptTelemetryReady).toBe(true);

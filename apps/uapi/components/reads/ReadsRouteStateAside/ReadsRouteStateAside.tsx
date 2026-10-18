@@ -42,7 +42,7 @@ export function ReadsRouteStateAside({
       >
         <div className="mt-3">
           <ProductRouteDisclosure title="Disclosure boundary" tone="orange">
-            Visible: Need measurements, fit ids, proof roots, fee quotes,
+            Visible: Evaluation measurements, fit ids, proof roots, fee quotes,
             settlement readback, delivery posture. Withheld until paid rights:
             source-bearing AssetPack contents.
           </ProductRouteDisclosure>

@@ -2,7 +2,7 @@
  * Unpaid commercial disclosure law (V48 Gate 5 source-safety).
  *
  * Unsettled READ options may present only title + summary + measurements
- * (absolutes / needinesses / needFit / confidence) plus optional coverage %
+ * (absolutes / relatives / evaluationFit / confidence) plus optional coverage %
  * of the request-SHA source catalog. Forbidden in browser-facing carriers:
  * covered path names, path-ops, patch bodies/diffs/summaries, downloads,
  * host source. Path-like tokens in measure labels/rationale are stripped.
@@ -111,11 +111,11 @@ export function toUnpaidReadOptionPresentation(
         ? o.absolutes
         : [],
   );
-  const needinesses = scrubReadings(
-    Array.isArray(measurementsIn.needinesses)
-      ? measurementsIn.needinesses
-      : Array.isArray(o.needinesses)
-        ? o.needinesses
+  const relatives = scrubReadings(
+    Array.isArray(measurementsIn.relatives)
+      ? measurementsIn.relatives
+      : Array.isArray(o.relatives)
+        ? o.relatives
         : [],
   );
 
@@ -138,8 +138,8 @@ export function toUnpaidReadOptionPresentation(
     title: typeof o.title === 'string' ? scrubPathTokens(o.title) : null,
     summary: typeof o.summary === 'string' ? scrubPathTokens(o.summary) : null,
     confidence: typeof o.confidence === 'number' ? o.confidence : null,
-    measurements: { absolutes, needinesses },
-    needFit: typeof o.needFit === 'number' ? o.needFit : null,
+    measurements: { absolutes, relatives },
+    evaluationFit: typeof o.evaluationFit === 'number' ? o.evaluationFit : null,
     selectable: o.selectable !== false,
     settleable: o.settleable !== false,
     disclosure: {
@@ -191,7 +191,7 @@ export function unpaidOptionContainsForbiddenFields(value: unknown, depth = 0): 
  */
 export function buildUnpaidReadSelectionEnvelope(input: {
   options: unknown[];
-  need?: string | null;
+  evaluation?: string | null;
   repositoryFullName?: string | null;
   readyToPresent?: boolean;
   validationSummary?: string | null;
@@ -211,7 +211,7 @@ export function buildUnpaidReadSelectionEnvelope(input: {
     surface: '/reads',
     purpose: 'user-select-options-to-settle',
     nextPipeline: 'settle-asset-pack-pipeline',
-    need: input.need ?? null,
+    evaluation: input.evaluation ?? null,
     repositoryFullName: input.repositoryFullName ?? null,
     catalogSourcePathCount:
       typeof input.catalogSourcePathCount === 'number' ? input.catalogSourcePathCount : null,

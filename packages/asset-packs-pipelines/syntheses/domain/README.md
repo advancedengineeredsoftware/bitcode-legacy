@@ -15,7 +15,7 @@ depository search/supply, reading pipeline contracts, synthesis helpers.
 | --- | --- |
 | `./depository-search` | Rank/select fit evidence over in-memory assets |
 | `./tools/deposit-depository-asset-pack-search` | Multi-query hybrid tool (lexical + static filters + optional vector) |
-| `./tools/depository-search-query-plan` | Need/demand → query terms |
+| `./tools/depository-search-query-plan` | Evaluation/demand → query terms |
 | `./embedding-config` | gte-small 384 embed policy (Edge); product RPC `match_depository_asset_pack_vectors` (**pgvector**, not OpenAI Embeddings; not Storage Vector Buckets MVP) |
 | `./depository-absolute-fixtures` | Sparse absolute fixture extract + corpus text for index/embed |
 | `./depository-supply-index*` | Source-safe supply records + search document builders |
@@ -25,5 +25,5 @@ execution stores before Discovery. **Index:** uapi `POST /api/depository/index`
 on admit (documents + pgvector vectors). **Embed:** Edge Function `embed`
 (gte-small 384) — store is always Supabase pgvector, never OpenAI vector DB.
 
-Product lenses only: `deposit-relevants` | `read-need-fits`.
+Product lenses only: `deposit-relevants` | `read-evaluation-fits`.
 Search quality: tool returns `telemetry` stored as `discovery:depositorySearchTelemetry`.

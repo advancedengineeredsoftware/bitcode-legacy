@@ -6,7 +6,7 @@
  */
 
 export * from './types';
-export * from './settlement-btd-from-needinesses';
+export * from './settlement-btd-from-relatives';
 export * from './decay';
 export * from './spot-quote';
 export * from './payout-split';

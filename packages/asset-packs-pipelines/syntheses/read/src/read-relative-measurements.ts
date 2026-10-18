@@ -1,44 +1,44 @@
 /**
- * Read needinesses measurement law helpers.
+ * Read relatives measurement law helpers.
  *
- * All neediness measurement kinds are "fits" and MUST be suffixed `-fit`
- * (e.g. language-fit, domain-fit, needs-session-refresh-fit).
+ * All relative measurement kinds are "fits" and MUST be suffixed `-fit`
+ * (e.g. language-fit, domain-fit, session-refresh-fit).
  *
  * Hybrid:
  *   - Static catalogue (language-fit, domain-fit, interface-fit)
- *   - Dynamic plan from Need + codebase (kinds, labels, guidance, weights)
- *   - need-fit composite = weighted mean of all needinesses (not a raw row target)
+ *   - Dynamic plan from Evaluation + codebase (kinds, labels, guidance, weights)
+ *   - evaluation-fit composite = weighted mean of all relatives (not a raw row target)
  *
  * Weight law: static catalog weights + dynamic weights are re-normalized so the
- * full set sums to 1 before need-fit.
+ * full set sums to 1 before evaluation-fit.
  *
  * When BITCODE_ASSET_PACK_REAL_INFERENCE is on, volumes may come from
- * NeedinessesMeasureAgent; otherwise deterministic proxies (still real numbers).
+ * RelativesMeasureAgent; otherwise deterministic proxies (still real numbers).
  */
 
 import {
-  ASSET_PACK_NEEDINESSES_CATALOG,
-  computeNeedFitVolume,
-  NEED_FIT_COMPOSITE_KIND,
-  factoryNeedinessesMeasureAgent,
-  type AssetPackNeedinessSpec,
-} from '@bitcode/generic-measurements-needinesses';
+  ASSET_PACK_RELATIVES_CATALOG,
+  computeEvaluationFitVolume,
+  EVALUATION_FIT_COMPOSITE_KIND,
+  factoryRelativesMeasureAgent,
+  type AssetPackRelativeSpec,
+} from '@bitcode/generic-measurements-relatives';
 import type { MeasurementSpec } from '@bitcode/measurement-generics';
 import { isAssetPackRealInferenceEnabled } from '@bitcode/asset-packs-pipelines-syntheses-domain/runtime-inference-policy';
 
-export { ASSET_PACK_NEEDINESSES_CATALOG, computeNeedFitVolume, NEED_FIT_COMPOSITE_KIND };
+export { ASSET_PACK_RELATIVES_CATALOG, computeEvaluationFitVolume, EVALUATION_FIT_COMPOSITE_KIND };
 
 const FIT_SUFFIX = '-fit';
 
 /** Force a kind string into *-fit form (lowercase slug). */
-export function slugifyNeedinessKind(raw: string): string {
+export function slugifyRelativeKind(raw: string): string {
   const base = String(raw || '')
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 48);
-  if (!base) return 'needs-unspecified-fit';
+  if (!base) return 'unspecified-fit';
   if (base.endsWith(FIT_SUFFIX)) return base;
   if (base.endsWith('fit')) {
     return base.endsWith(FIT_SUFFIX)
@@ -48,17 +48,17 @@ export function slugifyNeedinessKind(raw: string): string {
   return `${base}${FIT_SUFFIX}`;
 }
 
-export function assertNeedinessKindSuffix(kind: string): boolean {
+export function assertRelativeKindSuffix(kind: string): boolean {
   return typeof kind === 'string' && kind.endsWith(FIT_SUFFIX) && kind.length > FIT_SUFFIX.length;
 }
 
 /** Human label from a *-fit kind (title case words). */
-export function humanizeNeedinessLabel(kind: string): string {
+export function humanizeRelativeLabel(kind: string): string {
   const stem = String(kind || '')
     .replace(/-fit$/i, '')
     .replace(/[-_]+/g, ' ')
     .trim();
-  if (!stem) return 'Need fit';
+  if (!stem) return 'Evaluation fit';
   return stem
     .split(/\s+/)
     .map((w) => (w.length ? w[0]!.toUpperCase() + w.slice(1) : w))
@@ -66,10 +66,10 @@ export function humanizeNeedinessLabel(kind: string): string {
 }
 
 /**
- * Dynamic neediness plan row — produced from Need + codebase comprehension.
+ * Dynamic relative plan row — produced from Evaluation + codebase comprehension.
  * Labels/guidance are first-class (not slug-derived only).
  */
-export type DynamicNeedinessPlanRow = {
+export type DynamicRelativePlanRow = {
   measurementKind: string;
   label: string;
   guidance: string;
@@ -77,14 +77,14 @@ export type DynamicNeedinessPlanRow = {
   weight: number;
 };
 
-export type NeedinessReading = {
+export type RelativeReading = {
   measurementKind: string;
   label: string;
   weight: number;
   volume: number;
   magnitude: number;
   unit: string;
-  category: 'neediness';
+  category: 'relative';
   propertyClass?: 'static-catalog' | 'dynamic-inferred';
   rationale?: string;
 };
@@ -101,29 +101,29 @@ function hash(s: string): number {
 }
 
 /**
- * Normalize dynamic plan rows or bare kind strings into DynamicNeedinessPlanRow[].
+ * Normalize dynamic plan rows or bare kind strings into DynamicRelativePlanRow[].
  */
-export function normalizeDynamicNeedinessPlan(
+export function normalizeDynamicRelativePlan(
   raw:
-    | Array<string | DynamicNeedinessPlanRow | Record<string, unknown>>
+    | Array<string | DynamicRelativePlanRow | Record<string, unknown>>
     | string[]
     | null
     | undefined,
-  needSummary?: string | null,
-): DynamicNeedinessPlanRow[] {
+  evaluationSummary?: string | null,
+): DynamicRelativePlanRow[] {
   if (!Array.isArray(raw) || raw.length === 0) return [];
-  const out: DynamicNeedinessPlanRow[] = [];
+  const out: DynamicRelativePlanRow[] = [];
   const seen = new Set<string>();
   for (const entry of raw) {
     if (typeof entry === 'string') {
-      const kind = slugifyNeedinessKind(entry);
-      if (!assertNeedinessKindSuffix(kind) || seen.has(kind)) continue;
+      const kind = slugifyRelativeKind(entry);
+      if (!assertRelativeKindSuffix(kind) || seen.has(kind)) continue;
       seen.add(kind);
       out.push({
         measurementKind: kind,
-        label: humanizeNeedinessLabel(kind),
-        guidance: `How well the AssetPack fits the Need facet “${humanizeNeedinessLabel(kind)}”${
-          needSummary ? ` (${needSummary.slice(0, 120)})` : ''
+        label: humanizeRelativeLabel(kind),
+        guidance: `How well the AssetPack fits the Evaluation facet “${humanizeRelativeLabel(kind)}”${
+          evaluationSummary ? ` (${evaluationSummary.slice(0, 120)})` : ''
         }.`,
         weight: 1,
       });
@@ -137,17 +137,17 @@ export function normalizeDynamicNeedinessPlan(
         : typeof rec.kind === 'string'
           ? rec.kind
           : '';
-    const kind = slugifyNeedinessKind(kindRaw);
-    if (!assertNeedinessKindSuffix(kind) || seen.has(kind)) continue;
+    const kind = slugifyRelativeKind(kindRaw);
+    if (!assertRelativeKindSuffix(kind) || seen.has(kind)) continue;
     seen.add(kind);
     const label =
       typeof rec.label === 'string' && rec.label.trim()
         ? rec.label.trim().slice(0, 80)
-        : humanizeNeedinessLabel(kind);
+        : humanizeRelativeLabel(kind);
     const guidance =
       typeof rec.guidance === 'string' && rec.guidance.trim()
         ? rec.guidance.trim().slice(0, 400)
-        : `How well the AssetPack fits “${label}” relative to the reader Need.`;
+        : `How well the AssetPack fits “${label}” relative to the reader Evaluation.`;
     const weight =
       typeof rec.weight === 'number' && Number.isFinite(rec.weight) && rec.weight > 0
         ? rec.weight
@@ -158,22 +158,22 @@ export function normalizeDynamicNeedinessPlan(
 }
 
 /**
- * Ground dynamic plan from Need text + optional codebase topics/paths.
+ * Ground dynamic plan from Evaluation text + optional codebase topics/paths.
  * Used when Setup LLM returns only kinds (or empty) so labels still quality.
  */
-export function planDynamicNeedinessesFromContext(input: {
-  needText?: string | null;
-  needTopics?: string[] | null;
+export function planDynamicRelativesFromContext(input: {
+  evaluationText?: string | null;
+  evaluationTopics?: string[] | null;
   acceptanceCriteria?: string[] | null;
   codebaseTopics?: string[] | null;
   pathHints?: string[] | null;
-  existing?: Array<string | DynamicNeedinessPlanRow> | null;
-}): DynamicNeedinessPlanRow[] {
-  const fromExisting = normalizeDynamicNeedinessPlan(input.existing, input.needText);
+  existing?: Array<string | DynamicRelativePlanRow> | null;
+}): DynamicRelativePlanRow[] {
+  const fromExisting = normalizeDynamicRelativePlan(input.existing, input.evaluationText);
   if (fromExisting.length >= 3) return fromExisting;
 
   const seeds: string[] = [];
-  for (const t of input.needTopics || []) {
+  for (const t of input.evaluationTopics || []) {
     if (typeof t === 'string' && t.trim()) seeds.push(t.trim());
   }
   for (const c of input.acceptanceCriteria || []) {
@@ -188,41 +188,41 @@ export function planDynamicNeedinessesFromContext(input: {
     const base = p.split('/').pop()?.replace(/\.[^.]+$/, '') || '';
     if (base.length > 3 && base.length < 32) seeds.push(base);
   }
-  if (input.needText && seeds.length < 3) {
-    const words = String(input.needText)
+  if (input.evaluationText && seeds.length < 3) {
+    const words = String(input.evaluationText)
       .split(/\W+/)
       .filter((w) => w.length > 4)
       .slice(0, 6);
     seeds.push(...words);
   }
 
-  const planned: DynamicNeedinessPlanRow[] = [...fromExisting];
+  const planned: DynamicRelativePlanRow[] = [...fromExisting];
   const seen = new Set(planned.map((r) => r.measurementKind));
   for (const seed of seeds) {
     if (planned.length >= 6) break;
-    const kind = slugifyNeedinessKind(
+    const kind = slugifyRelativeKind(
       seed.toLowerCase().includes('fit') ? seed : `needs-${seed}`,
     );
-    if (seen.has(kind) || ASSET_PACK_NEEDINESSES_CATALOG.some((c) => c.measurementKind === kind)) {
+    if (seen.has(kind) || ASSET_PACK_RELATIVES_CATALOG.some((c) => c.measurementKind === kind)) {
       continue;
     }
     seen.add(kind);
-    const label = humanizeNeedinessLabel(kind);
+    const label = humanizeRelativeLabel(kind);
     planned.push({
       measurementKind: kind,
       label,
-      guidance: `Score how well the pack’s material satisfies “${label}” for Need: ${
-        (input.needText || '').slice(0, 160) || 'stated reader Need'
+      guidance: `Score how well the pack’s material satisfies “${label}” for Evaluation: ${
+        (input.evaluationText || '').slice(0, 160) || 'stated reader Evaluation'
       }.`,
       weight: 1,
     });
   }
-  if (planned.length === 0 && input.needText) {
-    const kind = slugifyNeedinessKind(input.needText.slice(0, 40) || 'need');
+  if (planned.length === 0 && input.evaluationText) {
+    const kind = slugifyRelativeKind(input.evaluationText.slice(0, 40) || 'evaluation');
     planned.push({
       measurementKind: kind,
-      label: humanizeNeedinessLabel(kind),
-      guidance: `Overall fit of the AssetPack to the Need: ${(input.needText || '').slice(0, 160)}.`,
+      label: humanizeRelativeLabel(kind),
+      guidance: `Overall fit of the AssetPack to the Evaluation: ${(input.evaluationText || '').slice(0, 160)}.`,
       weight: 1,
     });
   }
@@ -241,8 +241,8 @@ type SpecBuild = {
  * Re-normalize all weights to sum to 1 (static mass 0.6, dynamic mass 0.4 when both present).
  */
 function buildSpecs(
-  catalog: AssetPackNeedinessSpec[],
-  dynamic: DynamicNeedinessPlanRow[],
+  catalog: AssetPackRelativeSpec[],
+  dynamic: DynamicRelativePlanRow[],
 ): SpecBuild {
   const weightByKind = new Map<string, number>();
   const labelByKind = new Map<string, string>();
@@ -252,9 +252,9 @@ function buildSpecs(
   const staticRows: Array<{ kind: string; weight: number; label: string; guidance: string; unit: string }> =
     [];
   for (const spec of catalog) {
-    const kind = assertNeedinessKindSuffix(spec.measurementKind)
+    const kind = assertRelativeKindSuffix(spec.measurementKind)
       ? spec.measurementKind
-      : slugifyNeedinessKind(spec.measurementKind);
+      : slugifyRelativeKind(spec.measurementKind);
     staticRows.push({
       kind,
       weight: spec.weight > 0 ? spec.weight : 1,
@@ -266,7 +266,7 @@ function buildSpecs(
 
   const dynamicRows = dynamic.filter(
     (d) =>
-      assertNeedinessKindSuffix(d.measurementKind) &&
+      assertRelativeKindSuffix(d.measurementKind) &&
       !staticRows.some((s) => s.kind === d.measurementKind),
   );
 
@@ -308,23 +308,23 @@ function buildSpecs(
 
 function resolveDynamicPlan(input: {
   dynamicKinds?: string[];
-  dynamicNeedinesses?: Array<string | DynamicNeedinessPlanRow> | null;
-  needSummary?: string;
-  /** When Need is present but plan empty, re-ground from Need + path hints (STAB-B2). */
+  dynamicRelatives?: Array<string | DynamicRelativePlanRow> | null;
+  evaluationSummary?: string;
+  /** When Evaluation is present but plan empty, re-ground from Evaluation + path hints (STAB-B2). */
   pathHints?: string[] | null;
-  needTopics?: string[] | null;
+  evaluationTopics?: string[] | null;
   acceptanceCriteria?: string[] | null;
-}): DynamicNeedinessPlanRow[] {
-  if (Array.isArray(input.dynamicNeedinesses) && input.dynamicNeedinesses.length > 0) {
-    return normalizeDynamicNeedinessPlan(input.dynamicNeedinesses, input.needSummary);
+}): DynamicRelativePlanRow[] {
+  if (Array.isArray(input.dynamicRelatives) && input.dynamicRelatives.length > 0) {
+    return normalizeDynamicRelativePlan(input.dynamicRelatives, input.evaluationSummary);
   }
-  const fromKinds = normalizeDynamicNeedinessPlan(input.dynamicKinds || [], input.needSummary);
+  const fromKinds = normalizeDynamicRelativePlan(input.dynamicKinds || [], input.evaluationSummary);
   if (fromKinds.length > 0) return fromKinds;
-  // STAB-B2: Need present ⇒ non-empty dynamic plan (static catalog alone is not enough).
-  if (input.needSummary && String(input.needSummary).trim()) {
-    return planDynamicNeedinessesFromContext({
-      needText: input.needSummary,
-      needTopics: input.needTopics,
+  // STAB-B2: Evaluation present ⇒ non-empty dynamic plan (static catalog alone is not enough).
+  if (input.evaluationSummary && String(input.evaluationSummary).trim()) {
+    return planDynamicRelativesFromContext({
+      evaluationText: input.evaluationSummary,
+      evaluationTopics: input.evaluationTopics,
       acceptanceCriteria: input.acceptanceCriteria,
       pathHints: input.pathHints,
     });
@@ -332,7 +332,7 @@ function resolveDynamicPlan(input: {
   return [];
 }
 
-/** Tokenize for pack↔Need lexical grounding (source-safe strings only). */
+/** Tokenize for pack↔Evaluation lexical grounding (source-safe strings only). */
 function tokenizePackMaterial(text: string): Set<string> {
   const out = new Set<string>();
   for (const w of String(text || '')
@@ -344,19 +344,19 @@ function tokenizePackMaterial(text: string): Set<string> {
 }
 
 /**
- * Lexical overlap of Need tokens with pack material (title/summary/patch/paths).
+ * Lexical overlap of Evaluation tokens with pack material (title/summary/patch/paths).
  * STAB-B2: deterministic fit must weight pack content, not title-only hash wobble.
  */
-export function packNeedMaterialOverlap(input: {
-  needSummary?: string | null;
+export function packEvaluationMaterialOverlap(input: {
+  evaluationSummary?: string | null;
   title?: string | null;
   summary?: string | null;
   patchSummary?: string | null;
   coveredSourcePaths?: string[] | null;
   commercialDescription?: string | null;
 }): number {
-  const needTokens = tokenizePackMaterial(input.needSummary || '');
-  if (needTokens.size === 0) return 0.35;
+  const evaluationTokens = tokenizePackMaterial(input.evaluationSummary || '');
+  if (evaluationTokens.size === 0) return 0.35;
   const packText = [
     input.title || '',
     input.summary || '',
@@ -367,33 +367,33 @@ export function packNeedMaterialOverlap(input: {
   const packTokens = tokenizePackMaterial(packText);
   if (packTokens.size === 0) return 0.15;
   let hits = 0;
-  for (const t of needTokens) {
+  for (const t of evaluationTokens) {
     if (packTokens.has(t)) hits += 1;
   }
-  return clamp01(hits / Math.max(1, needTokens.size));
+  return clamp01(hits / Math.max(1, evaluationTokens.size));
 }
 
-/** Deterministic neediness volumes (proxy when agent unavailable). */
-export function measureReadNeedinessesDeterministic(input: {
+/** Deterministic relative volumes (proxy when agent unavailable). */
+export function measureReadRelativesDeterministic(input: {
   title: string;
   summary: string;
   confidence?: number;
-  needSummary?: string;
-  /** @deprecated Prefer dynamicNeedinesses with labels. */
+  evaluationSummary?: string;
+  /** @deprecated Prefer dynamicRelatives with labels. */
   dynamicKinds?: string[];
-  dynamicNeedinesses?: Array<string | DynamicNeedinessPlanRow> | null;
-  catalog?: AssetPackNeedinessSpec[];
+  dynamicRelatives?: Array<string | DynamicRelativePlanRow> | null;
+  catalog?: AssetPackRelativeSpec[];
   /** Pack material for STAB-B2 grounding (not title/summary alone). */
   patchSummary?: string | null;
   coveredSourcePaths?: string[] | null;
   commercialDescription?: string | null;
-  needTopics?: string[] | null;
+  evaluationTopics?: string[] | null;
   acceptanceCriteria?: string[] | null;
-}): NeedinessReading[] {
-  const catalog = input.catalog ?? ASSET_PACK_NEEDINESSES_CATALOG;
+}): RelativeReading[] {
+  const catalog = input.catalog ?? ASSET_PACK_RELATIVES_CATALOG;
   const confidence = clamp01(input.confidence ?? 0.65);
-  const materialOverlap = packNeedMaterialOverlap({
-    needSummary: input.needSummary,
+  const materialOverlap = packEvaluationMaterialOverlap({
+    evaluationSummary: input.evaluationSummary,
     title: input.title,
     summary: input.summary,
     patchSummary: input.patchSummary,
@@ -405,21 +405,21 @@ export function measureReadNeedinessesDeterministic(input: {
     input.summary,
     input.patchSummary || '',
     (input.coveredSourcePaths || []).slice(0, 12).join(','),
-    input.needSummary || '',
+    input.evaluationSummary || '',
   ].join('|');
   const dynamic = resolveDynamicPlan({
     dynamicKinds: input.dynamicKinds,
-    dynamicNeedinesses: input.dynamicNeedinesses,
-    needSummary: input.needSummary,
+    dynamicRelatives: input.dynamicRelatives,
+    evaluationSummary: input.evaluationSummary,
     pathHints: input.coveredSourcePaths,
-    needTopics: input.needTopics,
+    evaluationTopics: input.evaluationTopics,
     acceptanceCriteria: input.acceptanceCriteria,
   });
   const { specs, weightByKind, labelByKind, classByKind } = buildSpecs(catalog, dynamic);
 
   return specs.map((spec, index) => {
     const wobble = ((hash(seed + spec.measurementKind) % 16) - 8) / 100;
-    // Blend: confidence (prior) + pack↔Need material overlap (primary) + small wobble.
+    // Blend: confidence (prior) + pack↔Evaluation material overlap (primary) + small wobble.
     const volume = clamp01(
       confidence * 0.35 + materialOverlap * 0.55 + 0.08 + wobble + index * 0.005,
     );
@@ -430,44 +430,44 @@ export function measureReadNeedinessesDeterministic(input: {
       volume,
       magnitude: volume,
       unit: String(spec.unit),
-      category: 'neediness' as const,
+      category: 'relative' as const,
       propertyClass: classByKind.get(spec.measurementKind),
-      rationale: `Need-relative ${spec.measurementKind} (deterministic; pack material overlap=${materialOverlap.toFixed(2)}).`,
+      rationale: `Evaluation-relative ${spec.measurementKind} (deterministic; pack material overlap=${materialOverlap.toFixed(2)}).`,
     };
   });
 }
 
 /**
- * Prefer NeedinessesMeasureAgent when real inference is enabled; always fall back
+ * Prefer RelativesMeasureAgent when real inference is enabled; always fall back
  * to deterministic proxies so synthesis never invents volumes without a path.
  */
-export async function measureReadNeedinesses(input: {
+export async function measureReadRelatives(input: {
   title: string;
   summary: string;
   confidence?: number;
-  needSummary?: string;
+  evaluationSummary?: string;
   dynamicKinds?: string[];
-  dynamicNeedinesses?: Array<string | DynamicNeedinessPlanRow> | null;
-  catalog?: AssetPackNeedinessSpec[];
+  dynamicRelatives?: Array<string | DynamicRelativePlanRow> | null;
+  catalog?: AssetPackRelativeSpec[];
   execution?: any;
   patchSummary?: string | null;
   coveredSourcePaths?: string[] | null;
   commercialDescription?: string | null;
-  needTopics?: string[] | null;
+  evaluationTopics?: string[] | null;
   acceptanceCriteria?: string[] | null;
-}): Promise<NeedinessReading[]> {
-  const deterministic = measureReadNeedinessesDeterministic(input);
+}): Promise<RelativeReading[]> {
+  const deterministic = measureReadRelativesDeterministic(input);
   if (!isAssetPackRealInferenceEnabled()) return deterministic;
 
   try {
-    const catalog = input.catalog ?? ASSET_PACK_NEEDINESSES_CATALOG;
+    const catalog = input.catalog ?? ASSET_PACK_RELATIVES_CATALOG;
     const dynamic = resolveDynamicPlan(input);
     const { specs, weightByKind, labelByKind } = buildSpecs(catalog, dynamic);
     if (specs.length === 0) return deterministic;
 
-    const agent = factoryNeedinessesMeasureAgent({
-      name: 'SynthesizeReadAssetPacksNeedinessesMeasureAgent',
-      subject: 'a synthesized source-safe AssetPack under a reader Need',
+    const agent = factoryRelativesMeasureAgent({
+      name: 'SynthesizeReadAssetPacksRelativesMeasureAgent',
+      subject: 'a synthesized source-safe AssetPack under a reader Evaluation',
       measurements: specs,
     });
 
@@ -484,9 +484,9 @@ export async function measureReadNeedinesses(input: {
             : [],
           commercialDescription: input.commercialDescription || null,
         },
-        need: {
-          summary: input.needSummary || '',
-          topics: input.needTopics || [],
+        evaluation: {
+          summary: input.evaluationSummary || '',
+          topics: input.evaluationTopics || [],
           acceptanceCriteria: input.acceptanceCriteria || [],
         },
         measurementsRequested: specs.map((s) => s.measurementKind),

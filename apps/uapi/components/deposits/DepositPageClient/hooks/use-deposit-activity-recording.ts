@@ -87,7 +87,7 @@ export function useDepositActivityRecording(input: {
         openDepositRouteTransaction(nextRun.id);
       }
       // Soft-refresh: keep optimistic upsert visible; avoid loading flicker /
-      // detail remount that re-plays Need/Obfuscations entrance motion.
+      // detail remount that re-plays Evaluation/Obfuscations entrance motion.
       void refreshLiveRuns({ soft: true });
       if (
         (draft.context as Record<string, unknown> | undefined)?.source ===

@@ -63,10 +63,10 @@ function fullOption() {
     summary: 'Exactly-once webhook ingest.',
     kind: 'implementation-pattern',
     confidence: 0.82,
-    needFit: 0.8,
+    evaluationFit: 0.8,
     patch: { patchSummary: 'Adds webhooks module.', fileChanges: [{ path: 'src/webhooks/a.ts', op: 'create', content: 'export {}\n' }] },
     measurements: {
-      needinesses: [
+      relatives: [
         { measurementKind: 'language-fit', volume: 0.94, weight: 0.35 },
         { measurementKind: 'domain-fit', volume: 0.84, weight: 0.35 },
         { measurementKind: 'interface-fit', volume: 0.84, weight: 0.3 },

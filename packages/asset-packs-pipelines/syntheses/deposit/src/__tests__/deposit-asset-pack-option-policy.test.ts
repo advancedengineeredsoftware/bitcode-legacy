@@ -54,13 +54,13 @@ describe('Deposit AssetPack option policy', () => {
       expect(evaluation.demand.weightedDemand).toBeGreaterThan(0.5);
       expect(evaluation.roi.estimatedGrossSats).toBeGreaterThan(0);
       expect(evaluation.btdPotential.estimateOnly).toBe(true);
-      expect(evaluation.btdPotential.btdMintBoundary).toBe('not-minted-until-future-need-fit-settlement');
+      expect(evaluation.btdPotential.btdMintBoundary).toBe('not-minted-until-future-evaluation-fit-settlement');
       expect(evaluation.compensation).toMatchObject({
         payer: 'future-reader-after-settlement',
         payee: 'depositing-wallet',
         priceAsset: 'BTC',
         allocationMethod: 'source-to-shares-largest-remainder',
-        sourceToSharesProofState: 'not-created-until-accepted-need-fit-and-settlement',
+        sourceToSharesProofState: 'not-created-until-accepted-evaluation-fit-and-settlement',
       });
       expect(evaluation.admissionBoundary).toMatchObject({
         depositApprovalRequired: true,

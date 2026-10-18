@@ -1,9 +1,9 @@
 import { Execution } from '@bitcode/execution-generics';
 import {
-  acceptReadNeed,
+  acceptReadEvaluation,
   admitReadFitsFinding,
-  synthesizeReadNeedForPipelineInput,
-} from '../read-need';
+  synthesizeReadEvaluationForPipelineInput,
+} from '../read-evaluation';
 import {
   buildDepositoryFitResultEvidence,
   runDepositorySearchForPipelineInput,
@@ -75,20 +75,20 @@ function depositoryAsset(overrides: Partial<DepositoryAsset> = {}): DepositoryAs
   };
 }
 
-function acceptedNeed() {
-  return acceptReadNeed(
-    synthesizeReadNeedForPipelineInput(readInput),
+function acceptedEvaluation() {
+  return acceptReadEvaluation(
+    synthesizeReadEvaluationForPipelineInput(readInput),
     '2026-05-18T00:00:00.000Z',
   );
 }
 
 describe('ReadFitsFinding runtime, ranking, and replay', () => {
   it('builds a source-safe runtime around many-fit search results', async () => {
-    const acceptedReadNeed = acceptedNeed();
+    const acceptedReadEvaluation = acceptedEvaluation();
     const search = await runDepositorySearchForPipelineInput({
       ...readInput,
-      acceptedReadNeed,
-      requireAcceptedReadNeed: true,
+      acceptedReadEvaluation,
+      requireAcceptedReadEvaluation: true,
       depositoryAssets: [
         depositoryAsset({ assetId: 'fit-deposit-runtime-1' }),
         depositoryAsset({ assetId: 'fit-deposit-runtime-2', title: 'product proof readback second fit' }),
@@ -96,18 +96,18 @@ describe('ReadFitsFinding runtime, ranking, and replay', () => {
     });
     const fitResult = buildDepositoryFitResultEvidence(search);
     const runtime = buildReadFitsFindingRuntime({
-      admission: admitReadFitsFinding({ acceptedReadNeed, requireAcceptedReadNeed: true }),
+      admission: admitReadFitsFinding({ acceptedReadEvaluation, requireAcceptedReadEvaluation: true }),
       result: search,
       fitResult,
     });
 
     expect(runtime.schema).toBe('bitcode.read-fits-finding-runtime');
     expect(runtime.pipelineName).toBe('ReadFitsFindingSynthesis');
-    expect(runtime.acceptedNeed).toMatchObject({
-      needId: acceptedReadNeed.needId,
-      requestId: acceptedReadNeed.request.requestId,
+    expect(runtime.acceptedEvaluation).toMatchObject({
+      evaluationId: acceptedReadEvaluation.evaluationId,
+      requestId: acceptedReadEvaluation.request.requestId,
       reviewState: 'accepted',
-      measurementRoot: acceptedReadNeed.measurementRoot,
+      measurementRoot: acceptedReadEvaluation.measurementRoot,
     });
     expect(runtime.findingFitsAdmission).toEqual({ admitted: true, blockers: [] });
     expect(runtime.resultState).toBe('worthy_fit');
@@ -153,7 +153,7 @@ describe('ReadFitsFinding runtime, ranking, and replay', () => {
     expect(runtime.replayReceipt).toMatchObject({
       schema: 'bitcode.read-fits-finding.replay-receipt',
       replayMode: 'source-safe-query-ranking-selected-fit-replay',
-      acceptedNeedId: acceptedReadNeed.needId,
+      acceptedEvaluationId: acceptedReadEvaluation.evaluationId,
       resultState: 'worthy_fit',
       queryPlanRoot: search.queryPlan.queryPlanRoot,
       queryRoot: search.queryRoot,
@@ -170,7 +170,7 @@ describe('ReadFitsFinding runtime, ranking, and replay', () => {
     });
     expect(runtime.storageProjection.map((record) => record.recordKind)).toEqual(
       expect.arrayContaining([
-        'accepted_need_admission',
+        'accepted_evaluation_admission',
         'query_plan',
         'search_channel',
         'candidate_ranking',
@@ -195,24 +195,24 @@ describe('ReadFitsFinding runtime, ranking, and replay', () => {
     expect(JSON.stringify(runtime)).not.toContain('product path Deposit Read Finding Fits');
   });
 
-  it('blocks and records repair posture when the accepted Need is missing', async () => {
+  it('blocks and records repair posture when the accepted Evaluation is missing', async () => {
     const runtime = await buildReadFitsFindingRuntimeForPipelineInput({
       ...readInput,
-      requireAcceptedReadNeed: true,
+      requireAcceptedReadEvaluation: true,
       depositoryAssets: [depositoryAsset()],
     });
 
-    expect(runtime.acceptedNeed).toBeNull();
+    expect(runtime.acceptedEvaluation).toBeNull();
     expect(runtime.resultState).toBe('blocked_readiness');
     expect(runtime.findingFitsAdmission.admitted).toBe(false);
-    expect(runtime.findingFitsAdmission.blockers).toContain('accepted_read_need_missing');
-    expect(runtime.repairPosture.nextActions).toContain('accept_read_need');
+    expect(runtime.findingFitsAdmission.blockers).toContain('accepted_read_evaluation_missing');
+    expect(runtime.repairPosture.nextActions).toContain('accept_read_evaluation');
     expect(runtime.searchSummary.rankedCandidateCount).toBe(0);
-    expect(runtime.replayReceipt.acceptedNeedId).toBeNull();
+    expect(runtime.replayReceipt.acceptedEvaluationId).toBeNull();
   });
 
   it('records adjustment repair posture when no worthy fit is found', async () => {
-    const acceptedReadNeed = acceptedNeed();
+    const acceptedReadEvaluation = acceptedEvaluation();
     const search = await searchDepositoryAssetSpace({
       read: {
         id: 'read-no-worthy-fit',
@@ -227,21 +227,21 @@ describe('ReadFitsFinding runtime, ranking, and replay', () => {
       assets: [depositoryAsset()],
     });
     const runtime = buildReadFitsFindingRuntime({
-      admission: admitReadFitsFinding({ acceptedReadNeed, requireAcceptedReadNeed: true }),
+      admission: admitReadFitsFinding({ acceptedReadEvaluation, requireAcceptedReadEvaluation: true }),
       result: search,
     });
 
     expect(runtime.resultState).toBe('no_worthy_fit');
-    expect(runtime.repairPosture.nextActions).toContain('adjust_need_constraints_or_thresholds');
+    expect(runtime.repairPosture.nextActions).toContain('adjust_evaluation_constraints_or_thresholds');
     expect(runtime.repairPosture.sourceSafeReason).toContain('Finding Fits remains repairable');
   });
 
   it('records source-safe blocked repair posture for proof or readback gaps', async () => {
-    const acceptedReadNeed = acceptedNeed();
+    const acceptedReadEvaluation = acceptedEvaluation();
     const runtime = await buildReadFitsFindingRuntimeForPipelineInput({
       ...readInput,
-      acceptedReadNeed,
-      requireAcceptedReadNeed: true,
+      acceptedReadEvaluation,
+      requireAcceptedReadEvaluation: true,
       targetArtifactKinds: ['marketing-copy'],
       depositoryAssets: [
         depositoryAsset({
@@ -259,15 +259,15 @@ describe('ReadFitsFinding runtime, ranking, and replay', () => {
 
   it('persists replay, source-safe ranking, and repair records to execution storage', async () => {
     const execution = new Execution('read-fits-runtime-test');
-    const acceptedReadNeed = acceptedNeed();
+    const acceptedReadEvaluation = acceptedEvaluation();
     const search = await runDepositorySearchForPipelineInput({
       ...readInput,
-      acceptedReadNeed,
-      requireAcceptedReadNeed: true,
+      acceptedReadEvaluation,
+      requireAcceptedReadEvaluation: true,
       depositoryAssets: [depositoryAsset()],
     }, execution as any);
     const runtime = buildReadFitsFindingRuntime({
-      admission: admitReadFitsFinding({ acceptedReadNeed, requireAcceptedReadNeed: true }),
+      admission: admitReadFitsFinding({ acceptedReadEvaluation, requireAcceptedReadEvaluation: true }),
       result: search,
     });
 
@@ -296,15 +296,15 @@ describe('ReadFitsFinding runtime, ranking, and replay', () => {
   });
 
   it('summarizes runtime evidence for source-safe UI and protocol readback', async () => {
-    const acceptedReadNeed = acceptedNeed();
+    const acceptedReadEvaluation = acceptedEvaluation();
     const search = await runDepositorySearchForPipelineInput({
       ...readInput,
-      acceptedReadNeed,
-      requireAcceptedReadNeed: true,
+      acceptedReadEvaluation,
+      requireAcceptedReadEvaluation: true,
       depositoryAssets: [depositoryAsset()],
     });
     const runtime = buildReadFitsFindingRuntime({
-      admission: admitReadFitsFinding({ acceptedReadNeed, requireAcceptedReadNeed: true }),
+      admission: admitReadFitsFinding({ acceptedReadEvaluation, requireAcceptedReadEvaluation: true }),
       result: search,
     });
     const summary = summarizeReadFitsFindingRuntime(runtime);

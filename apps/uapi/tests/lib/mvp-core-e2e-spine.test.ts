@@ -7,10 +7,10 @@
 import { runMvpCoreE2eSpine } from '@/lib/mvp-core-e2e-spine';
 
 describe('MVP-E2E L4 core spine', () => {
-  it('runs deposit→admit→index projection→search→needinesses→quote with source-safe checks', async () => {
+  it('runs deposit→admit→index projection→search→relatives→quote with source-safe checks', async () => {
     const result = await runMvpCoreE2eSpine({
       repositoryFullName: 'octocat/Spoon-Knife',
-      needText: 'I need session refresh and token rotation for OAuth clients.',
+      evaluationText: 'I need session refresh and token rotation for OAuth clients.',
       includePathOnlyNoise: true,
       failMode: 'none',
     });
@@ -32,13 +32,13 @@ describe('MVP-E2E L4 core spine', () => {
     expect(result.steps.search.hitCount).toBeGreaterThanOrEqual(1);
     expect(result.steps.search.nlRankedAbovePathNoise).toBe(true);
 
-    expect(result.steps.readNeedinesses.rowCount).toBeGreaterThan(0);
-    expect(result.steps.readNeedinesses.allFitSuffix).toBe(true);
-    expect(result.steps.readNeedinesses.needFitVolume).toBeGreaterThan(0);
+    expect(result.steps.readRelatives.rowCount).toBeGreaterThan(0);
+    expect(result.steps.readRelatives.allFitSuffix).toBe(true);
+    expect(result.steps.readRelatives.evaluationFitVolume).toBeGreaterThan(0);
 
     expect(result.steps.quote.ok).toBe(true);
     expect(result.steps.quote.optionCount).toBeGreaterThan(0);
-    expect(result.steps.quote.needFitVolume).toBeGreaterThan(0);
+    expect(result.steps.quote.evaluationFitVolume).toBeGreaterThan(0);
 
     expect(result.steps.sourceSafety.admissionSourceSafe).toBe(true);
     expect(result.steps.sourceSafety.unpaidSearchHitsHaveNoFileBodies).toBe(true);
@@ -58,12 +58,12 @@ describe('MVP-E2E L5 fail-closed matrix', () => {
     expect(result.steps.pathOnlyHonesty.neverMeasured).toBe(true);
   });
 
-  it('empty-needinesses-quote: quote fails closed', async () => {
-    const result = await runMvpCoreE2eSpine({ failMode: 'empty-needinesses-quote' });
+  it('empty-relatives-quote: quote fails closed', async () => {
+    const result = await runMvpCoreE2eSpine({ failMode: 'empty-relatives-quote' });
     expect(result.ok).toBe(false);
-    expect(result.failMode).toBe('empty-needinesses-quote');
+    expect(result.failMode).toBe('empty-relatives-quote');
     expect(result.steps.quote.ok).toBe(false);
-    expect(result.errors).toContain('quote_failed_empty_needinesses');
+    expect(result.errors).toContain('quote_failed_empty_relatives');
   });
 
   it('empty-search-corpus: thin depository yields zero hits', async () => {

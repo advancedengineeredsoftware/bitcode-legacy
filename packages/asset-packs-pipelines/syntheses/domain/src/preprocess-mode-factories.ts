@@ -52,10 +52,10 @@ import {
 } from '../../read/src/reading-local-staging-rehearsal';
 import {
   admitReadFitsFinding,
-  isAcceptedReadNeed,
-  resolveReadNeedFromPipelineInput,
-  synthesizeReadNeedForPipelineInput,
-} from '../../read/src/read-need';
+  isAcceptedReadEvaluation,
+  resolveReadEvaluationFromPipelineInput,
+  synthesizeReadEvaluationForPipelineInput,
+} from '../../read/src/read-evaluation';
 
 function storePreprocessedSnapshot(
   execution: Execution,
@@ -96,7 +96,7 @@ function storePreprocessedSnapshot(
 
 /**
  * Deposit-mode preprocess. The depositor supplies a repository to synthesize
- * into reviewable AssetPack patches — there is no read Need / fits-finding, so
+ * into reviewable AssetPack patches — there is no read Evaluation / fits-finding, so
  * the read-lensed preprocess is skipped entirely. We store the repository
  * coordinates and depositor steering for the SDIVF phases: Setup clones +
  * danger-walls, Discovery explores, Implementation writes the AP patches,
@@ -166,7 +166,7 @@ function factoryPreprocess(): Executor<any, any> {
     const processedInput = input;
     try { (processedInput as any).synthesizeMode = mode; } catch {}
 
-    // Deposit skips the read Need / fits-finding preprocess entirely.
+    // Deposit skips the read Evaluation / fits-finding preprocess entirely.
     if (mode === 'deposit') {
       const depositInput = await preprocessDepositMode(processedInput, execution);
       storePreprocessedSnapshot(execution, depositInput, resolveWrittenAssetType(depositInput));
@@ -178,17 +178,17 @@ function factoryPreprocess(): Executor<any, any> {
     const writtenAssetType = resolveWrittenAssetType(processedInput);
     const writtenAssetRequest = normalizeWrittenAssetRequest(processedInput?.writtenAssetType);
     const deliveryMechanismTemplate = resolveDeliveryMechanismTemplate(processedInput);
-    const suppliedReadNeed = resolveReadNeedFromPipelineInput(processedInput);
-    const synthesizedReadNeed = synthesizeReadNeedForPipelineInput(processedInput);
-    const readNeed = suppliedReadNeed || synthesizedReadNeed;
+    const suppliedReadEvaluation = resolveReadEvaluationFromPipelineInput(processedInput);
+    const synthesizedReadEvaluation = synthesizeReadEvaluationForPipelineInput(processedInput);
+    const readEvaluation = suppliedReadEvaluation || synthesizedReadEvaluation;
     try { processedInput.read = expressedRead; } catch {}
     try { processedInput.definitionOfRead = expressedRead; } catch {}
     try { processedInput.writtenAssetType = writtenAssetType; } catch {}
     try { processedInput.writtenAssetRequest = writtenAssetRequest; } catch {}
     try { processedInput.deliveryMechanismTemplate = deliveryMechanismTemplate; } catch {}
-    try { processedInput.readNeed = readNeed; } catch {}
-    if (isAcceptedReadNeed(readNeed)) {
-      try { processedInput.acceptedReadNeed = readNeed; } catch {}
+    try { processedInput.readEvaluation = readEvaluation; } catch {}
+    if (isAcceptedReadEvaluation(readEvaluation)) {
+      try { processedInput.acceptedReadEvaluation = readEvaluation; } catch {}
     }
     // Cross-phase artifacts: the read-lens pipeline snapshot the phases +
     // postprocess resolve from their own sibling subtrees (cross-phase
@@ -199,12 +199,12 @@ function factoryPreprocess(): Executor<any, any> {
     storeCrossPhaseArtifact(execution, 'pipeline', 'deliveryMechanismTemplate', deliveryMechanismTemplate);
     storeCrossPhaseArtifact(execution, 'pipeline', 'expressedRead', expressedRead);
     storeCrossPhaseArtifact(execution, 'read', 'description', expressedRead);
-    storeCrossPhaseArtifact(execution, 'read/need', 'current', readNeed as any);
-    storeCrossPhaseArtifact(execution, 'read/need', 'needId', readNeed.needId);
-    storeCrossPhaseArtifact(execution, 'read/need', 'measurementRoot', readNeed.measurementRoot);
-    storeCrossPhaseArtifact(execution, 'read/need', 'reviewState', readNeed.reviewState);
-    if (isAcceptedReadNeed(readNeed)) {
-      storeCrossPhaseArtifact(execution, 'read/need', 'accepted', readNeed as any);
+    storeCrossPhaseArtifact(execution, 'read/evaluation', 'current', readEvaluation as any);
+    storeCrossPhaseArtifact(execution, 'read/evaluation', 'evaluationId', readEvaluation.evaluationId);
+    storeCrossPhaseArtifact(execution, 'read/evaluation', 'measurementRoot', readEvaluation.measurementRoot);
+    storeCrossPhaseArtifact(execution, 'read/evaluation', 'reviewState', readEvaluation.reviewState);
+    if (isAcceptedReadEvaluation(readEvaluation)) {
+      storeCrossPhaseArtifact(execution, 'read/evaluation', 'accepted', readEvaluation as any);
     }
 
     const depositorySearch = await runDepositorySearchForPipelineInput(processedInput, execution);
@@ -230,9 +230,9 @@ function factoryPreprocess(): Executor<any, any> {
       processedInput.readFitsFindingReplayReceipt = readFitsFindingRuntime.replayReceipt;
     } catch {}
     try {
-      if (isAcceptedReadNeed(readNeed)) {
+      if (isAcceptedReadEvaluation(readEvaluation)) {
         const assetPackPreviewBoundary = buildAssetPackPreviewBoundary({
-          need: readNeed,
+          evaluation: readEvaluation,
           fitResult,
           pullRequestTarget: processedInput?.deliveryTarget || null,
         });
@@ -252,10 +252,10 @@ function factoryPreprocess(): Executor<any, any> {
       // settlementBoundary always null on synthesis preprocess path.
       const operationalReadback = buildReadingOperationalTelemetryRepairReadback({
         runId: String(execution.id || processedInput?.transactionId || processedInput?.id || ''),
-        readNeedRuntime:
-          processedInput?.readNeedReviewRuntime ||
-          (execution.get('read-need-review', 'runtime') as any) ||
-          ((execution.parent as any)?.get?.('read-need-review', 'runtime') as any) ||
+        readEvaluationRuntime:
+          processedInput?.readEvaluationReviewRuntime ||
+          (execution.get('read-evaluation-review', 'runtime') as any) ||
+          ((execution.parent as any)?.get?.('read-evaluation-review', 'runtime') as any) ||
           null,
         readFitsRuntime:
           processedInput?.readFitsFindingRuntime ||
@@ -277,10 +277,10 @@ function factoryPreprocess(): Executor<any, any> {
       processedInput.readingOperationalStreamEvents = operationalReadback.streamEvents;
       processedInput.readingOperationalRunbookHooks = operationalReadback.runbookHooks;
       const interfaceParity = buildReadingInterfaceProductParity({
-        readNeedRuntime:
-          processedInput?.readNeedReviewRuntime ||
-          (execution.get('read-need-review', 'runtime') as any) ||
-          ((execution.parent as any)?.get?.('read-need-review', 'runtime') as any) ||
+        readEvaluationRuntime:
+          processedInput?.readEvaluationReviewRuntime ||
+          (execution.get('read-evaluation-review', 'runtime') as any) ||
+          ((execution.parent as any)?.get?.('read-evaluation-review', 'runtime') as any) ||
           null,
         readFitsRuntime:
           processedInput?.readFitsFindingRuntime ||
@@ -306,10 +306,10 @@ function factoryPreprocess(): Executor<any, any> {
       processedInput.interfaceDisclosureBoundaryRows = interfaceDisclosureBoundary.rows;
       const localStagingRehearsal = buildReadingLocalStagingRehearsal({
         runId: String(execution.id || processedInput?.transactionId || processedInput?.id || ''),
-        readNeedRuntime:
-          processedInput?.readNeedReviewRuntime ||
-          (execution.get('read-need-review', 'runtime') as any) ||
-          ((execution.parent as any)?.get?.('read-need-review', 'runtime') as any) ||
+        readEvaluationRuntime:
+          processedInput?.readEvaluationReviewRuntime ||
+          (execution.get('read-evaluation-review', 'runtime') as any) ||
+          ((execution.parent as any)?.get?.('read-evaluation-review', 'runtime') as any) ||
           null,
         readFitsRuntime:
           processedInput?.readFitsFindingRuntime ||
@@ -386,7 +386,7 @@ export function factoryPreprocessDepositOnly(): Executor<any, any> {
 }
 
 /**
- * Read preprocess — deposit twin: store Need + repository + catalog on shared root.
+ * Read preprocess — deposit twin: store Evaluation + repository + catalog on shared root.
  */
 export async function preprocessReadMode(processedInput: any, execution: Execution): Promise<any> {
   const repo = processedInput?.repository || {};
@@ -404,11 +404,11 @@ export async function preprocessReadMode(processedInput: any, execution: Executi
     processedInput.repository = { ...repo, ...repository };
   } catch {}
 
-  const need =
-    processedInput?.need ??
+  const evaluation =
+    processedInput?.evaluation ??
     processedInput?.needs ??
     processedInput?.instructions ??
-    processedInput?.readNeed?.text ??
+    processedInput?.readEvaluation?.text ??
     '';
 
   const catalog = processedInput?.sourceCheckoutCatalog;
@@ -416,7 +416,7 @@ export async function preprocessReadMode(processedInput: any, execution: Executi
     catalog && typeof catalog === 'object'
       ? {
           ...processedInput,
-          need,
+          evaluation,
           sourceCheckoutCatalog: {
             paths: catalog.paths,
             samples: catalog.samples,
@@ -424,12 +424,12 @@ export async function preprocessReadMode(processedInput: any, execution: Executi
             sourceFileCount: Array.isArray(catalog.sources) ? catalog.sources.length : 0,
           },
         }
-      : { ...processedInput, need };
+      : { ...processedInput, evaluation };
 
   storeCrossPhaseArtifact(execution, 'pipeline', 'input', pipelineInputForStore);
   storeCrossPhaseArtifact(execution, 'pipeline', 'synthesizeMode', 'read');
   storeCrossPhaseArtifact(execution, 'read', 'repository', repository);
-  storeCrossPhaseArtifact(execution, 'read', 'need', typeof need === 'string' ? need : '');
+  storeCrossPhaseArtifact(execution, 'read', 'evaluation', typeof evaluation === 'string' ? evaluation : '');
   storeCrossPhaseArtifact(execution, 'deposit', 'repository', repository);
   if (catalog) {
     storeCrossPhaseArtifact(execution, 'read', 'sourceCheckoutCatalog', catalog);
@@ -440,7 +440,7 @@ export async function preprocessReadMode(processedInput: any, execution: Executi
 
 /**
  * Read-only preprocess for ExecutionPipelineSDIVFSynthesizeReadAssetPacks.
- * Need + Host catalog; deposit obfuscation path never required.
+ * Evaluation + Host catalog; deposit obfuscation path never required.
  */
 export function factoryPreprocessReadOnly(): Executor<any, any> {
   return async (input, execution) => {

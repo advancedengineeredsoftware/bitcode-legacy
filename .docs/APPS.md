@@ -94,7 +94,7 @@ page client → page client; **never** packages → apps.
 | --- | --- | --- |
 | `/` | Marketing | Landing / public launch messaging |
 | `/deposits` | Deposits | **IP seller:** connect source → **SynthesizeDepositDataPacks (SDIVF)** → source-safe option review → Depository admission → compensation readback |
-| `/reads` | Reads | **IP buyer:** Read Request → Need comprehension/resynthesis → Fits finding → source-safe preview → quote → **BTC-testnet settle** → BTD rights → delivery |
+| `/reads` | Reads | **IP buyer:** Read Request → Evaluation comprehension/resynthesis → Fits finding → source-safe preview → quote → **BTC-testnet settle** → BTD rights → delivery |
 | `/exchange` | Packs | Searchable **PackActivity** master-detail (deposits, reads, previews, quotes, settlements, rights, delivery, compensation, repairs, proof roots, history) |
 | `/docs` | Docs | Public product documentation |
 | Auxillaries | Auxillaries | Identity, org/teams, **wallet**, GitHub/externals, interfaces, histories |
@@ -121,7 +121,7 @@ Depositor (/deposits)
   → /exchange activity + compensation expectation
 
 Reader (/reads)
-  Read Request → Need → Fits
+  Read Request → Evaluation → Fits
   → source-safe preview → quote
   → BTC-testnet settlement → BTD rights → delivery
   → /exchange activity
@@ -143,7 +143,7 @@ V48 product pipelines that the website drives:
 | Pipeline | Pattern | Purpose |
 | --- | --- | --- |
 | **SynthesizeDepositDataPacks** | **SDIVF** | Depositor repo (+ Obfuscations) → measured DataPack **options** on `/deposits` |
-| **SynthesizeReadDataPacks** | **SDIVF** | Reader repo + **Need** → option path on `/reads` |
+| **SynthesizeReadDataPacks** | **SDIVF** | Reader repo + **Evaluation** → option path on `/reads` |
 | **settle-asset-pack** (and related) | Linear / simple | Post-buy: BTC settle → BTD mint/rights → delivery; **1:1 DataPack : run** where SPEC requires |
 
 **SDIVF** = Setup → Discovery → Implementation → Validation → Finish — the

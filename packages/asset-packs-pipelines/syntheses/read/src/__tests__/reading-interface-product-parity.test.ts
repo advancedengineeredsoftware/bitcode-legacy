@@ -14,13 +14,13 @@ import {
   buildReadFitsFindingRuntime,
 } from '../read-fits-finding-runtime';
 import {
-  buildReadNeedReviewResynthesisRuntime,
-} from '../read-need-review-resynthesis';
+  buildReadEvaluationReviewResynthesisRuntime,
+} from '../read-evaluation-review-resynthesis';
 import {
-  acceptReadNeed,
+  acceptReadEvaluation,
   admitReadFitsFinding,
-  synthesizeReadNeedForPipelineInput,
-} from '../read-need';
+  synthesizeReadEvaluationForPipelineInput,
+} from '../read-evaluation';
 import {
   buildReadingInterfaceProductParity,
   persistReadingInterfaceProductParity,
@@ -42,13 +42,13 @@ const readInput = {
   read: {
     id: 'read-gate9',
     prompt:
-      'Request a Reading flow that reviews a synthesized Need, finds many fits, previews the AssetPack, settles, and delivers only after BTD rights transfer.',
+      'Request a Reading flow that reviews a synthesized Evaluation, finds many fits, previews the AssetPack, settles, and delivers only after BTD rights transfer.',
   },
   sourceRevision,
   targetArtifactKinds: ['asset-pack', 'rights-receipt', 'pull-request'],
   closureCriteria: [
     'Conversation delegates to Product Reading authority.',
-    'API, MCP, ChatGPT App, and package consumers cannot bypass accepted Need, settlement, rights, or delivery boundaries.',
+    'API, MCP, ChatGPT App, and package consumers cannot bypass accepted Evaluation, settlement, rights, or delivery boundaries.',
   ],
 };
 
@@ -57,7 +57,7 @@ function depositoryAsset(assetId: string): DepositoryAsset {
     assetId,
     title: 'Interface parity ready fit deposit',
     summary:
-      'Source-safe summary for Reading interface parity, accepted Need gating, preview, settlement, BTD rights, and delivery.',
+      'Source-safe summary for Reading interface parity, accepted Evaluation gating, preview, settlement, BTD rights, and delivery.',
     artifactKind: 'asset-pack',
     repositoryFullName: sourceRevision.repositoryFullName,
     sourceBranch: sourceRevision.branch,
@@ -68,7 +68,7 @@ function depositoryAsset(assetId: string): DepositoryAsset {
         unitId: `${assetId}:unit-1`,
         unitKind: 'asset-pack',
         text:
-          'interface parity accepted Need Finding Fits source-safe preview settlement BTD rights delivery no bypass',
+          'interface parity accepted Evaluation Finding Fits source-safe preview settlement BTD rights delivery no bypass',
         unitHash: `sha256:${assetId}-unit`,
       },
     ],
@@ -83,18 +83,18 @@ function depositoryAsset(assetId: string): DepositoryAsset {
 }
 
 async function settledInputs() {
-  const need = acceptReadNeed(
-    synthesizeReadNeedForPipelineInput(readInput),
+  const evaluation = acceptReadEvaluation(
+    synthesizeReadEvaluationForPipelineInput(readInput),
     '2026-05-23T00:00:00.000Z',
   );
-  const readNeedRuntime = buildReadNeedReviewResynthesisRuntime({
-    action: 'accept_read_need',
-    readNeed: need,
+  const readEvaluationRuntime = buildReadEvaluationReviewResynthesisRuntime({
+    action: 'accept_read_evaluation',
+    readEvaluation: evaluation,
   });
   const search = await runDepositorySearchForPipelineInput({
     ...readInput,
-    acceptedReadNeed: need,
-    requireAcceptedReadNeed: true,
+    acceptedReadEvaluation: evaluation,
+    requireAcceptedReadEvaluation: true,
     depositoryAssets: [
       depositoryAsset('fit-deposit-interface-1'),
       depositoryAsset('fit-deposit-interface-2'),
@@ -102,12 +102,12 @@ async function settledInputs() {
   });
   const fitResult = buildDepositoryFitResultEvidence(search);
   const readFitsRuntime = buildReadFitsFindingRuntime({
-    admission: admitReadFitsFinding({ acceptedReadNeed: need, requireAcceptedReadNeed: true }),
+    admission: admitReadFitsFinding({ acceptedReadEvaluation: evaluation, requireAcceptedReadEvaluation: true }),
     result: search,
     fitResult,
   });
   const previewBoundary = buildAssetPackPreviewBoundary({
-    need,
+    evaluation,
     fitResult,
     pullRequestTarget: 'https://github.com/octocat/Spoon-Knife/pull/409',
     createdAt: '2026-05-23T00:00:00.000Z',
@@ -121,14 +121,14 @@ async function settledInputs() {
   });
   const operationalReadback = buildReadingOperationalTelemetryRepairReadback({
     runId: 'reading-interface-gate9',
-    readNeedRuntime,
+    readEvaluationRuntime,
     readFitsRuntime,
     previewBoundary,
     settlementBoundary,
     createdAt: '2026-05-23T00:00:00.000Z',
   });
 
-  return { readNeedRuntime, readFitsRuntime, previewBoundary, settlementBoundary, operationalReadback };
+  return { readEvaluationRuntime, readFitsRuntime, previewBoundary, settlementBoundary, operationalReadback };
 }
 
 describe('Reading interface product parity', () => {
@@ -160,8 +160,8 @@ describe('Reading interface product parity', () => {
       expect(row.sameAuthorityAsProduct).toBe(true);
       expect(row.parallelAuthorityCreated).toBe(false);
       expect(row.stageContract).toMatchObject({
-        acceptedNeedRequired: true,
-        findingFitsRequiresAcceptedNeed: true,
+        acceptedEvaluationRequired: true,
+        findingFitsRequiresAcceptedEvaluation: true,
         sourceSafePreviewOnlyBeforeSettlement: true,
         settlementUnlockRequiredForSource: true,
         btdRightsRequiredForDelivery: true,
@@ -170,7 +170,7 @@ describe('Reading interface product parity', () => {
         sourceBearingDeliveryAllowedWithoutBtdRights: false,
       });
       expect(row.noBypassReadback).toMatchObject({
-        acceptedNeedGate: 'denied_without_accepted_need',
+        acceptedEvaluationGate: 'denied_without_accepted_evaluation',
         sourceSafePreview: 'source_safe_metadata_only_before_settlement',
         deliveryBoundary: 'source_bearing_delivery_locked_until_settlement_and_rights',
       });
@@ -226,7 +226,7 @@ describe('Reading interface product parity', () => {
     });
     expect(execution.get('reading/interfaces', 'parityRows')).toHaveLength(parity.rows.length);
     expect(execution.get('reading/interfaces', 'noBypassReadback')).toMatchObject({
-      acceptedNeedGate: 'denied_without_accepted_need',
+      acceptedEvaluationGate: 'denied_without_accepted_evaluation',
       btdRightsDelivery: 'required_before_source_delivery',
     });
     expect(execution.get('reading/interfaces', 'parityRoot')).toBe(parity.proofRoots.parityRoot);

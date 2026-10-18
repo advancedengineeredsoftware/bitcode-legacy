@@ -46,14 +46,14 @@ jest.mock('@bitcode/asset-packs-pipelines-syntheses-domain/runtime-inference-pol
 // Mock the heavy pipeline INDEX so its phase graph (phases/*) does not load in the
 // uapi jest env. The deposit route runs the full SDIVF pipeline here; we assert it
 // is dispatched + that its persisted output is built from the real lens adapter.
-// Also stub neediness grounding (settled Depository search) for unit isolation.
+// Also stub relative grounding (settled Depository search) for unit isolation.
 jest.mock('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-deposits-asset-packs', () => ({
   executionPipelineSDIVFSynthesizeDepositAssetPacks: jest.fn(async () => undefined),
 }));
 jest.mock('@bitcode/asset-packs-pipelines-syntheses-domain', () => ({
   runExecutionPipelineSDIVFSynthesizeAssetPacks: jest.fn(async () => undefined),
   // re-exports / shared helpers still imported from pipeline-asset-pack
-  groundOptionNeedinessFromSettledDepository: jest.fn((options: unknown[]) => options),
+  groundOptionRelativeFromSettledDepository: jest.fn((options: unknown[]) => options),
 }));
 
 // Init does not clone. Setup clone factory is wired; pipeline mock skips Setup.
@@ -80,7 +80,7 @@ jest.mock('@/lib/depository-settled-demand', () => ({
     state: 'unestimatable-demand',
     demand: null,
     saturation: null,
-    needinessVolume: null,
+    relativeVolume: null,
     settledPackCount: 0,
     matchedPackCount: 0,
     rationale: 'Unestimatable: test fixture has no settled packs.',
@@ -90,7 +90,7 @@ jest.mock('@/lib/depository-settled-demand', () => ({
     depositoryDemandSignals: [],
     readingDemandSignals: [],
     existingDepositorySignals: [],
-    unfitNeedOpportunitySignals: [],
+    unfitEvaluationOpportunitySignals: [],
   })),
 }));
 

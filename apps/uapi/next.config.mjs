@@ -698,7 +698,7 @@ let nextConfig = {
         'src',
         'index.ts'
       ),
-      '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-need': path.resolve(
+      '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-evaluation': path.resolve(
         __dirname,
         '..',
         '..',
@@ -707,9 +707,9 @@ let nextConfig = {
         'syntheses',
         'read',
         'src',
-        'read-need.ts'
+        'read-evaluation.ts'
       ),
-      '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-need-review-resynthesis': path.resolve(
+      '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-evaluation-review-resynthesis': path.resolve(
         __dirname,
         '..',
         '..',
@@ -718,7 +718,7 @@ let nextConfig = {
         'syntheses',
         'read',
         'src',
-        'read-need-review-resynthesis.ts'
+        'read-evaluation-review-resynthesis.ts'
       ),
       '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/reading-pipeline-contract': path.resolve(
         __dirname,

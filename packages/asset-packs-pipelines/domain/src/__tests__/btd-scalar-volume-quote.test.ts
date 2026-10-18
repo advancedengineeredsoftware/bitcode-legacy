@@ -4,14 +4,14 @@ import {
   type BtdScalarVolumeSelectedFitInput,
 } from '../btd-scalar-volume-quote';
 import {
-  acceptReadNeed,
+  acceptReadEvaluation,
   buildAssetPackSourceSafePreview,
   buildShareToFeePreview,
-  synthesizeReadNeedForPipelineInput,
+  synthesizeReadEvaluationForPipelineInput,
   type AssetPackSourceSafePreview,
-  type ReadNeed,
-  type ReadNeedMeasurementDimension,
-} from '../../../syntheses/read/src/read-need';
+  type ReadEvaluation,
+  type ReadEvaluationMeasurementDimension,
+} from '../../../syntheses/read/src/read-evaluation';
 import type { DepositoryFitResultEvidence } from '../../../syntheses/domain/src/depository-search';
 
 const input = {
@@ -27,9 +27,9 @@ const input = {
   },
 };
 
-function acceptedNeed(): ReadNeed {
-  return acceptReadNeed(
-    synthesizeReadNeedForPipelineInput(input),
+function acceptedEvaluation(): ReadEvaluation {
+  return acceptReadEvaluation(
+    synthesizeReadEvaluationForPipelineInput(input),
     '2026-05-31T00:00:00.000Z',
   );
 }
@@ -127,11 +127,11 @@ function fitResult(
 }
 
 function previewFor(
-  need: ReadNeed,
+  evaluation: ReadEvaluation,
   fits: Array<{ assetId: string; finalScore: number }>,
 ): AssetPackSourceSafePreview {
   return buildAssetPackSourceSafePreview({
-    need,
+    evaluation,
     fitResult: fitResult(fits),
     rangeStart: 50_000,
     pullRequestTarget: 'https://github.com/octocat/Spoon-Knife/pull/4500',
@@ -159,11 +159,11 @@ function selectedFit(
 }
 
 describe('BTD scalar volume and deterministic quote conservation', () => {
-  it('computes final Need-relative BTD scalar volume with conserved quote and one selected Fit', () => {
-    const need = acceptedNeed();
-    const preview = previewFor(need, [{ assetId: 'fit-a', finalScore: 0.82 }]);
+  it('computes final Evaluation-relative BTD scalar volume with conserved quote and one selected Fit', () => {
+    const evaluation = acceptedEvaluation();
+    const preview = previewFor(evaluation, [{ assetId: 'fit-a', finalScore: 0.82 }]);
     const projection = buildBtdScalarVolumeQuoteConservation({
-      acceptedNeed: need,
+      acceptedEvaluation: evaluation,
       sourceSafePreview: preview,
       selectedFits: [selectedFit('fit-a', 820, 8200)],
       issuedAt: '2026-05-31T00:00:00.000Z',
@@ -173,17 +173,17 @@ describe('BTD scalar volume and deterministic quote conservation', () => {
     expect(projection.state).toBe('final_btd_scalar_volume_admissible');
     expect(projection.blockers).toEqual([]);
     expect(projection.depositPotential).toMatchObject({
-      state: 'estimate_only_before_need_fit',
-      measurementRoot: need.measurementRoot,
+      state: 'estimate_only_before_evaluation_fit',
+      measurementRoot: evaluation.measurementRoot,
     });
     expect(projection.measurementWeightPolicy).toMatchObject({
-      policyId: 'need-relative-fixed-point-weighted-volume',
+      policyId: 'evaluation-relative-fixed-point-weighted-volume',
       arithmetic: 'fixed-point-integer',
       rounding: 'floor-row-remainder-rooted',
       requiredWeightBpsTotal: 10_000,
     });
     expect(projection.measurementRows).toHaveLength(
-      need.pricingMeasurementInputs.measurementVector.length,
+      evaluation.pricingMeasurementInputs.measurementVector.length,
     );
     expect(projection.quote).toMatchObject({
       quoteRoot: preview.feeQuote.quoteRoot,
@@ -205,13 +205,13 @@ describe('BTD scalar volume and deterministic quote conservation', () => {
   });
 
   it('conserves source-to-shares settlement sats and BTD range slices across many selected Fits', () => {
-    const need = acceptedNeed();
-    const preview = previewFor(need, [
+    const evaluation = acceptedEvaluation();
+    const preview = previewFor(evaluation, [
       { assetId: 'fit-a', finalScore: 0.82 },
       { assetId: 'fit-b', finalScore: 0.74 },
     ]);
     const projection = buildBtdScalarVolumeQuoteConservation({
-      acceptedNeed: need,
+      acceptedEvaluation: evaluation,
       sourceSafePreview: preview,
       selectedFits: [
         selectedFit('fit-a', 820, 8200),
@@ -240,18 +240,18 @@ describe('BTD scalar volume and deterministic quote conservation', () => {
     ]);
   });
 
-  it('blocks final BTD when reviewed Need, selected Fit set, synthesized AssetPack, proof roots, deterministic weights, range, or quote are missing', () => {
-    const need = acceptedNeed();
-    const preview = previewFor(need, [{ assetId: 'fit-a', finalScore: 0.82 }]);
-    const unreviewedNeed = synthesizeReadNeedForPipelineInput(input);
-    const malformedWeightsNeed = {
-      ...need,
+  it('blocks final BTD when reviewed Evaluation, selected Fit set, synthesized AssetPack, proof roots, deterministic weights, range, or quote are missing', () => {
+    const evaluation = acceptedEvaluation();
+    const preview = previewFor(evaluation, [{ assetId: 'fit-a', finalScore: 0.82 }]);
+    const unreviewedEvaluation = synthesizeReadEvaluationForPipelineInput(input);
+    const malformedWeightsEvaluation = {
+      ...evaluation,
       pricingMeasurementInputs: {
-        ...need.pricingMeasurementInputs,
+        ...evaluation.pricingMeasurementInputs,
         measurementVector: [
           { dimension: 'semantic_relevance', weight: 0.5, volume: 1 },
           { dimension: 'source_binding', weight: 0.4, volume: 1 },
-        ] as ReadNeedMeasurementDimension[],
+        ] as ReadEvaluationMeasurementDimension[],
       },
     };
     const malformedProofPreview = {
@@ -280,36 +280,36 @@ describe('BTD scalar volume and deterministic quote conservation', () => {
 
     const cases = [
       {
-        name: 'reviewed Need',
+        name: 'reviewed Evaluation',
         projection: buildBtdScalarVolumeQuoteConservation({
-          acceptedNeed: unreviewedNeed,
+          acceptedEvaluation: unreviewedEvaluation,
           sourceSafePreview: preview,
           selectedFits: [selectedFit('fit-a', 820, 8200)],
         }),
-        blocker: 'reviewed_need_required',
+        blocker: 'reviewed_evaluation_required',
       },
       {
         name: 'selected Fit set',
         projection: buildBtdScalarVolumeQuoteConservation({
-          acceptedNeed: need,
+          acceptedEvaluation: evaluation,
           sourceSafePreview: preview,
           selectedFits: [],
         }),
         blocker: 'selected_fit_set_required',
       },
       {
-        name: 'synthesized Need-Fit AssetPack',
+        name: 'synthesized Evaluation-Fit AssetPack',
         projection: buildBtdScalarVolumeQuoteConservation({
-          acceptedNeed: need,
-          quote: buildShareToFeePreview({ need, admittedFitQuality: 0.82 }),
+          acceptedEvaluation: evaluation,
+          quote: buildShareToFeePreview({ evaluation, admittedFitQuality: 0.82 }),
           selectedFits: [selectedFit('fit-a', 820, 8200)],
         }),
-        blocker: 'need_fit_assetpack_required',
+        blocker: 'evaluation_fit_assetpack_required',
       },
       {
         name: 'deterministic measurement weights',
         projection: buildBtdScalarVolumeQuoteConservation({
-          acceptedNeed: malformedWeightsNeed,
+          acceptedEvaluation: malformedWeightsEvaluation,
           sourceSafePreview: preview,
           selectedFits: [selectedFit('fit-a', 820, 8200)],
         }),
@@ -318,7 +318,7 @@ describe('BTD scalar volume and deterministic quote conservation', () => {
       {
         name: 'source-safe proof roots',
         projection: buildBtdScalarVolumeQuoteConservation({
-          acceptedNeed: need,
+          acceptedEvaluation: evaluation,
           sourceSafePreview: malformedProofPreview,
           selectedFits: [selectedFit('fit-a', 820, 8200)],
         }),
@@ -327,7 +327,7 @@ describe('BTD scalar volume and deterministic quote conservation', () => {
       {
         name: 'settlement-bound quote',
         projection: buildBtdScalarVolumeQuoteConservation({
-          acceptedNeed: need,
+          acceptedEvaluation: evaluation,
           sourceSafePreview: {
             ...preview,
             feeQuote: null as unknown as AssetPackSourceSafePreview['feeQuote'],
@@ -339,7 +339,7 @@ describe('BTD scalar volume and deterministic quote conservation', () => {
       {
         name: 'conserved quote',
         projection: buildBtdScalarVolumeQuoteConservation({
-          acceptedNeed: need,
+          acceptedEvaluation: evaluation,
           sourceSafePreview: malformedQuotePreview,
           selectedFits: [selectedFit('fit-a', 820, 8200)],
         }),
@@ -348,7 +348,7 @@ describe('BTD scalar volume and deterministic quote conservation', () => {
       {
         name: 'assigned BTD range',
         projection: buildBtdScalarVolumeQuoteConservation({
-          acceptedNeed: need,
+          acceptedEvaluation: evaluation,
           sourceSafePreview: unassignedRangePreview,
           selectedFits: [selectedFit('fit-a', 820, 8200)],
         }),

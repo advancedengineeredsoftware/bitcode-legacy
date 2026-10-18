@@ -241,7 +241,7 @@ describe('asset-pack sandbox host plan', () => {
     expect(source).toContain('syntheses/domain/src/index.ts');
     expect(source).toContain('synthesize-deposits-asset-packs-pipeline/src/index.ts');
     expect(source).toContain('factorySynthesizeDepositAssetPacksSDIVFPipeline');
-    expect(source).toContain('synthesizeReadNeedForPipelineInput');
+    expect(source).toContain('synthesizeReadEvaluationForPipelineInput');
     expect(source).toContain('buildAssetPackSourceSafePreview');
     expect(source).toContain('buildAssetPackPreviewBoundary');
     expect(source).toContain('persistAssetPackPreviewBoundary');
@@ -251,8 +251,8 @@ describe('asset-pack sandbox host plan', () => {
     expect(source).toContain('persistAssetPackSettlementRightsDeliveryBoundary');
     expect(source).toContain('buildAssetPackSettlementUnlock');
     expect(source).toContain('applyAssetPackSettlementUnlockToPreview');
-    expect(source).toContain('acceptedReadNeed: readNeed');
-    expect(source).toContain('requireAcceptedReadNeed');
+    expect(source).toContain('acceptedReadEvaluation: readEvaluation');
+    expect(source).toContain('requireAcceptedReadEvaluation');
     expect(source).toContain('artifact-streaming-enabled');
     expect(source).toContain('execution: execution ? summarizeExecution(execution) : null');
     expect(source).toContain('PipelineHostTimeoutError');

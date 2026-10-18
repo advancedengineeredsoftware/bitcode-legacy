@@ -14,7 +14,7 @@ interface DeliveryTemplate {
 interface DeliveryTemplateTextProps {
   text: string;
   templates?: DeliveryTemplate[];
-  defaultNeed: string;
+  defaultEvaluation: string;
   onSelect: (read: string) => void;
   onTemplateSelect: (templateId: string) => void;
   onMouseEnter: () => void;
@@ -26,7 +26,7 @@ interface DeliveryTemplateTextProps {
 export default function DeliveryTemplateText({
   text,
   templates,
-  defaultNeed,
+  defaultEvaluation,
   onSelect,
   onTemplateSelect,
   onMouseEnter,
@@ -80,7 +80,7 @@ export default function DeliveryTemplateText({
   const displayWords = [text, "select a template...", hoveredTemplate || selectedTemplate || ""];
   const currentWordIndex = (() => { if (showTemplates) { if (hoveredTemplate) return 2; if (selectedTemplate) return 2; return 1; } return hoveredTemplate && selectedTemplate ? 2 : 0; })();
 
-  const handleShippableClick = () => { if (selectedTemplateText) onSelect(selectedTemplateText); else onSelect(defaultNeed); };
+  const handleShippableClick = () => { if (selectedTemplateText) onSelect(selectedTemplateText); else onSelect(defaultEvaluation); };
 
   return (
     <span ref={rootRef} className="group/shimmer" style={{ display: "inline-block", position: "relative", fontSize: "inherit", lineHeight: "inherit", verticalAlign: "baseline", width: baseWidth ? `${baseWidth}px` : "auto", minWidth: baseWidth ? `${baseWidth}px` : "auto", maxWidth: baseWidth ? `${baseWidth}px` : "auto" }}>

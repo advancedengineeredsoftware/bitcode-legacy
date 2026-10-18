@@ -4,15 +4,15 @@
 import { runDepositDepositoryAssetPackSearch } from '@bitcode/asset-packs-pipelines-syntheses-domain/tools/deposit-depository-asset-pack-search';
 import {
   buildDepositorySearchQueryPlan,
-  extractNeedPrimaryPhrase,
+  extractEvaluationPrimaryPhrase,
 } from '@bitcode/asset-packs-pipelines-syntheses-domain/tools/depository-search-query-plan';
 
-describe('buildDepositorySearchQueryPlan (Need-first)', () => {
-  it('keeps the full Need phrase and de-prioritizes path stems for read-need-fits', () => {
+describe('buildDepositorySearchQueryPlan (Evaluation-first)', () => {
+  it('keeps the full Evaluation phrase and de-prioritizes path stems for read-evaluation-fits', () => {
     const plan = buildDepositorySearchQueryPlan({
-      needText: 'Add retries to payment webhooks when Stripe returns 429',
+      evaluationText: 'Add retries to payment webhooks when Stripe returns 429',
       paths: ['src/payments/stripe.ts', 'vendor/long-name-library/index.js'],
-      product: 'read-need-fits',
+      product: 'read-evaluation-fits',
       maxTerms: 12,
     });
     expect(plan[0]).toContain('retries');
@@ -23,7 +23,7 @@ describe('buildDepositorySearchQueryPlan (Need-first)', () => {
     // Path stems appear but must not be the only anchors
     const pathHeavy = plan.filter((t) => t === 'stripe' || t === 'index');
     expect(pathHeavy.length).toBeLessThanOrEqual(3);
-    expect(extractNeedPrimaryPhrase('  fix auth  ')).toBe('fix auth');
+    expect(extractEvaluationPrimaryPhrase('  fix auth  ')).toBe('fix auth');
   });
 });
 
@@ -47,15 +47,15 @@ describe('runDepositDepositoryAssetPackSearch', () => {
     expect(result.underservedTopics).toEqual(['auth', 'billing']);
   });
 
-  it('builds Need-first terms and ranks phrase matches for read-need-fits', async () => {
-    const need = 'Add retries to payment webhooks when Stripe returns 429';
+  it('builds Evaluation-first terms and ranks phrase matches for read-evaluation-fits', async () => {
+    const evaluation = 'Add retries to payment webhooks when Stripe returns 429';
     const result = await runDepositDepositoryAssetPackSearch({
-      needText: need,
-      product: 'read-need-fits',
+      evaluationText: evaluation,
+      product: 'read-evaluation-fits',
       paths: ['src/unrelated/foo.ts'],
       assets: [
         {
-          assetId: 'ap-need',
+          assetId: 'ap-evaluation',
           title: 'Stripe webhook retry pack',
           contentUnits: [
             {
@@ -75,7 +75,7 @@ describe('runDepositDepositoryAssetPackSearch', () => {
     });
     expect(result.success).toBe(true);
     expect(result.queryTerms[0]).toContain('payment');
-    expect(result.hits[0]?.assetId).toBe('ap-need');
+    expect(result.hits[0]?.assetId).toBe('ap-evaluation');
     expect(result.hits[0]?.matchedTerms.some((t) => t.includes('retries') || t.length > 20)).toBe(
       true,
     );
@@ -142,7 +142,7 @@ describe('runDepositDepositoryAssetPackSearch', () => {
   it('fans out multi-query and unions hits by assetId', async () => {
     const result = await runDepositDepositoryAssetPackSearch({
       queries: ['stripe webhook retries', 'invoice billing'],
-      product: 'read-need-fits',
+      product: 'read-evaluation-fits',
       assets: [
         {
           assetId: 'ap-stripe',

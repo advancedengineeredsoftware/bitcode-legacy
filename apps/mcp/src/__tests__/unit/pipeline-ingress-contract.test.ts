@@ -600,15 +600,15 @@ describe('Bitcode MCP pipeline ingress contract', () => {
       sameAuthorityAsProduct: true,
       parallelAuthorityCreated: false,
       stageContract: {
-        acceptedNeedRequired: true,
-        findingFitsRequiresAcceptedNeed: true,
+        acceptedEvaluationRequired: true,
+        findingFitsRequiresAcceptedEvaluation: true,
         sourceSafePreviewOnlyBeforeSettlement: true,
         settlementUnlockRequiredForSource: true,
         btdRightsRequiredForDelivery: true,
         sourceBearingDeliveryAllowedBeforeSettlement: false,
       },
       noBypassReadback: {
-        findingFitsRequest: 'denied_without_accepted_need',
+        findingFitsRequest: 'denied_without_accepted_evaluation',
         deliveryBoundary: 'source_bearing_delivery_locked_until_settlement_and_rights',
       },
     });

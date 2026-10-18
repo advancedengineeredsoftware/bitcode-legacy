@@ -1,8 +1,8 @@
 /**
  * Pure Depository search query planning.
  *
- * Shared by deposit relevants search and read Need-fit search. Prefer
- * human Need / demand language over path basenames so lexical+vector
+ * Shared by deposit relevants search and read Evaluation-fit search. Prefer
+ * human Evaluation / demand language over path basenames so lexical+vector
  * channels target settled AssetPack semantics, not file names alone.
  */
 
@@ -27,7 +27,7 @@ const STOPWORDS = new Set(
     'would',
     'could',
     'must',
-    'need',
+    'evaluation',
     'needs',
     'want',
     'wants',
@@ -63,14 +63,14 @@ const STOPWORDS = new Set(
   ].map((s) => s.toLowerCase()),
 );
 
-export type DepositorySearchProduct = 'read-need-fits' | 'deposit-relevants';
+export type DepositorySearchProduct = 'read-evaluation-fits' | 'deposit-relevants';
 
 export type BuildDepositorySearchQueryPlanInput = {
   /** Explicit model or caller terms (preferred first). */
   queryTerms?: string[] | null;
-  /** Free-text Need (read) or demand framing (deposit). */
-  needText?: string | null;
-  /** Alternate Need / expressed read string. */
+  /** Free-text Evaluation (read) or demand framing (deposit). */
+  evaluationText?: string | null;
+  /** Alternate Evaluation / expressed read string. */
   expressedRead?: string | null;
   repositoryFullName?: string | null;
   /** sourceCheckoutCatalog paths — secondary anchors only. */
@@ -95,14 +95,14 @@ function normalizeWhitespace(text: string): string {
 }
 
 /**
- * Extract a single primary phrase from Need text (capped) for vector+lexical.
+ * Extract a single primary phrase from Evaluation text (capped) for vector+lexical.
  * Keeping the phrase whole is critical for Reading — token-only plans lose intent.
  */
-export function extractNeedPrimaryPhrase(
-  needText: string | null | undefined,
+export function extractEvaluationPrimaryPhrase(
+  evaluationText: string | null | undefined,
   maxLen = 160,
 ): string | null {
-  const raw = normalizeWhitespace(String(needText || ''));
+  const raw = normalizeWhitespace(String(evaluationText || ''));
   if (!raw) return null;
   if (raw.length <= maxLen) return raw;
   return `${raw.slice(0, maxLen).trimEnd()}…`;
@@ -132,8 +132,8 @@ function pathBasenameTerms(paths: string[] | null | undefined, max: number): str
 
 /**
  * Build ordered query terms for Depository search.
- * Order: explicit terms → Need phrase → Need tokens → repo slug → path stems
- * (path stems capped lower for read-need-fits so Need language dominates).
+ * Order: explicit terms → Evaluation phrase → Evaluation tokens → repo slug → path stems
+ * (path stems capped lower for read-evaluation-fits so Evaluation language dominates).
  */
 export function buildDepositorySearchQueryPlan(
   input: BuildDepositorySearchQueryPlanInput,
@@ -154,24 +154,24 @@ export function buildDepositorySearchQueryPlan(
 
   for (const t of asTerms(input.queryTerms)) push(t);
 
-  const needBlob = normalizeWhitespace(
-    [input.needText, input.expressedRead].filter(Boolean).join(' '),
+  const evaluationBlob = normalizeWhitespace(
+    [input.evaluationText, input.expressedRead].filter(Boolean).join(' '),
   );
-  const primary = extractNeedPrimaryPhrase(needBlob);
+  const primary = extractEvaluationPrimaryPhrase(evaluationBlob);
   if (primary) push(primary);
-  for (const t of tokenizeSearchTerms(needBlob, 10)) push(t);
+  for (const t of tokenizeSearchTerms(evaluationBlob, 10)) push(t);
 
   const fullName = input.repositoryFullName?.trim();
   if (fullName) {
     push(fullName.split('/').pop() || fullName);
   }
 
-  // Read Need-fits: at most 3 path stems. Deposit relevants: more structure OK.
-  const pathBudget = product === 'read-need-fits' ? 3 : 8;
+  // Read Evaluation-fits: at most 3 path stems. Deposit relevants: more structure OK.
+  const pathBudget = product === 'read-evaluation-fits' ? 3 : 8;
   for (const t of pathBasenameTerms(input.paths, pathBudget)) push(t);
 
-  if (product === 'read-need-fits') {
-    push('need-fit');
+  if (product === 'read-evaluation-fits') {
+    push('evaluation-fit');
     push('source-safe-asset-pack');
   } else {
     push('source-safe-asset-pack');

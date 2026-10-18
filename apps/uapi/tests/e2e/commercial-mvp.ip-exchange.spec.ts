@@ -31,7 +31,7 @@ function readAdmissionSeed(): SeedExecution {
     agentic_execution: {
       canonicalType: 'agentic-execution:read-measurement',
       lens: 'read',
-      proofStatus: 'read Need accepted',
+      proofStatus: 'read Evaluation accepted',
       closureFocus: 'read measurement + Finding Fits admission',
     },
     context: {
@@ -204,7 +204,7 @@ test.describe('commercial MVP IP exchange browser proof', () => {
     // Five-step buyer session is route-owned.
     for (const stepId of [
       'request-read',
-      'review-synthesized-need',
+      'review-synthesized-evaluation',
       'request-fit',
       'review-synthesized-asset-pack',
       'buy-asset-pack-settle',

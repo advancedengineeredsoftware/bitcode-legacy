@@ -16,5 +16,5 @@ export {
   DATA_PACK_ABSOLUTE_KIND_SPECS,
   DATA_PACK_ABSOLUTES_PRODUCT_CATALOG,
   assertDataPackAbsolutesCatalogWeights,
-  DEPOSIT_NEEDINESS_MEASUREMENT,
+  DEPOSIT_RELATIVE_MEASUREMENT,
 } from '@bitcode/generic-asset-packs-synthesis';

@@ -28,7 +28,7 @@ sellable unit.
 | Actor | Path |
 | --- | --- |
 | Depositor | `/deposits` → connect source → SynthesizeDepositAssetPacks (SDIVF) → review → admit |
-| Reader | `/reads` → Need → SynthesizeReadAssetPacks → select → SettleAssetPack → BTD rights → delivery |
+| Reader | `/reads` → Evaluation → SynthesizeReadAssetPacks → select → SettleAssetPack → BTD rights → delivery |
 | Operator | `/packs`, Auxillaries (wallet / GitHub / org), `/docs` |
 
 - **Pipeline** = product run language (UI logs, history, host plans).

@@ -1,5 +1,5 @@
 /**
- * BitcodeERC1155 TypeScript mirror — multi-rail settle + needinesses volume.
+ * BitcodeERC1155 TypeScript mirror — multi-rail settle + relatives volume.
  */
 
 import {
@@ -11,40 +11,40 @@ import {
   buildMultiRailSpotQuote,
   burnAssetPackOwnership,
   computePayoutSplit,
-  computeSettlementBtdFromNeedinesses,
+  computeSettlementBtdFromRelatives,
   createBitcodeErc1155State,
   createMockSpotBoard,
   finalizeSellerPayout,
   finalizeSettle,
   isAssetPackCoOwner,
-  needFitVolumeToBaseUnits,
+  evaluationFitVolumeToBaseUnits,
   remainingMintable,
   transferBtd,
   type SettleQuote,
 } from '../src/erc1155';
 
-describe('computeSettlementBtdFromNeedinesses (rawV)', () => {
-  it('computes weighted need-fit scalar from needinesses only', () => {
-    const result = computeSettlementBtdFromNeedinesses({
-      needinesses: [
+describe('computeSettlementBtdFromRelatives (rawV)', () => {
+  it('computes weighted evaluation-fit scalar from relatives only', () => {
+    const result = computeSettlementBtdFromRelatives({
+      relatives: [
         { measurementKind: 'language-fit', volume: 1, weight: 0.5 },
         { measurementKind: 'domain-fit', volume: 0, weight: 0.5 },
       ],
     });
-    expect(result.needFitVolume).toBeCloseTo(0.5, 6);
-    expect(result.amountBaseUnits).toBe(needFitVolumeToBaseUnits(0.5));
+    expect(result.evaluationFitVolume).toBeCloseTo(0.5, 6);
+    expect(result.amountBaseUnits).toBe(evaluationFitVolumeToBaseUnits(0.5));
   });
 
-  it('fails closed when needinesses empty', () => {
-    const empty = computeSettlementBtdFromNeedinesses({ needinesses: [] });
+  it('fails closed when relatives empty', () => {
+    const empty = computeSettlementBtdFromRelatives({ relatives: [] });
     expect(empty.amountBaseUnits).toBe(0n);
-    expect(() => assertPositiveSettlementBtd(empty)).toThrow(/needinesses/);
+    expect(() => assertPositiveSettlementBtd(empty)).toThrow(/relatives/);
   });
 });
 
 describe('applyBtdSupplyDecay', () => {
   it('decays raw volume by residual supply fraction', () => {
-    const raw = needFitVolumeToBaseUnits(1);
+    const raw = evaluationFitVolumeToBaseUnits(1);
     const halfMinted = BTD_MAX_SUPPLY_BASE_UNITS / 2n;
     const result = applyBtdSupplyDecay({
       rawVolumeBaseUnits: raw,
@@ -56,7 +56,7 @@ describe('applyBtdSupplyDecay', () => {
 
   it('returns zero when fully minted', () => {
     const result = applyBtdSupplyDecay({
-      rawVolumeBaseUnits: needFitVolumeToBaseUnits(1),
+      rawVolumeBaseUnits: evaluationFitVolumeToBaseUnits(1),
       btdTotalMinted: BTD_MAX_SUPPLY_BASE_UNITS,
     });
     expect(result.btdVolume).toBe(0n);
@@ -66,7 +66,7 @@ describe('applyBtdSupplyDecay', () => {
 
 describe('buildMultiRailSpotQuote (mock)', () => {
   it('returns ETH/BTC/SOL options for positive volume', () => {
-    const V = needFitVolumeToBaseUnits(0.5);
+    const V = evaluationFitVolumeToBaseUnits(0.5);
     const quote = buildMultiRailSpotQuote(V, createMockSpotBoard());
     expect(quote.options).toHaveLength(3);
     for (const opt of quote.options) {
@@ -91,8 +91,8 @@ describe('BitcodeERC1155 finalizeSettle', () => {
   }
 
   function baseQuote(overrides?: Partial<SettleQuote>): SettleQuote {
-    const raw = computeSettlementBtdFromNeedinesses({
-      needinesses: [
+    const raw = computeSettlementBtdFromRelatives({
+      relatives: [
         { measurementKind: 'language-fit', volume: 1, weight: 1 },
         { measurementKind: 'domain-fit', volume: 1, weight: 1 },
       ],
@@ -110,7 +110,7 @@ describe('BitcodeERC1155 finalizeSettle', () => {
       btdVolume: decayed.btdVolume,
       payAmount: eth.payAmount,
       rateMicro: eth.rateMicro,
-      needFitMicro: Math.round(raw.needFitVolume * 1e6),
+      evaluationFitMicro: Math.round(raw.evaluationFitVolume * 1e6),
       decayMicro: decayed.decayMicro,
       shares: [
         {

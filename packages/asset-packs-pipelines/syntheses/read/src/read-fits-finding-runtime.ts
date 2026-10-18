@@ -8,8 +8,8 @@ import {
 import {
   admitReadFitsFinding,
   type ReadFitsFindingAdmission,
-  type ReadNeed,
-} from './read-need';
+  type ReadEvaluation,
+} from './read-evaluation';
 import {
   buildDepositoryFitResultEvidence,
   runDepositorySearchForPipelineInput,
@@ -20,7 +20,7 @@ import {
 } from '@bitcode/asset-packs-pipelines-syntheses-domain/depository-search';
 
 export type ReadFitsFindingStorageRecordKind =
-  | 'accepted_need_admission'
+  | 'accepted_evaluation_admission'
   | 'query_plan'
   | 'search_channel'
   | 'candidate_ranking'
@@ -31,12 +31,12 @@ export type ReadFitsFindingStorageRecordKind =
   | 'telemetry_receipt';
 
 export type ReadFitsFindingRepairAction =
-  | 'accept_read_need'
+  | 'accept_read_evaluation'
   | 'supply_depository_assets'
   | 'repair_candidate_proof'
   | 'repair_candidate_measurement'
   | 'repair_candidate_readback'
-  | 'adjust_need_constraints_or_thresholds'
+  | 'adjust_evaluation_constraints_or_thresholds'
   | 'continue_to_assetpack_preview';
 
 export interface ReadFitsFindingSourceSafety {
@@ -81,7 +81,7 @@ export interface ReadFitsFindingReplayReceipt {
   schema: 'bitcode.read-fits-finding.replay-receipt';
   pipelineName: typeof READ_FITS_FINDING_SYNTHESIS;
   replayMode: 'source-safe-query-ranking-selected-fit-replay';
-  acceptedNeedId: string | null;
+  acceptedEvaluationId: string | null;
   resultState: DepositorySearchResult['resultState'];
   queryPlanRoot: string;
   queryRoot: string;
@@ -115,10 +115,10 @@ export interface ReadFitsFindingRuntime {
   schema: 'bitcode.read-fits-finding-runtime';
   runtimeId: string;
   pipelineName: typeof READ_FITS_FINDING_SYNTHESIS;
-  acceptedNeed: {
-    needId: string;
+  acceptedEvaluation: {
+    evaluationId: string;
     requestId: string;
-    reviewState: ReadNeed['reviewState'];
+    reviewState: ReadEvaluation['reviewState'];
     measurementRoot: string;
     acceptanceRoot: string | null;
   } | null;
@@ -218,15 +218,15 @@ function storageRecord(
   };
 }
 
-function acceptedNeedSummary(admission: ReadFitsFindingAdmission): ReadFitsFindingRuntime['acceptedNeed'] {
-  const need = admission.acceptedNeed;
-  if (!need) return null;
+function acceptedEvaluationSummary(admission: ReadFitsFindingAdmission): ReadFitsFindingRuntime['acceptedEvaluation'] {
+  const evaluation = admission.acceptedEvaluation;
+  if (!evaluation) return null;
   return {
-    needId: need.needId,
-    requestId: need.request.requestId,
-    reviewState: need.reviewState,
-    measurementRoot: need.measurementRoot,
-    acceptanceRoot: need.review?.acceptanceRoot || null,
+    evaluationId: evaluation.evaluationId,
+    requestId: evaluation.request.requestId,
+    reviewState: evaluation.reviewState,
+    measurementRoot: evaluation.measurementRoot,
+    acceptanceRoot: evaluation.review?.acceptanceRoot || null,
   };
 }
 
@@ -311,7 +311,7 @@ function replayReceipt(input: {
       stableStringify(candidateCounts) === stableStringify(receipt.candidateCounts),
   };
   const replayableRecordKinds: ReadFitsFindingStorageRecordKind[] = [
-    'accepted_need_admission',
+    'accepted_evaluation_admission',
     'query_plan',
     'candidate_ranking',
     'selected_fit_provenance',
@@ -320,7 +320,7 @@ function replayReceipt(input: {
   ];
   const replayRoot = rootOf({
     pipelineName: READ_FITS_FINDING_SYNTHESIS,
-    acceptedNeedId: input.admission.acceptedNeed?.needId || null,
+    acceptedEvaluationId: input.admission.acceptedEvaluation?.evaluationId || null,
     resultState: result.resultState,
     queryPlanRoot: result.queryPlan.queryPlanRoot,
     queryRoot: result.queryRoot,
@@ -337,7 +337,7 @@ function replayReceipt(input: {
     schema: 'bitcode.read-fits-finding.replay-receipt',
     pipelineName: READ_FITS_FINDING_SYNTHESIS,
     replayMode: 'source-safe-query-ranking-selected-fit-replay',
-    acceptedNeedId: input.admission.acceptedNeed?.needId || null,
+    acceptedEvaluationId: input.admission.acceptedEvaluation?.evaluationId || null,
     resultState: result.resultState,
     queryPlanRoot: result.queryPlan.queryPlanRoot,
     queryRoot: result.queryRoot,
@@ -368,14 +368,14 @@ function repairPosture(
   ].sort();
   const nextActions: ReadFitsFindingRepairAction[] = [];
 
-  if (!admission.admitted) nextActions.push('accept_read_need');
+  if (!admission.admitted) nextActions.push('accept_read_evaluation');
   if (!result.searchedAssetCount) nextActions.push('supply_depository_assets');
   if (warnings.includes('wallet_or_attestation_proof_missing')) nextActions.push('repair_candidate_proof');
   if (warnings.includes('asset_measurement_evidence_missing')) nextActions.push('repair_candidate_measurement');
   if (warnings.some((warning) => warning.includes('readback_missing'))) {
     nextActions.push('repair_candidate_readback');
   }
-  if (result.resultState === 'no_worthy_fit') nextActions.push('adjust_need_constraints_or_thresholds');
+  if (result.resultState === 'no_worthy_fit') nextActions.push('adjust_evaluation_constraints_or_thresholds');
   if (result.resultState === 'worthy_fit') nextActions.push('continue_to_assetpack_preview');
 
   return {
@@ -387,7 +387,7 @@ function repairPosture(
     sourceSafeReason:
       result.resultState === 'worthy_fit'
         ? 'Fit deposits are ready for source-safe AssetPack preview.'
-        : 'Finding Fits remains repairable using Need admission, candidate proof, measurement, readback, or threshold evidence.',
+        : 'Finding Fits remains repairable using Evaluation admission, candidate proof, measurement, readback, or threshold evidence.',
   };
 }
 
@@ -406,12 +406,12 @@ export function buildReadFitsFindingRuntime(input: {
   const repair = repairPosture(input.admission, input.result);
   const rankingEvidence = input.result.candidateRanking.map(summarizeDepositoryCandidateForFitEvidence);
   const selectedFitEvidence = input.result.fitDeposits.map(summarizeDepositoryCandidateForFitEvidence);
-  const acceptedNeed = acceptedNeedSummary(input.admission);
+  const acceptedEvaluation = acceptedEvaluationSummary(input.admission);
   const records: ReadFitsFindingStorageRecord[] = [
-    storageRecord('accepted_need_admission', 'read/finding-fits', 'admission', {
+    storageRecord('accepted_evaluation_admission', 'read/finding-fits', 'admission', {
       admitted: input.admission.admitted,
       blockers: input.admission.blockers,
-      acceptedNeed,
+      acceptedEvaluation,
     }),
     storageRecord('query_plan', 'depository/search', 'sourceSafeQueryPlan', {
       queryPlan: input.result.queryPlan,
@@ -448,7 +448,7 @@ export function buildReadFitsFindingRuntime(input: {
   const telemetryRoot = rootOf([telemetry.root]);
   const runtimeRoot = rootOf({
     pipelineName: READ_FITS_FINDING_SYNTHESIS,
-    acceptedNeed,
+    acceptedEvaluation,
     resultState: input.result.resultState,
     resultReasons: input.result.resultReasons,
     queryPlanRoot: input.result.queryPlan.queryPlanRoot,
@@ -464,7 +464,7 @@ export function buildReadFitsFindingRuntime(input: {
     schema: 'bitcode.read-fits-finding-runtime',
     runtimeId: `read-fits-runtime-${sha256(runtimeRoot).slice(0, 16)}`,
     pipelineName: READ_FITS_FINDING_SYNTHESIS,
-    acceptedNeed,
+    acceptedEvaluation,
     findingFitsAdmission: {
       admitted: input.admission.admitted,
       blockers: input.admission.blockers,
@@ -548,7 +548,7 @@ export function summarizeReadFitsFindingRuntime(runtime: ReadFitsFindingRuntime)
     schema: runtime.schema,
     runtimeId: runtime.runtimeId,
     pipelineName: runtime.pipelineName,
-    acceptedNeed: runtime.acceptedNeed,
+    acceptedEvaluation: runtime.acceptedEvaluation,
     findingFitsAdmission: runtime.findingFitsAdmission,
     resultState: runtime.resultState,
     resultReasons: runtime.resultReasons,

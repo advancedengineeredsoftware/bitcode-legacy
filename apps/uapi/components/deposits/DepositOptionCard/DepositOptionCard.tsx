@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Single deposit AssetPack option card — contents, policy rows, neediness,
+ * Single deposit AssetPack option card — contents, policy rows, relative,
  * select/archive/resynthesize controls. Parent list owns batch deposit footer.
  */
 
@@ -583,7 +583,7 @@ export function DepositOptionCard(props: DepositOptionCardProps) {
             ) : null}
           </>
         ) : null}
-        <DepositOptionNeedinessBlock
+        <DepositOptionRelativeBlock
           option={option}
           policyDemandState={policyEvaluation?.demand.state}
           settledDemandEstimate={settledDemandEstimate}
@@ -956,8 +956,8 @@ export function DepositOptionCard(props: DepositOptionCardProps) {
   );
 }
 
-/** Neediness / est. read demand — settled-Depository grounded, fail-closed. */
-function DepositOptionNeedinessBlock({
+/** Relative / est. read demand — settled-Depository grounded, fail-closed. */
+function DepositOptionRelativeBlock({
   option,
   policyDemandState,
   settledDemandEstimate,
@@ -966,9 +966,9 @@ function DepositOptionNeedinessBlock({
   policyDemandState: string | undefined;
   settledDemandEstimate: DepositSettledDemandEstimate | null;
 }) {
-  // Prefer settled-Depository grounding over LLM-invented neediness.
+  // Prefer settled-Depository grounding over LLM-invented relative.
   const rationale =
-    option.neediness?.rationale || settledDemandEstimate?.rationale || "";
+    option.relative?.rationale || settledDemandEstimate?.rationale || "";
   const unestimatable =
     settledDemandEstimate?.estimatable === false ||
     policyDemandState === "unestimatable-demand" ||
@@ -977,7 +977,7 @@ function DepositOptionNeedinessBlock({
     return (
       <div className="min-w-0 border border-amber-300/25 bg-amber-300/[0.06] px-3 py-2">
         <dt className="text-[0.58rem] uppercase tracking-[0.14em] text-amber-200/85">
-          Neediness · est. read demand
+          Relative · est. read demand
         </dt>
         <dd className="mt-1 text-sm text-amber-100/95">Unestimatable</dd>
         {rationale ? (
@@ -993,14 +993,14 @@ function DepositOptionNeedinessBlock({
       </div>
     );
   }
-  // Settled-grounded display: prefer option neediness when already grounded;
+  // Settled-grounded display: prefer option relative when already grounded;
   // else fall back to corpus estimate.
-  const demand = option.neediness?.demand ?? settledDemandEstimate?.demand ?? null;
+  const demand = option.relative?.demand ?? settledDemandEstimate?.demand ?? null;
   const saturation =
-    option.neediness?.saturation ?? settledDemandEstimate?.saturation ?? null;
+    option.relative?.saturation ?? settledDemandEstimate?.saturation ?? null;
   const volume =
-    option.neediness?.volume ??
-    settledDemandEstimate?.needinessVolume ??
+    option.relative?.volume ??
+    settledDemandEstimate?.relativeVolume ??
     (typeof demand === "number" && typeof saturation === "number"
       ? demand * (0.5 + 0.5 * (1 - saturation))
       : null);
@@ -1012,11 +1012,11 @@ function DepositOptionNeedinessBlock({
     return (
       <div className="min-w-0 border border-amber-300/25 bg-amber-300/[0.06] px-3 py-2">
         <dt className="text-[0.58rem] uppercase tracking-[0.14em] text-amber-200/85">
-          Neediness · est. read demand
+          Relative · est. read demand
         </dt>
         <dd className="mt-1 text-sm text-amber-100/95">Unestimatable</dd>
         <dd className="mt-1 break-words text-[0.7rem] leading-5 text-neutral-400">
-          Unestimatable: no settled Depository neediness signal for this
+          Unestimatable: no settled Depository relative signal for this
           AssetPack option.
         </dd>
       </div>
@@ -1025,7 +1025,7 @@ function DepositOptionNeedinessBlock({
   return (
     <div className="min-w-0 border border-amber-300/25 bg-amber-300/[0.06] px-3 py-2">
       <dt className="text-[0.58rem] uppercase tracking-[0.14em] text-amber-200/85">
-        Neediness · est. read demand
+        Relative · est. read demand
       </dt>
       <dd className="mt-1 text-sm text-neutral-100">
         {(volume * 100).toFixed(0)}%

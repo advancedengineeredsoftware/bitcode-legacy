@@ -19,7 +19,7 @@ function makePack(overrides: Record<string, any> = {}) {
     summary:
       'A bounded, source-safe capability slice covering session authentication and refresh.',
     coveredSourcePaths: ['src/auth/session.ts'],
-    // Nested measurement kinds: deposit absolutes only (neediness is Read-pipeline).
+    // Nested measurement kinds: deposit absolutes only (relative is Read-pipeline).
     measurements: {
       absolutes: [
         {

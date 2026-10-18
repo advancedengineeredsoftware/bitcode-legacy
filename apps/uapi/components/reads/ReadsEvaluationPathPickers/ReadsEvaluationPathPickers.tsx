@@ -1,5 +1,5 @@
 /**
- * Relevant / Irrelevant path pickers for read Need synthesis (deposit twin).
+ * Relevant / Irrelevant path pickers for read Evaluation synthesis (deposit twin).
  * Mirrors Permissible sources / Impermissible sources trees on deposit Obfuscations.
  */
 "use client";
@@ -8,7 +8,7 @@ import React from "react";
 import { VCSFileTreePicker } from "@/components/bitcode/vcs/VCSFileTreePicker/VCSFileTreePicker";
 import type { RepositoryContextState } from "@/components/bitcode/pipeline/models/repository-context";
 
-export type ReadsNeedPathPickersProps = {
+export type ReadsEvaluationPathPickersProps = {
   isConfigLocked: boolean;
   relevantPaths: string[];
   onRelevantPathsChange: (paths: string[]) => void;
@@ -17,14 +17,14 @@ export type ReadsNeedPathPickersProps = {
   repositoryContext: RepositoryContextState | null;
 };
 
-export function ReadsNeedPathPickers({
+export function ReadsEvaluationPathPickers({
   isConfigLocked,
   relevantPaths,
   onRelevantPathsChange,
   irrelevantPaths,
   onIrrelevantPathsChange,
   repositoryContext,
-}: ReadsNeedPathPickersProps) {
+}: ReadsEvaluationPathPickersProps) {
   const provider = repositoryContext?.provider ?? "github";
   const repositoryFullName =
     repositoryContext?.selectedRepository?.fullName ?? null;

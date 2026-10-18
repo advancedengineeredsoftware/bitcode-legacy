@@ -2,7 +2,7 @@
  * Fail-closed validation of raw synthesis candidates into AssetPackCandidates.
  *
  * Drops options with unknown/excluded covered paths or missing formal absolutes;
- * maps neediness signals; attaches source-safe patch descriptors. Used by the
+ * maps relative signals; attaches source-safe patch descriptors. Used by the
  * deposit route and by synthesizeAssetPackCandidates post-inference checks.
  */
 
@@ -15,7 +15,7 @@ import type {
 } from './asset-packs-synthesis-types';
 import type { SynthesizeAssetPacksMode } from './synthesize-asset-packs';
 import { isPathImpermissible } from './asset-packs-synthesis-inventory';
-import { buildNeedinessFromSignal, clampVolume } from './asset-packs-synthesis-neediness';
+import { buildRelativeFromSignal, clampVolume } from './asset-packs-synthesis-relative';
 
 /**
  * Defense-in-depth source-safety assertion: if any non-trivial source line
@@ -113,7 +113,7 @@ export function validateDepositSynthesisOptions(
       label: String(m.label ?? m.measurementKind),
       weight: Number.isFinite(m.weight) ? Number(m.weight) : 0,
       volume: clampVolume(Number(m.volume) || 0),
-      category: m.category === 'neediness' ? 'neediness' : 'absolute',
+      category: m.category === 'relative' ? 'relative' : 'absolute',
       ...(Number.isFinite(m.magnitude as number)
         ? { magnitude: Math.max(0, Math.round(Number(m.magnitude))) }
         : {}),
@@ -267,8 +267,8 @@ export function validateDepositSynthesisOptions(
           ...(measureReport ? { measureReport } : {}),
         };
       })(),
-      // Neediness is entirely a Read-pipeline concept — never synthesize for deposit.
-      neediness: undefined,
+      // Relative is entirely a Read-pipeline concept — never synthesize for deposit.
+      relative: undefined,
     });
   }
   return {

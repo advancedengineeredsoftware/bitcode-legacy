@@ -13,8 +13,8 @@ export type ProductReadFitsFindingSynthesisHostRequest = {
   mode: 'asset_pack_pipeline';
   readId: string;
   readPrompt: string;
-  acceptedReadNeed: unknown;
-  requireAcceptedReadNeed: true;
+  acceptedReadEvaluation: unknown;
+  requireAcceptedReadEvaluation: true;
   depositId: string;
   depositAssetId?: string | null;
   depositHasWalletOrAttestationProof?: boolean;
@@ -79,13 +79,13 @@ export function buildProductReadFitsFindingSynthesisHostRequest({
   repositoryContext,
   depositedSourceRevision,
   readActivityId,
-  acceptedReadNeed,
+  acceptedReadEvaluation,
 }: {
   workbench: ProductDepositReadWorkbench | null;
   repositoryContext?: RepositoryContextState | null;
   depositedSourceRevision?: ProductDepositedSourceRevision | null;
   readActivityId?: string | null;
-  acceptedReadNeed?: unknown;
+  acceptedReadEvaluation?: unknown;
 }): ProductReadFitsFindingSynthesisHostRequestState {
   const selectedRepository = repositoryContext?.selectedRepository || null;
   const sourceRevision = workbench?.sourceRevision || null;
@@ -110,9 +110,9 @@ export function buildProductReadFitsFindingSynthesisHostRequest({
   );
   const depositId = normalizedText(depositedSourceRevision?.activityId || '');
   const readId = normalizedText(readActivityId || '');
-  const acceptedNeed = recordValue(acceptedReadNeed);
-  const acceptedNeedId = normalizedText(acceptedNeed?.needId as string | undefined);
-  const acceptedNeedReviewState = normalizedText(acceptedNeed?.reviewState as string | undefined);
+  const acceptedEvaluation = recordValue(acceptedReadEvaluation);
+  const acceptedEvaluationId = normalizedText(acceptedEvaluation?.evaluationId as string | undefined);
+  const acceptedEvaluationReviewState = normalizedText(acceptedEvaluation?.reviewState as string | undefined);
 
   const missing = [
     !workbench ? 'read-fit workbench' : null,
@@ -121,7 +121,7 @@ export function buildProductReadFitsFindingSynthesisHostRequest({
     !sourceCommit ? 'source commit' : null,
     !depositId ? 'deposit activity' : null,
     !readId ? 'admitted Read activity' : null,
-    !acceptedNeedId || acceptedNeedReviewState !== 'accepted' ? 'accepted Read-Need' : null,
+    !acceptedEvaluationId || acceptedEvaluationReviewState !== 'accepted' ? 'accepted Read-Evaluation' : null,
   ].filter((entry): entry is string => Boolean(entry));
 
   if (missing.length > 0 || !workbench) {
@@ -139,8 +139,8 @@ export function buildProductReadFitsFindingSynthesisHostRequest({
       mode: 'asset_pack_pipeline',
       readId,
       readPrompt: workbench.read.summary,
-      acceptedReadNeed,
-      requireAcceptedReadNeed: true,
+      acceptedReadEvaluation,
+      requireAcceptedReadEvaluation: true,
       depositId,
       depositAssetId: depositedSourceRevision?.depositAssetId || null,
       depositHasWalletOrAttestationProof:
@@ -607,10 +607,10 @@ export function summarizeProductReadFitsFindingSynthesisHostEvent(
   const data = recordValue(event.data);
   if (event.event === 'host-started') {
     const runId = shortIdentifier(data?.runId);
-    const needId = shortIdentifier(data?.readNeedId);
+    const evaluationId = shortIdentifier(data?.readEvaluationId);
     return [
       `Host started for ${data?.repositoryFullName || 'selected repository'}`,
-      needId ? `Need ${needId}` : null,
+      evaluationId ? `Evaluation ${evaluationId}` : null,
       runId ? `run ${runId}` : null,
     ].filter(Boolean).join('; ') + '.';
   }

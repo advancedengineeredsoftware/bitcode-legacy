@@ -87,7 +87,7 @@ export const PRODUCT_ACTION_GUIDES = [
       'Write the currently measured demand frame into the Bitcode activity ledger before fit and closure read against it.',
     expectedRead:
       'The product activity result can reopen the exact Read frame with parser posture, scenario, and review state intact.',
-    proofSignal: PRODUCT_INLINE_EXPLAINERS.activeNeed.summary,
+    proofSignal: PRODUCT_INLINE_EXPLAINERS.activeEvaluation.summary,
   },
   {
     id: 'read-review',

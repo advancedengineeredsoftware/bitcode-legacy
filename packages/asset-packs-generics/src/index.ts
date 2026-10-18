@@ -2,7 +2,7 @@
  * @bitcode/asset-packs-generics
  *
  * AssetPack **primitive** contracts for Bitcode Protocol.
- * Measurements (absolutes | needinesses) are part of the primitive shape via
+ * Measurements (absolutes | relatives) are part of the primitive shape via
  * `@bitcode/measurement-generics`.
  *
  * Hierarchy:

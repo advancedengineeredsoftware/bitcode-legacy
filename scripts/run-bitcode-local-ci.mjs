@@ -592,8 +592,8 @@ export function buildLocalCiSteps(repoRoot, mode) {
       '--forceExit',
     ]),
   );
-  add('gate-test-read-need', () =>
-    runPnpm(repoRoot, 'Gate test: read-need', [
+  add('gate-test-read-evaluation', () =>
+    runPnpm(repoRoot, 'Gate test: read-evaluation', [
       '--filter',
       readingFilter,
       'exec',
@@ -601,8 +601,8 @@ export function buildLocalCiSteps(repoRoot, mode) {
       '--config',
       'jest.config.cjs',
       '--runTestsByPath',
-      'src/__tests__/read-need.test.ts',
-      'src/__tests__/read-need-review-resynthesis.test.ts',
+      'src/__tests__/read-evaluation.test.ts',
+      'src/__tests__/read-evaluation-review-resynthesis.test.ts',
       '--runInBand',
       '--forceExit',
     ]),

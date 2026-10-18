@@ -8,7 +8,7 @@
  *  - Fan-out: each query independent; hits union by assetId (max score)
  *
  * Embed generation: open-source gte-small via Edge (not OpenAI Embeddings API).
- * Products: deposit-relevants | read-need-fits (query plan framing only).
+ * Products: deposit-relevants | read-evaluation-fits (query plan framing only).
  */
 
 import {
@@ -51,13 +51,13 @@ export type DepositDepositorySearchToolInput = {
   queryTerms?: string[];
   /**
    * Multi-query fan-out. When present, each query is searched independently
-   * and hits are unioned (max score). Prefer this for read Need-fits.
+   * and hits are unioned (max score). Prefer this for read Evaluation-fits.
    */
   queries?: string[] | null;
-  /** Free-text Need / demand — folded into query plan when present. */
-  needText?: string | null;
+  /** Free-text Evaluation / demand — folded into query plan when present. */
+  evaluationText?: string | null;
   expressedRead?: string | null;
-  /** Product query framing: deposit-relevants | read-need-fits (not dual-pipeline mode). */
+  /** Product query framing: deposit-relevants | read-evaluation-fits (not dual-pipeline mode). */
   product?: DepositorySearchProduct;
   paths?: string[] | null;
   assets?: DepositoryAsset[];
@@ -90,7 +90,7 @@ export type DepositDepositorySearchHit = {
 
 /**
  * Source-safe search quality telemetry for pipeline/stream debug
- * (deposit relevants + read Need-fits). No raw source; scores + ids only.
+ * (deposit relevants + read Evaluation-fits). No raw source; scores + ids only.
  */
 export type DepositorySearchQualityTelemetry = {
   schema: 'bitcode.depository.search-quality-telemetry';
@@ -98,7 +98,7 @@ export type DepositorySearchQualityTelemetry = {
   repositoryFullName: string | null;
   queryCount: number;
   queries: string[];
-  needTextPreview: string | null;
+  evaluationTextPreview: string | null;
   assetCorpusSize: number;
   assetCorpusAfterFilters: number;
   hitCount: number;
@@ -318,7 +318,7 @@ export function collectLexicalFieldCorpora(asset: DepositoryAsset): LexicalField
 
 /**
  * Field-weighted lexical score (STAB-C1).
- * Multi-word Need phrases weigh more than single path-stem tokens.
+ * Multi-word Evaluation phrases weigh more than single path-stem tokens.
  * A term matching commercial NL contributes full weight; path-only matches
  * contribute LEXICAL_FIELD_WEIGHTS.paths so path noise cannot rank like buyer prose.
  */
@@ -501,33 +501,33 @@ export async function runDepositDepositoryAssetPackSearch(
   const env = input.env || process.env;
   const product: DepositorySearchProduct =
     input.product ||
-    (input.needText || input.expressedRead ? 'read-need-fits' : 'deposit-relevants');
+    (input.evaluationText || input.expressedRead ? 'read-evaluation-fits' : 'deposit-relevants');
   const explicitTerms = asTerms(input?.queryTerms);
-  // Prefer explicit model terms when present; else build from Need/paths.
+  // Prefer explicit model terms when present; else build from Evaluation/paths.
   const queryTerms =
     explicitTerms.length > 0
       ? explicitTerms
       : buildDepositorySearchQueryPlan({
           queryTerms: explicitTerms,
-          needText: input.needText,
+          evaluationText: input.evaluationText,
           expressedRead: input.expressedRead,
           repositoryFullName: input.repositoryFullName,
           paths: input.paths,
           product,
         });
-  // When both Need and explicit terms exist, ensure Need phrase is in the plan.
-  const withNeed =
-    explicitTerms.length > 0 && (input.needText || input.expressedRead)
+  // When both Evaluation and explicit terms exist, ensure Evaluation phrase is in the plan.
+  const withEvaluation =
+    explicitTerms.length > 0 && (input.evaluationText || input.expressedRead)
       ? buildDepositorySearchQueryPlan({
           queryTerms: explicitTerms,
-          needText: input.needText,
+          evaluationText: input.evaluationText,
           expressedRead: input.expressedRead,
           repositoryFullName: input.repositoryFullName,
           paths: input.paths,
           product,
         })
       : queryTerms;
-  const finalTerms = withNeed.length > 0 ? withNeed : queryTerms;
+  const finalTerms = withEvaluation.length > 0 ? withEvaluation : queryTerms;
   const queries = resolveQueries(input, finalTerms);
 
   const embeddingPolicy = buildAssetPackEmbeddingPolicy(
@@ -539,8 +539,8 @@ export async function runDepositDepositoryAssetPackSearch(
   const assets = applyStaticFilters(rawAssets, input.staticFilters);
 
   const defaultPrompt =
-    product === 'read-need-fits'
-      ? 'read need-fit depository search'
+    product === 'read-evaluation-fits'
+      ? 'read evaluation-fit depository search'
       : 'deposit supply demand framing';
 
   let searchResult: DepositorySearchResult | null = null;
@@ -734,7 +734,7 @@ export async function runDepositDepositoryAssetPackSearch(
     if (!asset) continue;
     const blended = blendHybridScoreWithAbsolutes(hit.finalScore, asset, {
       queryTerms: finalTerms,
-      absoluteWeight: product === 'read-need-fits' ? 0.24 : 0.18,
+      absoluteWeight: product === 'read-evaluation-fits' ? 0.24 : 0.18,
     });
     const facets = extractAbsoluteFacets(asset);
     hitMap.set(id, {
@@ -782,9 +782,9 @@ export async function runDepositDepositoryAssetPackSearch(
     channelCounts[h.channel] = (channelCounts[h.channel] || 0) + 1;
   }
 
-  const needPreview =
-    typeof input.needText === 'string' && input.needText.trim()
-      ? input.needText.trim().slice(0, 160)
+  const evaluationPreview =
+    typeof input.evaluationText === 'string' && input.evaluationText.trim()
+      ? input.evaluationText.trim().slice(0, 160)
       : typeof input.expressedRead === 'string' && input.expressedRead.trim()
         ? input.expressedRead.trim().slice(0, 160)
         : null;
@@ -795,7 +795,7 @@ export async function runDepositDepositoryAssetPackSearch(
     repositoryFullName: input.repositoryFullName || null,
     queryCount: fanout.length,
     queries: fanout,
-    needTextPreview: needPreview,
+    evaluationTextPreview: evaluationPreview,
     assetCorpusSize: rawAssets.length,
     assetCorpusAfterFilters: assets.length,
     hitCount: hits.length,
@@ -864,7 +864,7 @@ export async function runDepositDepositoryAssetPackSearch(
 
 export {
   buildDepositorySearchQueryPlan,
-  extractNeedPrimaryPhrase,
+  extractEvaluationPrimaryPhrase,
   tokenizeSearchTerms,
 } from './depository-search-query-plan';
 export type { DepositorySearchProduct } from './depository-search-query-plan';

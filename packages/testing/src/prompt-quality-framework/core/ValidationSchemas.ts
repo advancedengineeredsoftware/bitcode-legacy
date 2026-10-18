@@ -385,7 +385,7 @@ export class ContextCompletenessRule extends ValidationRule {
       severity: 'high',
       parameters: {
         requiredContextElements: [
-          'need_description',
+          'evaluation_description',
           'success_criteria',
           'constraints',
           'available_tools',
@@ -431,7 +431,7 @@ export class ContextCompletenessRule extends ValidationRule {
     
     // Read description
     if (text.includes('read') || text.includes('objective') || text.includes('goal')) {
-      foundElements.push('need_description');
+      foundElements.push('evaluation_description');
     }
     
     // Success criteria

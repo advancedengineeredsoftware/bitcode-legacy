@@ -10,7 +10,7 @@ Network-scope PackActivity master-detail for `/exchange` — aligned with
 | --- | --- | --- | --- |
 | `/exchange` | Activity table + compact portfolio strip | Source-safe AP detail grid | Back to Exchange |
 | `/deposits` | Pipelines table | Source + Obfuscations + options | Back to Deposit |
-| `/reads` | Pipelines table | Source + Need + options | Back to Read |
+| `/reads` | Pipelines table | Source + Evaluation + options | Back to Read |
 
 ## Layout
 
@@ -42,7 +42,7 @@ exchange/
 ## Type filters (ownership + payout)
 
 - **My DataExchange** / reads bought / deposits unsettled|settled — ownership lenses
-- **Needs payout review** — settled rows with `pendingPayout.status === pending-seller-review`
+- **Evaluations payout review** — settled rows with `pendingPayout.status === pending-seller-review`
   (escrow still held; seller finalizes BTD% vs pay-asset% on detail)
 - Network depository / settled commodity cuts
 

@@ -1,7 +1,7 @@
 /**
- * Commercial Read-Need review API.
+ * Commercial Read-Evaluation review API.
  *
- * Owns product Read-Need synthesis / accept / reject actions used by the Reads
+ * Owns product Read-Evaluation synthesis / accept / reject actions used by the Reads
  * experience. Protocol-demo host shims (scenario GET, specifying reviewRead)
  * are intentionally absent — those lived under the specifying machine only.
  */
@@ -15,77 +15,77 @@ type StatusError = Error & { statusCode?: number | undefined };
 export async function POST(request: Request) {
   try {
     const body = await readJsonBody(request);
-    const action = readNeedAction(body);
-    if (action === 'synthesize_read_need' || action === 'resynthesize_read_need') {
-      const { synthesizeReadNeedForPipelineInputWithInference } = await import('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-need');
+    const action = readEvaluationAction(body);
+    if (action === 'synthesize_read_evaluation' || action === 'resynthesize_read_evaluation') {
+      const { synthesizeReadEvaluationForPipelineInputWithInference } = await import('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-evaluation');
       const {
-        buildReadNeedReviewResynthesisRuntime,
-        persistReadNeedReviewResynthesisRuntime,
-        summarizeReadNeedReviewResynthesisRuntime,
-      } = await import('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-need-review-resynthesis');
+        buildReadEvaluationReviewResynthesisRuntime,
+        persistReadEvaluationReviewResynthesisRuntime,
+        summarizeReadEvaluationReviewResynthesisRuntime,
+      } = await import('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-evaluation-review-resynthesis');
       const {
-        READ_NEED_COMPREHENSION_SYNTHESIS,
-        READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT,
+        READ_EVALUATION_COMPREHENSION_SYNTHESIS,
+        READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT,
         listReadingPipelineTelemetryTrace,
         summarizeReadingPipelineContract,
       } = await import('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/reading-pipeline-contract');
       const inferenceCapture = createRouteInferenceCapture();
-      const readNeed = await synthesizeReadNeedForPipelineInputWithInference(
-        readNeedPipelineInput(body),
+      const readEvaluation = await synthesizeReadEvaluationForPipelineInputWithInference(
+        readEvaluationPipelineInput(body),
         inferenceCapture.execution,
       );
-      const reviewRuntime = buildReadNeedReviewResynthesisRuntime({
+      const reviewRuntime = buildReadEvaluationReviewResynthesisRuntime({
         action,
-        readNeed,
-        previousReadNeed: objectValue(body.previousReadNeed || body.readNeed) as Parameters<typeof buildReadNeedReviewResynthesisRuntime>[0]['previousReadNeed'],
-        feedback: stringArray(body.feedback || body.readNeedFeedback),
+        readEvaluation,
+        previousReadEvaluation: objectValue(body.previousReadEvaluation || body.readEvaluation) as Parameters<typeof buildReadEvaluationReviewResynthesisRuntime>[0]['previousReadEvaluation'],
+        feedback: stringArray(body.feedback || body.readEvaluationFeedback),
       });
-      persistReadNeedReviewResynthesisRuntime(inferenceCapture.execution, reviewRuntime);
+      persistReadEvaluationReviewResynthesisRuntime(inferenceCapture.execution, reviewRuntime);
       const synthesisStep =
-        READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT.phases
+        READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT.phases
           .flatMap((phase) => phase.agents)
           .flatMap((agent) => agent.ptrrSteps)
-          .find((step) => step.ptrrStepId === 'ReadNeedComprehensionSynthesis.comprehend.need-synthesizer.try');
+          .find((step) => step.ptrrStepId === 'ReadEvaluationComprehensionSynthesis.comprehend.evaluation-synthesizer.try');
 
       return NextResponse.json({
         ok: true,
-        pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
-        stage: 'review_synthesized_need',
+        pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
+        stage: 'review_synthesized_evaluation',
         action,
-        readNeed,
-        readRequest: readNeed.request,
-        readNeedReviewRuntime: reviewRuntime,
+        readEvaluation,
+        readRequest: readEvaluation.request,
+        readEvaluationReviewRuntime: reviewRuntime,
         storageProjection: reviewRuntime.storageProjection,
-        runtimeSummary: summarizeReadNeedReviewResynthesisRuntime(reviewRuntime),
+        runtimeSummary: summarizeReadEvaluationReviewResynthesisRuntime(reviewRuntime),
         fitsFindingAdmission: reviewRuntime.findingFitsAdmission,
         telemetry: {
-          schema: 'bitcode.read-need.synthesis-telemetry',
-          pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
-          pipelineContract: summarizeReadingPipelineContract(READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT),
-          pipelineTrace: listReadingPipelineTelemetryTrace(READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT),
-          phaseId: 'ReadNeedComprehensionSynthesis.comprehend',
-          agentId: 'ReadNeedComprehensionSynthesis.comprehend.need-synthesizer',
-          ptrrStepId: synthesisStep?.ptrrStepId || 'ReadNeedComprehensionSynthesis.comprehend.need-synthesizer.try',
+          schema: 'bitcode.read-evaluation.synthesis-telemetry',
+          pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
+          pipelineContract: summarizeReadingPipelineContract(READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT),
+          pipelineTrace: listReadingPipelineTelemetryTrace(READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT),
+          phaseId: 'ReadEvaluationComprehensionSynthesis.comprehend',
+          agentId: 'ReadEvaluationComprehensionSynthesis.comprehend.evaluation-synthesizer',
+          ptrrStepId: synthesisStep?.ptrrStepId || 'ReadEvaluationComprehensionSynthesis.comprehend.evaluation-synthesizer.try',
           thinkingsGenerationIds: synthesisStep?.thinkingsGenerationIds || [],
           promptTemplate: synthesisStep?.prompt || null,
-          promptInput: readNeed.read,
+          promptInput: readEvaluation.read,
           interpolatedContext: {
-            sourceConstraints: readNeed.sourceConstraints,
-            targetArtifactKinds: readNeed.targetArtifactKinds,
-            closureCriteria: readNeed.closureCriteria,
-            feedbackHistory: readNeed.feedbackHistory,
+            sourceConstraints: readEvaluation.sourceConstraints,
+            targetArtifactKinds: readEvaluation.targetArtifactKinds,
+            closureCriteria: readEvaluation.closureCriteria,
+            feedbackHistory: readEvaluation.feedbackHistory,
           },
           modelOutput: {
-            runtime: 'structured-read-need-synthesis',
+            runtime: 'structured-read-evaluation-synthesis',
             outputKind: 'typed-protocol-synthesis',
-            requirements: readNeed.requirements,
-            failureModes: readNeed.failureModes,
-            proofExpectations: readNeed.proofExpectations,
+            requirements: readEvaluation.requirements,
+            failureModes: readEvaluation.failureModes,
+            proofExpectations: readEvaluation.proofExpectations,
           },
           rawModelResponse: {
-            runtime: 'structured-read-need-synthesis',
+            runtime: 'structured-read-evaluation-synthesis',
             outputKind: 'typed-protocol-synthesis',
-            content: readNeed,
+            content: readEvaluation,
           },
           thinkingsGeneration: {
             mode: inferenceCapture.value('bounded-inference', 'mode') || 'deterministic-typed-witness',
@@ -95,15 +95,15 @@ export async function POST(request: Request) {
             judgmentOutput: inferenceCapture.value('llm', 'judgmentOutput') || null,
             structuredOutput: inferenceCapture.value('llm', 'parsedOutput') || null,
           },
-          parsedTypedOutput: readNeed,
-          returnType: 'ReadNeed',
-          parsedNeed: readNeed,
-          readRequest: readNeed.request,
-          previousNeedId: readNeed.request.previousNeedId || null,
-          feedbackHistory: readNeed.feedbackHistory,
-          measurementRoot: readNeed.measurementRoot,
-          reviewState: readNeed.reviewState,
-          resynthesisAttempt: action === 'resynthesize_read_need',
+          parsedTypedOutput: readEvaluation,
+          returnType: 'ReadEvaluation',
+          parsedEvaluation: readEvaluation,
+          readRequest: readEvaluation.request,
+          previousEvaluationId: readEvaluation.request.previousEvaluationId || null,
+          feedbackHistory: readEvaluation.feedbackHistory,
+          measurementRoot: readEvaluation.measurementRoot,
+          reviewState: readEvaluation.reviewState,
+          resynthesisAttempt: action === 'resynthesize_read_evaluation',
           runtimeRoot: reviewRuntime.proofRoots.runtimeRoot,
           storageRoot: reviewRuntime.proofRoots.storageRoot,
           telemetryRoot: reviewRuntime.proofRoots.telemetryRoot,
@@ -112,72 +112,72 @@ export async function POST(request: Request) {
       });
     }
 
-    if (action === 'accept_read_need') {
-      const { acceptReadNeed, admitReadFitsFinding } = await import('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-need');
+    if (action === 'accept_read_evaluation') {
+      const { acceptReadEvaluation, admitReadFitsFinding } = await import('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-evaluation');
       const {
-        buildReadNeedReviewResynthesisRuntime,
-        persistReadNeedReviewResynthesisRuntime,
-        summarizeReadNeedReviewResynthesisRuntime,
-      } = await import('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-need-review-resynthesis');
+        buildReadEvaluationReviewResynthesisRuntime,
+        persistReadEvaluationReviewResynthesisRuntime,
+        summarizeReadEvaluationReviewResynthesisRuntime,
+      } = await import('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-evaluation-review-resynthesis');
       const {
-        READ_NEED_COMPREHENSION_SYNTHESIS,
-        READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT,
+        READ_EVALUATION_COMPREHENSION_SYNTHESIS,
+        READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT,
         READ_FITS_FINDING_SYNTHESIS,
         listReadingPipelineTelemetryTrace,
         summarizeReadingPipelineContract,
       } = await import('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/reading-pipeline-contract');
-      const readNeed = objectValue(body.readNeed) || objectValue(body.acceptedReadNeed);
-      if (!readNeed || readNeed.schema !== 'bitcode.read.need') {
-        return NextResponse.json({ error: 'readNeed is required' }, { status: 400 });
+      const readEvaluation = objectValue(body.readEvaluation) || objectValue(body.acceptedReadEvaluation);
+      if (!readEvaluation || readEvaluation.schema !== 'bitcode.read.need') {
+        return NextResponse.json({ error: 'readEvaluation is required' }, { status: 400 });
       }
 
-      const acceptedReadNeed = acceptReadNeed(readNeed as unknown as Parameters<typeof acceptReadNeed>[0]);
+      const acceptedReadEvaluation = acceptReadEvaluation(readEvaluation as unknown as Parameters<typeof acceptReadEvaluation>[0]);
       const fitsFindingAdmission = admitReadFitsFinding({
-        acceptedReadNeed,
-        requireAcceptedReadNeed: true,
+        acceptedReadEvaluation,
+        requireAcceptedReadEvaluation: true,
       });
       const inferenceCapture = createRouteInferenceCapture();
-      const reviewRuntime = buildReadNeedReviewResynthesisRuntime({
+      const reviewRuntime = buildReadEvaluationReviewResynthesisRuntime({
         action,
-        readNeed: acceptedReadNeed,
+        readEvaluation: acceptedReadEvaluation,
       });
-      persistReadNeedReviewResynthesisRuntime(inferenceCapture.execution, reviewRuntime);
+      persistReadEvaluationReviewResynthesisRuntime(inferenceCapture.execution, reviewRuntime);
       const acceptanceStep =
-        READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT.phases
+        READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT.phases
           .flatMap((phase) => phase.agents)
           .flatMap((agent) => agent.ptrrSteps)
-          .find((step) => step.ptrrStepId === 'ReadNeedComprehensionSynthesis.review.operator-review.try');
+          .find((step) => step.ptrrStepId === 'ReadEvaluationComprehensionSynthesis.review.operator-review.try');
       return NextResponse.json({
         ok: true,
-        pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
+        pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
         nextPipelineName: READ_FITS_FINDING_SYNTHESIS,
         stage: 'request_fit_ready',
         action,
-        acceptedReadNeed,
-        readNeed: acceptedReadNeed,
-        readRequest: acceptedReadNeed.request,
+        acceptedReadEvaluation,
+        readEvaluation: acceptedReadEvaluation,
+        readRequest: acceptedReadEvaluation.request,
         fitsFindingAdmission,
-        readNeedReviewRuntime: reviewRuntime,
+        readEvaluationReviewRuntime: reviewRuntime,
         storageProjection: reviewRuntime.storageProjection,
-        runtimeSummary: summarizeReadNeedReviewResynthesisRuntime(reviewRuntime),
+        runtimeSummary: summarizeReadEvaluationReviewResynthesisRuntime(reviewRuntime),
         telemetry: {
-          schema: 'bitcode.read-need.acceptance-telemetry',
-          pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
-          pipelineContract: summarizeReadingPipelineContract(READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT),
-          pipelineTrace: listReadingPipelineTelemetryTrace(READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT),
-          phaseId: 'ReadNeedComprehensionSynthesis.review',
-          agentId: 'ReadNeedComprehensionSynthesis.review.operator-review',
-          ptrrStepId: acceptanceStep?.ptrrStepId || 'ReadNeedComprehensionSynthesis.review.operator-review.try',
+          schema: 'bitcode.read-evaluation.acceptance-telemetry',
+          pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
+          pipelineContract: summarizeReadingPipelineContract(READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT),
+          pipelineTrace: listReadingPipelineTelemetryTrace(READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT),
+          phaseId: 'ReadEvaluationComprehensionSynthesis.review',
+          agentId: 'ReadEvaluationComprehensionSynthesis.review.operator-review',
+          ptrrStepId: acceptanceStep?.ptrrStepId || 'ReadEvaluationComprehensionSynthesis.review.operator-review.try',
           thinkingsGenerationIds: acceptanceStep?.thinkingsGenerationIds || [],
-          needId: acceptedReadNeed.needId,
-          measurementRoot: acceptedReadNeed.measurementRoot,
-          reviewState: acceptedReadNeed.reviewState,
-          acceptanceRoot: acceptedReadNeed.review?.acceptanceRoot || null,
-          readRequest: acceptedReadNeed.request,
-          feedbackHistory: acceptedReadNeed.feedbackHistory,
-          nextStage: acceptedReadNeed.review?.nextStage || 'finding_fits',
+          evaluationId: acceptedReadEvaluation.evaluationId,
+          measurementRoot: acceptedReadEvaluation.measurementRoot,
+          reviewState: acceptedReadEvaluation.reviewState,
+          acceptanceRoot: acceptedReadEvaluation.review?.acceptanceRoot || null,
+          readRequest: acceptedReadEvaluation.request,
+          feedbackHistory: acceptedReadEvaluation.feedbackHistory,
+          nextStage: acceptedReadEvaluation.review?.nextStage || 'finding_fits',
           nextPipelineName: READ_FITS_FINDING_SYNTHESIS,
-          returnType: 'AcceptedReadNeed',
+          returnType: 'AcceptedReadEvaluation',
           runtimeRoot: reviewRuntime.proofRoots.runtimeRoot,
           storageRoot: reviewRuntime.proofRoots.storageRoot,
           telemetryRoot: reviewRuntime.proofRoots.telemetryRoot,
@@ -186,76 +186,76 @@ export async function POST(request: Request) {
       });
     }
 
-    if (action === 'reject_read_need') {
-      const { rejectReadNeed, admitReadFitsFinding } = await import('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-need');
+    if (action === 'reject_read_evaluation') {
+      const { rejectReadEvaluation, admitReadFitsFinding } = await import('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-evaluation');
       const {
-        buildReadNeedReviewResynthesisRuntime,
-        persistReadNeedReviewResynthesisRuntime,
-        summarizeReadNeedReviewResynthesisRuntime,
-      } = await import('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-need-review-resynthesis');
+        buildReadEvaluationReviewResynthesisRuntime,
+        persistReadEvaluationReviewResynthesisRuntime,
+        summarizeReadEvaluationReviewResynthesisRuntime,
+      } = await import('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-evaluation-review-resynthesis');
       const {
-        READ_NEED_COMPREHENSION_SYNTHESIS,
-        READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT,
+        READ_EVALUATION_COMPREHENSION_SYNTHESIS,
+        READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT,
         READ_FITS_FINDING_SYNTHESIS,
         listReadingPipelineTelemetryTrace,
         summarizeReadingPipelineContract,
       } = await import('@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/reading-pipeline-contract');
-      const readNeed = objectValue(body.readNeed);
-      if (!readNeed || readNeed.schema !== 'bitcode.read.need') {
-        return NextResponse.json({ error: 'readNeed is required' }, { status: 400 });
+      const readEvaluation = objectValue(body.readEvaluation);
+      if (!readEvaluation || readEvaluation.schema !== 'bitcode.read.need') {
+        return NextResponse.json({ error: 'readEvaluation is required' }, { status: 400 });
       }
 
-      const rejectedReadNeed = rejectReadNeed(
-        readNeed as unknown as Parameters<typeof rejectReadNeed>[0],
-        stringArray(body.feedback || body.readNeedFeedback),
+      const rejectedReadEvaluation = rejectReadEvaluation(
+        readEvaluation as unknown as Parameters<typeof rejectReadEvaluation>[0],
+        stringArray(body.feedback || body.readEvaluationFeedback),
       );
       const fitsFindingAdmission = admitReadFitsFinding({
-        readNeed: rejectedReadNeed,
-        requireAcceptedReadNeed: true,
+        readEvaluation: rejectedReadEvaluation,
+        requireAcceptedReadEvaluation: true,
       });
       const inferenceCapture = createRouteInferenceCapture();
-      const reviewRuntime = buildReadNeedReviewResynthesisRuntime({
+      const reviewRuntime = buildReadEvaluationReviewResynthesisRuntime({
         action,
-        readNeed: rejectedReadNeed,
-        feedback: stringArray(body.feedback || body.readNeedFeedback),
+        readEvaluation: rejectedReadEvaluation,
+        feedback: stringArray(body.feedback || body.readEvaluationFeedback),
       });
-      persistReadNeedReviewResynthesisRuntime(inferenceCapture.execution, reviewRuntime);
+      persistReadEvaluationReviewResynthesisRuntime(inferenceCapture.execution, reviewRuntime);
       const reviewStep =
-        READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT.phases
+        READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT.phases
           .flatMap((phase) => phase.agents)
           .flatMap((agent) => agent.ptrrSteps)
-          .find((step) => step.ptrrStepId === 'ReadNeedComprehensionSynthesis.review.operator-review.try');
+          .find((step) => step.ptrrStepId === 'ReadEvaluationComprehensionSynthesis.review.operator-review.try');
       return NextResponse.json({
         ok: true,
-        pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
+        pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
         nextPipelineName: READ_FITS_FINDING_SYNTHESIS,
-        stage: 'review_synthesized_need',
+        stage: 'review_synthesized_evaluation',
         action,
-        rejectedReadNeed,
-        readNeed: rejectedReadNeed,
-        readRequest: rejectedReadNeed.request,
+        rejectedReadEvaluation,
+        readEvaluation: rejectedReadEvaluation,
+        readRequest: rejectedReadEvaluation.request,
         fitsFindingAdmission,
-        readNeedReviewRuntime: reviewRuntime,
+        readEvaluationReviewRuntime: reviewRuntime,
         storageProjection: reviewRuntime.storageProjection,
-        runtimeSummary: summarizeReadNeedReviewResynthesisRuntime(reviewRuntime),
+        runtimeSummary: summarizeReadEvaluationReviewResynthesisRuntime(reviewRuntime),
         telemetry: {
-          schema: 'bitcode.read-need.rejection-telemetry',
-          pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
-          pipelineContract: summarizeReadingPipelineContract(READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT),
-          pipelineTrace: listReadingPipelineTelemetryTrace(READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT),
-          phaseId: 'ReadNeedComprehensionSynthesis.review',
-          agentId: 'ReadNeedComprehensionSynthesis.review.operator-review',
-          ptrrStepId: reviewStep?.ptrrStepId || 'ReadNeedComprehensionSynthesis.review.operator-review.try',
+          schema: 'bitcode.read-evaluation.rejection-telemetry',
+          pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
+          pipelineContract: summarizeReadingPipelineContract(READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT),
+          pipelineTrace: listReadingPipelineTelemetryTrace(READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT),
+          phaseId: 'ReadEvaluationComprehensionSynthesis.review',
+          agentId: 'ReadEvaluationComprehensionSynthesis.review.operator-review',
+          ptrrStepId: reviewStep?.ptrrStepId || 'ReadEvaluationComprehensionSynthesis.review.operator-review.try',
           thinkingsGenerationIds: reviewStep?.thinkingsGenerationIds || [],
-          needId: rejectedReadNeed.needId,
-          measurementRoot: rejectedReadNeed.measurementRoot,
-          reviewState: rejectedReadNeed.reviewState,
-          rejectionRoot: rejectedReadNeed.review?.rejectionRoot || null,
-          readRequest: rejectedReadNeed.request,
-          feedbackHistory: rejectedReadNeed.feedbackHistory,
+          evaluationId: rejectedReadEvaluation.evaluationId,
+          measurementRoot: rejectedReadEvaluation.measurementRoot,
+          reviewState: rejectedReadEvaluation.reviewState,
+          rejectionRoot: rejectedReadEvaluation.review?.rejectionRoot || null,
+          readRequest: rejectedReadEvaluation.request,
+          feedbackHistory: rejectedReadEvaluation.feedbackHistory,
           blockedStage: 'finding_fits',
           nextPipelineName: READ_FITS_FINDING_SYNTHESIS,
-          returnType: 'RejectedReadNeed',
+          returnType: 'RejectedReadEvaluation',
           runtimeRoot: reviewRuntime.proofRoots.runtimeRoot,
           storageRoot: reviewRuntime.proofRoots.storageRoot,
           telemetryRoot: reviewRuntime.proofRoots.telemetryRoot,
@@ -267,7 +267,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          'Unsupported read-review action. Use synthesize_read_need, resynthesize_read_need, accept_read_need, or reject_read_need.',
+          'Unsupported read-review action. Use synthesize_read_evaluation, resynthesize_read_evaluation, accept_read_evaluation, or reject_read_evaluation.',
       },
       { status: 400 },
     );
@@ -320,8 +320,8 @@ function stringArray(value: unknown): string[] {
     .filter(Boolean);
 }
 
-function readNeedAction(body: Record<string, unknown>): string | null {
-  return stringValue(body.action) || stringValue(body.readNeedAction);
+function readEvaluationAction(body: Record<string, unknown>): string | null {
+  return stringValue(body.action) || stringValue(body.readEvaluationAction);
 }
 
 function createRouteInferenceCapture() {
@@ -365,7 +365,7 @@ function createRouteInferenceCapture() {
   };
 }
 
-function readNeedPipelineInput(body: Record<string, unknown>) {
+function readEvaluationPipelineInput(body: Record<string, unknown>) {
   const readRequest = objectValue(body.readRequest);
   const read = objectValue(body.read);
   const sourceRevision = objectValue(body.sourceRevision);
@@ -399,12 +399,12 @@ function readNeedPipelineInput(body: Record<string, unknown>) {
     },
     readRequest,
     sourceRevision,
-    previousReadNeed: body.previousReadNeed || body.readNeed,
-    readNeed: body.readNeed,
+    previousReadEvaluation: body.previousReadEvaluation || body.readEvaluation,
+    readEvaluation: body.readEvaluation,
     targetArtifactKinds: body.targetArtifactKinds || body.targetKinds,
     targetKinds: body.targetKinds,
     closureCriteria: body.closureCriteria,
     failureModes: body.failureModes,
-    feedback: body.feedback || body.readNeedFeedback,
+    feedback: body.feedback || body.readEvaluationFeedback,
   };
 }

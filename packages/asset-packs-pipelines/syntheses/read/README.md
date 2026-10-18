@@ -1,6 +1,6 @@
 # `@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs`
 
-Product **ExecutionPipeline** for reader Need → measured read AssetPack options.
+Product **ExecutionPipeline** for reader Evaluation → measured read AssetPack options.
 
 ## Hierarchy naming (left → right)
 

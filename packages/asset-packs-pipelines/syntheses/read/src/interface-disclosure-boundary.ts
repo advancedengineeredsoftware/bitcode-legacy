@@ -171,7 +171,7 @@ const ROUTE_VOCABULARY: InterfaceDisclosureRouteVocabulary = {
 const VISIBLE_BY_STAGE: Record<InterfaceDisclosureBoundaryStage, string[]> = {
   'before-settlement': [
     'source-safe AssetPack measurements',
-    'Need measurement summaries',
+    'Evaluation measurement summaries',
     'candidate fit ids',
     'proof roots',
     'quote readiness',

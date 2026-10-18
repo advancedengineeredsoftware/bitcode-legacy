@@ -2,13 +2,13 @@ import { createHash } from 'node:crypto';
 import {
   READ_FITS_FINDING_SYNTHESIS,
   READ_FITS_FINDING_SYNTHESIS_CONTRACT,
-  READ_NEED_COMPREHENSION_SYNTHESIS,
-  READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT,
+  READ_EVALUATION_COMPREHENSION_SYNTHESIS,
+  READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT,
   listReadingPipelineTelemetryTrace,
   type ReadingPipelineName,
   type ReadingPipelineTelemetryTraceEntry,
 } from './reading-pipeline-contract';
-import type { ReadNeedReviewResynthesisRuntime } from './read-need-review-resynthesis';
+import type { ReadEvaluationReviewResynthesisRuntime } from './read-evaluation-review-resynthesis';
 import type { ReadFitsFindingRuntime } from './read-fits-finding-runtime';
 import type { AssetPackPreviewBoundary } from '@bitcode/asset-packs-pipelines-syntheses-domain/asset-pack-preview-boundary';
 import type { AssetPackSettlementRightsDeliveryBoundary } from '@bitcode/asset-packs-pipelines-domain/asset-pack-settlement-rights-delivery';
@@ -37,7 +37,7 @@ export type ReadingOperationalTelemetryProgress =
 export type ReadingOperationalTelemetryRunbookHookId =
   | 'open-rich-execution-log'
   | 'inspect-source-safe-metadata'
-  | 'retry-read-need-resynthesis'
+  | 'retry-read-evaluation-resynthesis'
   | 'repair-depository-search-readback'
   | 'observe-btc-payment-finality'
   | 'repair-ledger-database-storage-projection'
@@ -110,14 +110,14 @@ export interface ReadingOperationalOperatorReadback {
   runId: string;
   stageStates: {
     requestRead: ReadingOperationalTelemetryProgress;
-    reviewSynthesizedNeed: ReadingOperationalTelemetryProgress;
+    reviewSynthesizedEvaluation: ReadingOperationalTelemetryProgress;
     requestFindingFits: ReadingOperationalTelemetryProgress;
     reviewAssetPackPreview: ReadingOperationalTelemetryProgress;
     buyAssetPackSettle: ReadingOperationalTelemetryProgress;
   };
   eventCounts: Record<ReadingOperationalTelemetryEventKind, number>;
   proofRoots: {
-    readNeedRuntimeRoot: string | null;
+    readEvaluationRuntimeRoot: string | null;
     readFitsRuntimeRoot: string | null;
     previewBoundaryRoot: string | null;
     settlementBoundaryRoot: string | null;
@@ -162,7 +162,7 @@ export interface ReadingOperationalTelemetryRepairReadback {
 
 export interface ReadingOperationalTelemetryRepairReadbackInput {
   runId?: string | null;
-  readNeedRuntime?: ReadNeedReviewResynthesisRuntime | null;
+  readEvaluationRuntime?: ReadEvaluationReviewResynthesisRuntime | null;
   readFitsRuntime?: ReadFitsFindingRuntime | null;
   previewBoundary?: AssetPackPreviewBoundary | null;
   settlementBoundary?: AssetPackSettlementRightsDeliveryBoundary | null;
@@ -422,12 +422,12 @@ function storageEvents(input: ReadingOperationalTelemetryRepairReadbackInput & {
   timestamp: string;
 }): ReadingOperationalTelemetryEvent[] {
   const records = [
-    ...(input.readNeedRuntime?.storageProjection || []).map((record) => ({
+    ...(input.readEvaluationRuntime?.storageProjection || []).map((record) => ({
       namespace: record.namespace,
       key: record.key,
       kind: record.recordKind,
       root: record.root,
-      pipeline: input.readNeedRuntime?.pipelineName,
+      pipeline: input.readEvaluationRuntime?.pipelineName,
     })),
     ...(input.readFitsRuntime?.storageProjection || []).map((record) => ({
       namespace: record.namespace,
@@ -551,7 +551,7 @@ function uiEvents(input: ReadingOperationalTelemetryRepairReadbackInput & {
   const stageStates = stageStatesFor(input);
   return [
     ['requestRead', 'Request Read', stageStates.requestRead],
-    ['reviewSynthesizedNeed', 'Review Synthesized Need', stageStates.reviewSynthesizedNeed],
+    ['reviewSynthesizedEvaluation', 'Review Synthesized Evaluation', stageStates.reviewSynthesizedEvaluation],
     ['requestFindingFits', 'Request Finding Fits', stageStates.requestFindingFits],
     ['reviewAssetPackPreview', 'Review AssetPack Preview', stageStates.reviewAssetPackPreview],
     ['buyAssetPackSettle', 'Buy AssetPack And Settle', stageStates.buyAssetPackSettle],
@@ -608,16 +608,16 @@ function repairEvents(input: ReadingOperationalTelemetryRepairReadbackInput & {
 }
 
 function stageStatesFor(input: ReadingOperationalTelemetryRepairReadbackInput): ReadingOperationalOperatorReadback['stageStates'] {
-  const needAccepted = input.readNeedRuntime?.reviewState === 'accepted';
+  const evaluationAccepted = input.readEvaluationRuntime?.reviewState === 'accepted';
   const fitsReady = input.readFitsRuntime?.resultState === 'worthy_fit';
   const previewReady = Boolean(input.previewBoundary);
   const settlementDelivered = input.settlementBoundary?.state === 'settlement_delivered';
   const settlementRepair = Boolean(input.settlementBoundary && !settlementDelivered);
 
   return {
-    requestRead: input.readNeedRuntime ? 'completed' : 'blocked',
-    reviewSynthesizedNeed: needAccepted ? 'completed' : input.readNeedRuntime ? 'blocked' : 'planned',
-    requestFindingFits: fitsReady ? 'completed' : needAccepted ? 'blocked' : 'planned',
+    requestRead: input.readEvaluationRuntime ? 'completed' : 'blocked',
+    reviewSynthesizedEvaluation: evaluationAccepted ? 'completed' : input.readEvaluationRuntime ? 'blocked' : 'planned',
+    requestFindingFits: fitsReady ? 'completed' : evaluationAccepted ? 'blocked' : 'planned',
     reviewAssetPackPreview: previewReady ? 'completed' : fitsReady ? 'blocked' : 'planned',
     buyAssetPackSettle: settlementDelivered ? 'completed' : settlementRepair ? 'repair-required' : previewReady ? 'blocked' : 'planned',
   };
@@ -625,7 +625,7 @@ function stageStatesFor(input: ReadingOperationalTelemetryRepairReadbackInput): 
 
 function blockersFor(input: ReadingOperationalTelemetryRepairReadbackInput): string[] {
   return [
-    ...(input.readNeedRuntime?.findingFitsAdmission.blockers || []),
+    ...(input.readEvaluationRuntime?.findingFitsAdmission.blockers || []),
     ...(input.readFitsRuntime?.repairPosture.blockers || []),
     ...(input.previewBoundary?.repairPosture.blockers || []),
     ...(input.settlementBoundary?.repairPosture.blockers || []),
@@ -656,12 +656,12 @@ function runbookHooksFor(input: ReadingOperationalTelemetryRepairReadbackInput):
     },
   ];
 
-  if (!input.readNeedRuntime || input.readNeedRuntime.reviewState !== 'accepted') {
+  if (!input.readEvaluationRuntime || input.readEvaluationRuntime.reviewState !== 'accepted') {
     hooks.push({
-      hookId: 'retry-read-need-resynthesis',
-      label: 'Retry or resynthesize the ReadNeed before Finding Fits.',
+      hookId: 'retry-read-evaluation-resynthesis',
+      label: 'Retry or resynthesize the ReadEvaluation before Finding Fits.',
       triggerEventKinds: ['repair', 'ui'],
-      repairActions: ['resynthesize_read_need', 'accept_read_need'],
+      repairActions: ['resynthesize_read_evaluation', 'accept_read_evaluation'],
     });
   }
   if (input.readFitsRuntime && input.readFitsRuntime.resultState !== 'worthy_fit') {
@@ -750,20 +750,20 @@ export function buildReadingOperationalTelemetryRepairReadback(
   const runId =
     firstString(
       input.runId,
-      input.readNeedRuntime?.runtimeId,
+      input.readEvaluationRuntime?.runtimeId,
       input.readFitsRuntime?.runtimeId,
       input.previewBoundary?.boundaryId,
       input.settlementBoundary?.boundaryId,
     ) || `reading-run-${sha256(timestamp).slice(0, 16)}`;
-  const readNeedTraces = listReadingPipelineTelemetryTrace(READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT);
+  const readEvaluationTraces = listReadingPipelineTelemetryTrace(READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT);
   const readFitsTraces = listReadingPipelineTelemetryTrace(READ_FITS_FINDING_SYNTHESIS_CONTRACT);
   const streamEvents = [
     ...pipelineTraceEvents({
       runId,
       timestamp,
-      pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
-      traces: readNeedTraces,
-      resultState: input.readNeedRuntime?.reviewState || 'unobserved',
+      pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
+      traces: readEvaluationTraces,
+      resultState: input.readEvaluationRuntime?.reviewState || 'unobserved',
     }),
     ...pipelineTraceEvents({
       runId,
@@ -793,7 +793,7 @@ export function buildReadingOperationalTelemetryRepairReadback(
     warnings: warningsFor(input),
     runbookHookIds: hooks.map((hook) => hook.hookId),
     proofRoots: {
-      readNeedRuntimeRoot: input.readNeedRuntime?.proofRoots.runtimeRoot || null,
+      readEvaluationRuntimeRoot: input.readEvaluationRuntime?.proofRoots.runtimeRoot || null,
       readFitsRuntimeRoot: input.readFitsRuntime?.proofRoots.runtimeRoot || null,
       previewBoundaryRoot: input.previewBoundary?.proofRoots.boundaryRoot || null,
       settlementBoundaryRoot: input.settlementBoundary?.proofRoots.boundaryRoot || null,
@@ -809,7 +809,7 @@ export function buildReadingOperationalTelemetryRepairReadback(
     stageStates: readbackWithoutRoot.stageStates,
     eventCounts: readbackWithoutRoot.eventCounts,
     proofRoots: {
-      readNeedRuntimeRoot: readbackWithoutRoot.proofRoots.readNeedRuntimeRoot,
+      readEvaluationRuntimeRoot: readbackWithoutRoot.proofRoots.readEvaluationRuntimeRoot,
       readFitsRuntimeRoot: readbackWithoutRoot.proofRoots.readFitsRuntimeRoot,
       previewBoundaryRoot: readbackWithoutRoot.proofRoots.previewBoundaryRoot,
       settlementBoundaryRoot: readbackWithoutRoot.proofRoots.settlementBoundaryRoot,

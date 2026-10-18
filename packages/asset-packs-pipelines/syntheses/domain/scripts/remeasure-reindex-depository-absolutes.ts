@@ -406,7 +406,7 @@ async function main() {
         absolute_kinds: facets.absoluteKinds,
         absolute_volumes: facets.absoluteVolumes,
         material_identity: facets.materialIdentity || {},
-        neediness_kinds: [] as string[],
+        relative_kinds: [] as string[],
         source_path_tokens: (item.coveredSourcePaths || [])
           .map((p) => p.split('/').pop() || p)
           .filter(Boolean)

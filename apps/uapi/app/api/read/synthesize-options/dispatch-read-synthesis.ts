@@ -3,7 +3,7 @@
  *
  * Same host/stream/cancel shape as deposit: early emitStatus, preload depository
  * supply for Discovery search, optional Host provision, then SDIVF read pipeline.
- * Product deltas only: Need (not Obfuscations), need-fits search, needinesses.
+ * Product deltas only: Evaluation (not Obfuscations), evaluation-fits search, relatives.
  *
  * Cooperative cancel: polls executions.status between stages (same law as deposit).
  */
@@ -31,7 +31,7 @@ export type ReadSynthesisDispatchInput = {
   repositoryFullName: string;
   sourceBranch: string;
   sourceCommit: string | null;
-  need: string;
+  evaluation: string;
   /** Deposit permissibleSources twin. */
   relevantPaths?: string[];
   /** Deposit impermissibleSources twin. */
@@ -59,7 +59,7 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
   storeCrossPhaseArtifact(execution, 'deposit', 'supabase', admin);
   storeCrossPhaseArtifact(execution, 'read', 'relevantPaths', input.relevantPaths || []);
   storeCrossPhaseArtifact(execution, 'read', 'irrelevantPaths', input.irrelevantPaths || []);
-  storeCrossPhaseArtifact(execution, 'read', 'need', input.need);
+  storeCrossPhaseArtifact(execution, 'read', 'evaluation', input.evaluation);
   // Deposit steering keys so shared discovery filters can reuse exclusion law.
   storeCrossPhaseArtifact(execution, 'deposit', 'permissibleSources', input.relevantPaths || []);
   storeCrossPhaseArtifact(execution, 'deposit', 'impermissibleSources', input.irrelevantPaths || []);
@@ -100,7 +100,7 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
   const pipelineInput: Record<string, unknown> = {
     mode: 'read',
     synthesizeMode: 'read',
-    need: input.need,
+    evaluation: input.evaluation,
     repositoryFullName: input.repositoryFullName,
     sourceBranch: input.sourceBranch,
     sourceCommit: input.sourceCommit,
@@ -133,7 +133,7 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
       `AssetPacksSynthesis (read lens) started for ${input.repositoryFullName}.`,
     );
 
-    // Preload depository supply so Discovery need-fits search has assets.
+    // Preload depository supply so Discovery evaluation-fits search has assets.
     await assertNotCancelled();
     try {
       const searchAssets = await loadDepositorySearchAssets(120);
@@ -141,7 +141,7 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
       storeCrossPhaseArtifact(execution, 'deposit', 'settledDepositoryAssets', searchAssets);
       storeCrossPhaseArtifact(execution, 'pipeline', 'depositoryAssets', searchAssets);
       emitStatus(
-        `depository: ${searchAssets.length} supply AssetPack(s) loaded for Need-fit search.`,
+        `depository: ${searchAssets.length} supply AssetPack(s) loaded for Evaluation-fit search.`,
       );
     } catch {
       storeCrossPhaseArtifact(execution, 'depository', 'settledAssets', []);
@@ -208,7 +208,7 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
 
     await assertNotCancelled();
     emitStatus(
-      'Running SynthesizeAssetPacks (read mode): Setup (Need) → Discovery (Need-fits search) → Implementation → Validation → Finish…',
+      'Running SynthesizeAssetPacks (read mode): Setup (Evaluation) → Discovery (Evaluation-fits search) → Implementation → Validation → Finish…',
     );
 
     const result = demonstrationReplay
@@ -220,7 +220,7 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
           repositoryFullName: input.repositoryFullName,
           reference: input.sourceCommit || input.sourceBranch || 'HEAD',
           sourceBranch: input.sourceBranch,
-          need: input.need,
+          evaluation: input.evaluation,
           relevantPaths: input.relevantPaths || [],
           irrelevantPaths: input.irrelevantPaths || [],
           emitStatus,

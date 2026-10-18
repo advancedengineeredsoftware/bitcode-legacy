@@ -5,7 +5,7 @@
 import { buildAssetPackEmbeddingPolicy } from './embedding-config';
 import {
   admitReadFitsFinding,
-} from '../../read/src/read-need';
+} from '../../read/src/read-evaluation';
 import {
   buildDepositorySupplyIndex,
   type DepositorySupplyIndex,
@@ -351,7 +351,7 @@ function buildBlockedReadFitsFindingResult(input: {
     schema: 'bitcode.asset-pack.depository-search',
     resultState: 'blocked_readiness',
     resultReasons: [
-      'Finding Fits search requires an accepted Read-Need before depository discovery.',
+      'Finding Fits search requires an accepted Read-Evaluation before depository discovery.',
       ...input.blockers,
     ],
     read: input.read,
@@ -416,10 +416,10 @@ export async function runDepositorySearchForPipelineInput(
   const fitResult = buildDepositoryFitResultEvidence(result);
   const storeEvidence = (target?: { store?: (namespace: string, key: string, value: unknown) => void }) => {
     if (!target?.store) return;
-    if (admission.acceptedNeed) {
-      target.store('read/need', 'accepted', admission.acceptedNeed);
-      target.store('read/need', 'measurementRoot', admission.acceptedNeed.measurementRoot);
-      target.store('read/need', 'needId', admission.acceptedNeed.needId);
+    if (admission.acceptedEvaluation) {
+      target.store('read/evaluation', 'accepted', admission.acceptedEvaluation);
+      target.store('read/evaluation', 'measurementRoot', admission.acceptedEvaluation.measurementRoot);
+      target.store('read/evaluation', 'evaluationId', admission.acceptedEvaluation.evaluationId);
     }
     target.store('read/finding-fits', 'admission', admission);
     target.store('depository/search', 'result', result);

@@ -9,7 +9,7 @@ export type DepositSettledDemandEstimate = {
   estimatable: boolean;
   demand: number | null;
   saturation: number | null;
-  needinessVolume: number | null;
+  relativeVolume: number | null;
   settledPackCount: number;
   matchedPackCount: number;
   rationale: string;
@@ -25,14 +25,14 @@ export type DepositSettledDemandSignals = {
   depositoryDemandSignals: DepositSettledDemandSignal[];
   readingDemandSignals: DepositSettledDemandSignal[];
   existingDepositorySignals: DepositSettledDemandSignal[];
-  unfitNeedOpportunitySignals: DepositSettledDemandSignal[];
+  unfitEvaluationOpportunitySignals: DepositSettledDemandSignal[];
 };
 
 export const EMPTY_SETTLED_DEMAND_SIGNALS: DepositSettledDemandSignals = {
   depositoryDemandSignals: [],
   readingDemandSignals: [],
   existingDepositorySignals: [],
-  unfitNeedOpportunitySignals: [],
+  unfitEvaluationOpportunitySignals: [],
 };
 
 export function unestimatableDemand(
@@ -42,7 +42,7 @@ export function unestimatableDemand(
     estimatable: false,
     demand: null,
     saturation: null,
-    needinessVolume: null,
+    relativeVolume: null,
     settledPackCount: 0,
     matchedPackCount: 0,
     rationale,

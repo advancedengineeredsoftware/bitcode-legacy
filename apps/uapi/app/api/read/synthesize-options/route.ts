@@ -1,7 +1,7 @@
 /**
  * POST /api/read/synthesize-options — thin dispatch surface (deposit twin).
  *
- * Auth → validate Need + repository → create execution → waitUntil
+ * Auth → validate Evaluation + repository → create execution → waitUntil
  * ExecutionPipelineSDIVFSynthesizeReadAssetPacks. Settlement is a separate pipeline.
  */
 
@@ -62,14 +62,12 @@ export async function POST(request: Request) {
 
   const repositoryFullName =
     typeof body.repositoryFullName === 'string' ? body.repositoryFullName.trim() : '';
-  const need =
-    typeof body.need === 'string'
-      ? body.need.trim()
-      : typeof body.needs === 'string'
-        ? body.needs.trim()
-        : typeof body.instructions === 'string'
-          ? body.instructions.trim()
-          : '';
+  const evaluation =
+    typeof body.evaluation === 'string'
+      ? body.evaluation.trim()
+      : typeof body.instructions === 'string'
+        ? body.instructions.trim()
+        : '';
   const sourceBranch = typeof body.sourceBranch === 'string' ? body.sourceBranch.trim() : 'main';
   const sourceCommit = typeof body.sourceCommit === 'string' ? body.sourceCommit.trim() : '';
   const normalizePathList = (value: unknown): string[] =>
@@ -95,9 +93,9 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  if (!need) {
+  if (!evaluation) {
     return NextResponse.json(
-      { error: 'need (reader instruction) is required.', code: 'need_required' },
+      { error: 'need (reader instruction) is required.', code: 'evaluation_required' },
       { status: 400 },
     );
   }
@@ -113,7 +111,7 @@ export async function POST(request: Request) {
       repositoryFullName,
       sourceBranch,
       sourceCommit: sourceCommit || null,
-      needLength: need.length,
+      evaluationLength: evaluation.length,
       relevantPathCount: relevantPaths.length,
       irrelevantPathCount: irrelevantPaths.length,
     },
@@ -160,7 +158,7 @@ export async function POST(request: Request) {
       repositoryFullName,
       sourceBranch,
       sourceCommit: sourceCommit || null,
-      need,
+      evaluation,
       relevantPaths,
       irrelevantPaths,
       execution: execution || undefined,

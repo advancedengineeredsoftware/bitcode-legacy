@@ -153,7 +153,7 @@ describe('ProfileStep (SSR)', () => {
     expect(html).toContain('Organization authority');
     expect(html).toContain('team-platform');
     expect(html).toContain('settlement:pay_btc_fee');
-    expect(html).toContain('Needs repair');
+    expect(html).toContain('Evaluations repair');
     expect(html).toContain('Wallet binding is missing.');
     expect(html).not.toContain('Template preference is not configured.');
     expect(html).not.toContain('Model preference is not configured.');

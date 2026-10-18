@@ -17,8 +17,8 @@ describe('read-route-model', () => {
       sourceCommit: '31bbc0c5227b6b3aed5d107fd8507d35ec22970a',
       hasRepositorySource: true,
       hasReadMeasurement: true,
-      hasSynthesizedNeed: true,
-      hasAcceptedNeed: true,
+      hasSynthesizedEvaluation: true,
+      hasAcceptedEvaluation: true,
       hasSourceSafePreview: true,
     });
 
@@ -27,14 +27,14 @@ describe('read-route-model', () => {
     expect(session.stageCount).toBe(5);
     expect(session.steps.map((step) => step.id)).toEqual([
       'request-read',
-      'review-synthesized-need',
+      'review-synthesized-evaluation',
       'request-fit',
       'review-synthesized-asset-pack',
       'buy-asset-pack-settle',
     ]);
-    expect(session.pipelineOwnership.readNeedPipeline).toBe('ReadNeedComprehensionSynthesis');
+    expect(session.pipelineOwnership.readEvaluationPipeline).toBe('ReadEvaluationComprehensionSynthesis');
     expect(session.pipelineOwnership.findingFitsPipeline).toBe('ReadFitsFindingSynthesis');
-    expect(session.pipelineOwnership.acceptedNeedRequiredBeforeFindingFits).toBe(true);
+    expect(session.pipelineOwnership.acceptedEvaluationRequiredBeforeFindingFits).toBe(true);
     expect(session.pipelineOwnership.previewSourceSafeBeforeSettlement).toBe(true);
     expect(session.pipelineOwnership.deliveryRequiresPaidReadRights).toBe(true);
     expect(session.procurementGovernance.schema).toBe('bitcode.read.procurement-governance');
@@ -60,8 +60,8 @@ describe('read-route-model', () => {
       repositoryFullName: 'octocat/Spoon-Knife',
       hasRepositorySource: true,
       hasReadMeasurement: true,
-      hasSynthesizedNeed: true,
-      hasAcceptedNeed: true,
+      hasSynthesizedEvaluation: true,
+      hasAcceptedEvaluation: true,
       hasSourceSafePreview: true,
       measuredBtd: 120,
       budgetEnvelopeSats: 50_000,
@@ -134,33 +134,33 @@ describe('read-route-model', () => {
     expect(expiredQuote.settlement.readiness).toBe('blocked-expired-quote');
   });
 
-  it('keeps Finding Fits blocked until a synthesized Need is accepted', () => {
+  it('keeps Finding Fits blocked until a synthesized Evaluation is accepted', () => {
     const session = buildReadRouteSession({
       routeReadingStage: 'request-fit',
       repositoryFullName: 'octocat/Spoon-Knife',
       hasRepositorySource: true,
       hasReadMeasurement: true,
-      hasSynthesizedNeed: true,
-      hasAcceptedNeed: false,
+      hasSynthesizedEvaluation: true,
+      hasAcceptedEvaluation: false,
     });
 
     expect(session.activeStepId).toBe('request-fit');
-    expect(session.readObjects.acceptedNeedPresent).toBe(false);
-    expect(session.steps.find((step) => step.id === 'request-fit')?.blockers).toContain('accepted Need required');
+    expect(session.readObjects.acceptedEvaluationPresent).toBe(false);
+    expect(session.steps.find((step) => step.id === 'request-fit')?.blockers).toContain('accepted Evaluation required');
     expect(session.steps.find((step) => step.id === 'review-synthesized-asset-pack')?.blockers).toContain(
-      'accepted Need required',
+      'accepted Evaluation required',
     );
     expect(assertReadRouteSessionSourceSafe(session).admitted).toBe(true);
   });
 
-  it('renders Need-relative fit measurement review whose contributions decide the quote basis', () => {
+  it('renders Evaluation-relative fit measurement review whose contributions decide the quote basis', () => {
     const session = buildReadRouteSession({
       transactionId: 'read-run-measured',
       repositoryFullName: 'octocat/Spoon-Knife',
       hasRepositorySource: true,
       hasReadMeasurement: true,
-      hasSynthesizedNeed: true,
-      hasAcceptedNeed: true,
+      hasSynthesizedEvaluation: true,
+      hasAcceptedEvaluation: true,
       hasSourceSafePreview: true,
       measuredBtd: 120,
       selectedFitIds: ['fit-depository-1', 'fit-depository-2'],
@@ -170,7 +170,7 @@ describe('read-route-model', () => {
     expect(review.schema).toBe('bitcode.read.fit-measurement-review');
     expect(review.visible).toBe(true);
     expect(review.measurements.map((row) => row.visualizationId)).toEqual([
-      'need-coverage',
+      'evaluation-coverage',
       'fit-confidence',
       'specificity',
       'novelty',
@@ -194,11 +194,11 @@ describe('read-route-model', () => {
     expect(review.repairBlockers).toEqual([]);
     expect(assertReadRouteSessionSourceSafe(session).admitted).toBe(true);
 
-    const hiddenReview = buildReadFitMeasurementReview({ hasAcceptedNeed: false });
+    const hiddenReview = buildReadFitMeasurementReview({ hasAcceptedEvaluation: false });
     expect(hiddenReview.visible).toBe(false);
     expect(hiddenReview.btdScalarVolume).toBe(0);
     expect(hiddenReview.repairBlockers).toContain(
-      'accepted Need required before Fit measurement review',
+      'accepted Evaluation required before Fit measurement review',
     );
   });
 
@@ -244,8 +244,8 @@ describe('read-route-model', () => {
       repositoryFullName: 'octocat/Spoon-Knife',
       hasRepositorySource: true,
       hasReadMeasurement: true,
-      hasSynthesizedNeed: true,
-      hasAcceptedNeed: true,
+      hasSynthesizedEvaluation: true,
+      hasAcceptedEvaluation: true,
       hasSourceSafePreview: true,
       hasSettlementReadback: true,
       hasDeliveryReadback: true,

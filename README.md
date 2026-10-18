@@ -27,7 +27,7 @@ Both commercial roles share one spine — only the **state** field and the **ter
 | Role | State | Terminal |
 | --- | --- | --- |
 | **Depositors** | **Obfuscations** (what to withhold / steer supply) | **Deposit** — admit measured options into the Depository |
-| **Readers** | **Need** (what the target repo should satisfy) | **Settle** — select option(s) → BTC-testnet → BTD rights → delivery |
+| **Readers** | **Evaluation** (what the target repo should satisfy) | **Settle** — select option(s) → BTC-testnet → BTD rights → delivery |
 | **Operators** | — | Packs activity, Auxillaries (wallet / GitHub / org), public docs |
 
 Same connected repository package, same option-synthesis / review UX; deposit admits supply, read settles demand.
@@ -40,7 +40,7 @@ Product routes are `/packs`, `/deposits`, `/reads`, and `/docs`.
 | Route | Purpose |
 | --- | --- |
 | `/deposits` | Connect source → Obfuscations → synthesize options → review → admit |
-| `/reads` | Connect source → Need → synthesize options → review → settle |
+| `/reads` | Connect source → Evaluation → synthesize options → review → settle |
 | `/packs` | Master-detail PackActivity (admitted / settled packs) |
 | Auxillaries | Wallet identity, GitHub App, organization panes |
 | `/` · `/docs` | Marketing and public docs |
@@ -50,7 +50,7 @@ Product routes are `/packs`, `/deposits`, `/reads`, and `/docs`.
 | Pipeline | Pattern | UI |
 | --- | --- | --- |
 | SynthesizeDepositAssetPacks | SDIVF | `/deposits` |
-| SynthesizeReadAssetPacks | SDIVF (Need + fit needinesses) | `/reads` |
+| SynthesizeReadAssetPacks | SDIVF (Evaluation + fit relatives) | `/reads` |
 | SettleAssetPack | Simple (pay → mint BTD → rights → PR ship) | after `/reads` → `/packs` |
 
 ---

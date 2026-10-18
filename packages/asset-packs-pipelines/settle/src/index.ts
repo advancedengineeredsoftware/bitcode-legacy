@@ -18,7 +18,7 @@
  * Stages (multi-rail BTD earn law):
  *   1. validate-settlement-readiness
  *   2. settle-payment (ETH|BTC|SOL observation / projected)
- *   3. quote-btd-volume (needinesses → rawV → decay)
+ *   3. quote-btd-volume (relatives → rawV → decay)
  *   4. finalize-settle (mint depositor BTD slices + AP co-own; never pay in BTD)
  *   5. ship-asset-pack-patch-pr
  *   6. journal-and-pack-activity
@@ -38,7 +38,7 @@ import {
   balanceOf,
   BITCODE_BTD_TOKEN_ID,
   buildMultiRailSpotQuote,
-  computeSettlementBtdFromNeedinesses,
+  computeSettlementBtdFromRelatives,
   createBitcodeErc1155State,
   createMockSpotBoard,
   finalizeSettle,
@@ -84,20 +84,20 @@ export type ExecutionPipelineSimpleSettleAssetPack = ExecutionPipelineSimple<
 >;
 
 function optionToReadSynthesized(option: SettleAssetPackOption) {
-  const needinesses = (option.measurements?.needinesses ?? []).map((row) => {
+  const relatives = (option.measurements?.relatives ?? []).map((row) => {
     const measurementKind =
       'measurementKind' in row && typeof row.measurementKind === 'string'
         ? row.measurementKind
         : 'kind' in row && typeof row.kind === 'string'
           ? row.kind
-          : 'need-fit';
+          : 'evaluation-fit';
     return {
       measurementKind,
       volume: typeof row.volume === 'number' ? row.volume : 0,
       magnitude: typeof row.magnitude === 'number' ? row.magnitude : typeof row.volume === 'number' ? row.volume : 0,
       weight: typeof row.weight === 'number' ? row.weight : 0,
       unit: typeof row.unit === 'string' ? row.unit : 'fit',
-      category: 'neediness' as const,
+      category: 'relative' as const,
     };
   });
   const absolutes = (option.measurements?.absolutes ?? []).map((row) => {
@@ -123,9 +123,9 @@ function optionToReadSynthesized(option: SettleAssetPackOption) {
       `settled-${Date.now().toString(36)}`,
     title: option.title || 'AssetPack',
     summary: option.summary || option.title || 'Settled AssetPack',
-    measurements: { absolutes, needinesses },
+    measurements: { absolutes, relatives },
     kind: option.kind ?? null,
-    needFit: null,
+    evaluationFit: null,
     settleable: true,
   });
 }
@@ -384,7 +384,7 @@ const settleBtc: Executor<SettleAssetPackInput, SettleAssetPackInput> = async (
 };
 
 // ---------------------------------------------------------------------------
-// 3. quote-btd-volume (needinesses → rawV → decay; multi-rail spot preview)
+// 3. quote-btd-volume (relatives → rawV → decay; multi-rail spot preview)
 // ---------------------------------------------------------------------------
 const mintBtd: Executor<SettleAssetPackInput, SettleAssetPackInput> = async (
   input,
@@ -400,7 +400,7 @@ const mintBtd: Executor<SettleAssetPackInput, SettleAssetPackInput> = async (
     assetPackKeyFor(option, input);
 
   const raw = assertPositiveSettlementBtd(
-    computeSettlementBtdFromNeedinesses(option.measurements, { assetPackKey }),
+    computeSettlementBtdFromRelatives(option.measurements, { assetPackKey }),
   );
   const master = defaultMasterAddress(input);
   const state = ensureErc1155State(input, master);
@@ -431,9 +431,9 @@ const mintBtd: Executor<SettleAssetPackInput, SettleAssetPackInput> = async (
       tokenId: '0',
       to: defaultDepositorAddress(input),
       amountBaseUnits: decayed.btdVolume.toString(),
-      needFitVolume: raw.needFitVolume,
-      weightedNeedinessesSum: raw.weightedNeedinessesSum,
-      needinessesCount: raw.needinessesCount,
+      evaluationFitVolume: raw.evaluationFitVolume,
+      weightedRelativesSum: raw.weightedRelativesSum,
+      relativesCount: raw.relativesCount,
       btdTotalMintedBefore: state.btdTotalMinted.toString(),
       btdTotalMintedAfter: state.btdTotalMinted.toString(),
       maxSupplyBaseUnits: decayed.remainingMintable.toString(),
@@ -445,7 +445,7 @@ const mintBtd: Executor<SettleAssetPackInput, SettleAssetPackInput> = async (
     masterAccount: master,
     masterBtdBalance: balanceOf(state, master, BITCODE_BTD_TOKEN_ID).toString(),
     note:
-      'BTD Volume quoted from needinesses + supply decay. Mint occurs on finalize to depositor earn slices (never pay-in-BTD).',
+      'BTD Volume quoted from relatives + supply decay. Mint occurs on finalize to depositor earn slices (never pay-in-BTD).',
   };
   storeCrossPhaseArtifact(execution, 'settle-asset-pack-pipeline', 'mintBtd', mintArtifact);
   storeCrossPhaseArtifact(execution, 'settle-asset-pack-pipeline', 'settlementBtd', settlementBtd);
@@ -581,7 +581,7 @@ const settleAssetPack: Executor<SettleAssetPackInput, SettleAssetPackInput> = as
     btdVolume: settlementBtd.amountBaseUnits,
     payAmount: rail.payAmount,
     rateMicro: rail.rateMicro,
-    needFitMicro: Math.round((settlementBtd.needFitVolume || 0) * 1e6),
+    evaluationFitMicro: Math.round((settlementBtd.evaluationFitVolume || 0) * 1e6),
     decayMicro:
       typeof (settlementBtd as unknown as { decayMicro?: number }).decayMicro ===
       'number'
@@ -651,7 +651,7 @@ const settleAssetPack: Executor<SettleAssetPackInput, SettleAssetPackInput> = as
     btdVolume: receipt.btdVolume.toString(),
     payAmount: receipt.payAmount.toString(),
     payAsset: receipt.payAsset,
-    needFitVolume: settlementBtd.needFitVolume,
+    evaluationFitVolume: settlementBtd.evaluationFitVolume,
     quoteId: receipt.quoteId,
     apTokenId: receipt.apTokenId.toString(),
     patchSummary:
@@ -673,9 +673,9 @@ const settleAssetPack: Executor<SettleAssetPackInput, SettleAssetPackInput> = as
       tokenId: '0',
       to: master,
       amountBaseUnits: receipt.btdMintedTotal.toString(),
-      needFitVolume: settlementBtd.needFitVolume,
-      weightedNeedinessesSum: settlementBtd.weightedNeedinessesSum,
-      needinessesCount: settlementBtd.needinessesCount,
+      evaluationFitVolume: settlementBtd.evaluationFitVolume,
+      weightedRelativesSum: settlementBtd.weightedRelativesSum,
+      relativesCount: settlementBtd.relativesCount,
       btdTotalMintedBefore: (state.btdTotalMinted - receipt.btdMintedTotal).toString(),
       btdTotalMintedAfter: state.btdTotalMinted.toString(),
       maxSupplyBaseUnits: '0',
@@ -956,7 +956,7 @@ function projectSourceSafePackMeasurements(
       weight: typeof raw.weight === 'number' ? raw.weight : null,
     });
   }
-  for (const raw of measurements.needinesses ?? []) {
+  for (const raw of measurements.relatives ?? []) {
     const kind =
       'measurementKind' in raw && typeof raw.measurementKind === 'string'
         ? raw.measurementKind
@@ -966,7 +966,7 @@ function projectSourceSafePackMeasurements(
     if (!kind) continue;
     rows.push({
       kind,
-      category: 'neediness',
+      category: 'relative',
       volume: typeof raw.volume === 'number' ? raw.volume : null,
       magnitude: null,
       unit: typeof raw.unit === 'string' ? raw.unit : null,
@@ -1067,7 +1067,7 @@ const journalAndPackActivity: Executor<SettleAssetPackInput, SettleAssetPackResu
     paymentObservation: paymentObservationSummary,
     mintBtd: mintBtdArtifact
       ? {
-          needFitVolume: mintBtdArtifact.settlementBtd.needFitVolume,
+          evaluationFitVolume: mintBtdArtifact.settlementBtd.evaluationFitVolume,
           amountBaseUnits: mintBtdArtifact.receipt.amountBaseUnits,
           masterAccount: mintBtdArtifact.masterAccount,
         }
@@ -1123,7 +1123,7 @@ const journalAndPackActivity: Executor<SettleAssetPackInput, SettleAssetPackResu
     buildReadSynthesizedSettledAssetPack({
       readOption: optionToReadSynthesized(option),
       btdRights: {
-        needFitVolume: settlementBtd.needFitVolume,
+        evaluationFitVolume: settlementBtd.evaluationFitVolume,
         amountBaseUnits: mintBtdArtifact.receipt.amountBaseUnits,
         masterAccount: mintBtdArtifact.masterAccount,
         buyerAccount: settleBtdArtifact.buyerAccount,

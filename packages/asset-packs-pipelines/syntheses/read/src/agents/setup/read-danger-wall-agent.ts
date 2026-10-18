@@ -1,5 +1,5 @@
 /**
- * Read Setup danger wall — admit Need comprehension before Discovery.
+ * Read Setup danger wall — admit Evaluation comprehension before Discovery.
  * Twin of deposit danger-wall (obfuscations → need guidance).
  */
 
@@ -23,57 +23,57 @@ function objectValue(value: unknown): Record<string, unknown> | null {
 }
 
 export default async function runReadDangerWallAgent(input: any, execution: any) {
-  const needText = asString(
-    input?.need ??
+  const evaluationText = asString(
+    input?.evaluation ??
       input?.needs ??
-      findValue(execution, 'read', 'need') ??
+      findValue(execution, 'read', 'evaluation') ??
       findValue(execution, 'deposit', 'obfuscations'),
   );
   const guidance =
-    objectValue(input?.needComprehension) ??
-    objectValue(findValue(execution, 'setup', 'needComprehension')) ??
+    objectValue(input?.evaluationComprehension) ??
+    objectValue(findValue(execution, 'setup', 'evaluationComprehension')) ??
     objectValue(findValue(execution, 'setup', 'inputComprehension'));
 
-  const hasText = needText.length > 0;
+  const hasText = evaluationText.length > 0;
   const hasGuidance = Boolean(guidance);
   const summary = asString(guidance?.summary);
-  const dynamicKinds = Array.isArray(guidance?.dynamicNeedinessKinds)
-    ? (guidance!.dynamicNeedinessKinds as string[])
+  const dynamicKinds = Array.isArray(guidance?.dynamicRelativeKinds)
+    ? (guidance!.dynamicRelativeKinds as string[])
     : [];
 
   let safe = true;
-  let reason = 'Read Setup admitted: Need posture is valid to synthesize.';
+  let reason = 'Read Setup admitted: Evaluation posture is valid to synthesize.';
   const flags: string[] = [];
 
   if (!hasText) {
     safe = false;
-    reason = 'A Need text is required to synthesize read AssetPack options.';
-    flags.push('need-missing');
+    reason = 'An Evaluation text is required to synthesize read AssetPack options.';
+    flags.push('evaluation-missing');
   } else if (!hasGuidance) {
     safe = false;
-    reason = 'Need text was provided but Setup did not store structured Need guidance.';
-    flags.push('need-guidance-missing');
+    reason = 'Evaluation text was provided but Setup did not store structured Evaluation guidance.';
+    flags.push('evaluation-guidance-missing');
   } else if (!summary) {
     safe = false;
-    reason = 'Need guidance is empty (no summary).';
-    flags.push('need-guidance-empty');
+    reason = 'Evaluation guidance is empty (no summary).';
+    flags.push('evaluation-guidance-empty');
   } else if (dynamicKinds.length === 0) {
     safe = false;
-    reason = 'Need guidance must plan at least one dynamic *-fit neediness measurement.';
-    flags.push('need-dynamic-kinds-missing');
+    reason = 'Evaluation guidance must plan at least one dynamic *-fit relative measurement.';
+    flags.push('evaluation-dynamic-kinds-missing');
   } else if (dynamicKinds.some((k) => !String(k).endsWith('-fit'))) {
     safe = false;
-    reason = 'Every dynamic neediness kind must end with the suffix -fit.';
-    flags.push('need-dynamic-kinds-suffix');
+    reason = 'Every dynamic relative kind must end with the suffix -fit.';
+    flags.push('evaluation-dynamic-kinds-suffix');
   }
 
   const admission = {
     safe,
     reason,
     flags,
-    hasNeedText: hasText,
+    hasEvaluationText: hasText,
     guidancePresent: hasGuidance,
-    dynamicNeedinessKindCount: dynamicKinds.length,
+    dynamicRelativeKindCount: dynamicKinds.length,
   };
 
   storeCrossPhaseArtifact(execution, 'setup', 'admission', admission);

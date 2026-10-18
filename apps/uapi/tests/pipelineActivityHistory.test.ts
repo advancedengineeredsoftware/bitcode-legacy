@@ -2,11 +2,11 @@
  * Pipeline activity history helpers (relocated from product).
  */
 import {
-  buildProductNeedAnchorDraft,
+  buildProductEvaluationAnchorDraft,
   buildProductObfuscationsAnchorDraft,
   buildProductRepositoryAnchorDraft,
   mapExecutionHistoryRunToWorkspaceRun,
-  normalizeNeedAnchorPaths,
+  normalizeEvaluationAnchorPaths,
   normalizeObfuscationsAnchorPaths,
   REPOSITORY_ANCHOR_CONTEXT_SOURCE,
   upsertWorkspaceRun,
@@ -20,20 +20,20 @@ describe("pipeline-activity-history", () => {
   });
 
   it("normalizes need path anchors", () => {
-    expect(normalizeNeedAnchorPaths(["  a/b  ", "", "a/b", "c"])).toEqual([
+    expect(normalizeEvaluationAnchorPaths(["  a/b  ", "", "a/b", "c"])).toEqual([
       "a/b",
       "c",
     ]);
   });
 
-  it("builds need anchor drafts with read-need-anchor source", () => {
-    const draft = buildProductNeedAnchorDraft({
-      need: "add retries",
+  it("builds need anchor drafts with read-evaluation-anchor source", () => {
+    const draft = buildProductEvaluationAnchorDraft({
+      evaluation: "add retries",
       name: "Resilience",
       relevantPaths: ["src/http.ts"],
       irrelevantPaths: [],
     });
-    expect(draft.context?.source).toBe("read-need-anchor");
+    expect(draft.context?.source).toBe("read-evaluation-anchor");
     expect(draft.selectAfterRecord).toBe(false);
   });
 

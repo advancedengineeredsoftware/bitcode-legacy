@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import glassyInputStyles from '@/components/bitcode/inputs/GlassyInput/glassy-input.module.css';
-import { ENABLE_ENHANCE_NEED_DEFINITION } from '@/config/featureFlags';
+import { ENABLE_ENHANCE_EVALUATION_DEFINITION } from '@/config/featureFlags';
 
 interface Attachment {
   id: string;
@@ -17,7 +17,7 @@ interface ExecutionInputProps {
   /** Execution type to drive mode-specific behavior */
   type?: string;
   /** Initial content loaded (e.g. from template); disables save when equal */
-  initialDefinitionOfNeed?: string;
+  initialDefinitionOfEvaluation?: string;
   /** Additional context to feed into the Enhance endpoint */
   attachments?: Attachment[];
   /** Optional repo slug (owner/repo).  If undefined or null no repo context will be sent. */
@@ -46,7 +46,7 @@ export const ExecutionReadInput = ({
   isProcessing,
   placeholder = "Definition of Read...",
   type,
-  initialDefinitionOfNeed,
+  initialDefinitionOfEvaluation,
   attachments = [],
   repoSlug = null,
   onEnhanceError,
@@ -214,15 +214,15 @@ export const ExecutionReadInput = ({
           onClick={handleEnhanceWriting}
           onMouseEnter={onEnhanceMouseEnter}
           onMouseLeave={onEnhanceMouseLeave}
-          disabled={!ENABLE_ENHANCE_NEED_DEFINITION || isEnhancing || isProcessing || !definitionOfRead.trim()}
+          disabled={!ENABLE_ENHANCE_EVALUATION_DEFINITION || isEnhancing || isProcessing || !definitionOfRead.trim()}
           className={`
             flex items-center justify-center w-10 h-10
             transition-all duration-300
-            ${definitionOfRead.trim() && ENABLE_ENHANCE_NEED_DEFINITION ? 'opacity-80 hover:opacity-100' : 'opacity-30 cursor-not-allowed'}
-            ${isEnhancing ? 'bg-gray-500/20' : ENABLE_ENHANCE_NEED_DEFINITION ? 'bg-purple-500/10' : 'bg-gray-500/10'}
-            border ${ENABLE_ENHANCE_NEED_DEFINITION ? 'border-purple-500/20' : 'border-gray-500/20'}
-            ${ENABLE_ENHANCE_NEED_DEFINITION ? 'hover:bg-purple-500/20 hover:border-purple-500/30' : ''}
-            ${ENABLE_ENHANCE_NEED_DEFINITION ? 'hover:shadow-glow-purple' : ''}
+            ${definitionOfRead.trim() && ENABLE_ENHANCE_EVALUATION_DEFINITION ? 'opacity-80 hover:opacity-100' : 'opacity-30 cursor-not-allowed'}
+            ${isEnhancing ? 'bg-gray-500/20' : ENABLE_ENHANCE_EVALUATION_DEFINITION ? 'bg-purple-500/10' : 'bg-gray-500/10'}
+            border ${ENABLE_ENHANCE_EVALUATION_DEFINITION ? 'border-purple-500/20' : 'border-gray-500/20'}
+            ${ENABLE_ENHANCE_EVALUATION_DEFINITION ? 'hover:bg-purple-500/20 hover:border-purple-500/30' : ''}
+            ${ENABLE_ENHANCE_EVALUATION_DEFINITION ? 'hover:shadow-glow-purple' : ''}
             disabled:hover:bg-gray-500/10 disabled:hover:border-gray-500/20
             disabled:hover:shadow-none disabled:cursor-not-allowed
             group
@@ -263,7 +263,7 @@ export const ExecutionReadInput = ({
           >
           <button
             onClick={handleSaveTemplate}
-            disabled={!definitionOfRead.trim() || isProcessing || definitionOfRead === initialDefinitionOfNeed}
+            disabled={!definitionOfRead.trim() || isProcessing || definitionOfRead === initialDefinitionOfEvaluation}
           className={`
             flex items-center justify-center w-10 h-10
             transition-all duration-300
@@ -303,15 +303,15 @@ export const ExecutionReadInput = ({
         {/* Enhance Writing - always shown, disabled when feature flag is off */}
         <button
           onClick={handleEnhanceWriting}
-          disabled={!ENABLE_ENHANCE_NEED_DEFINITION || isEnhancing || isProcessing || !definitionOfRead.trim()}
+          disabled={!ENABLE_ENHANCE_EVALUATION_DEFINITION || isEnhancing || isProcessing || !definitionOfRead.trim()}
           className={`
             flex items-center justify-center w-10 h-10
             transition-all duration-300
-            ${definitionOfRead.trim() && ENABLE_ENHANCE_NEED_DEFINITION ? 'opacity-80 hover:opacity-100' : 'opacity-30 cursor-not-allowed'}
-            ${isEnhancing ? 'bg-gray-500/20' : ENABLE_ENHANCE_NEED_DEFINITION ? 'bg-purple-500/10' : 'bg-gray-500/10'}
-            border ${ENABLE_ENHANCE_NEED_DEFINITION ? 'border-purple-500/20' : 'border-gray-500/20'}
-            ${ENABLE_ENHANCE_NEED_DEFINITION ? 'hover:bg-purple-500/20 hover:border-purple-500/30' : ''}
-            ${ENABLE_ENHANCE_NEED_DEFINITION ? 'hover:shadow-glow-purple' : ''}
+            ${definitionOfRead.trim() && ENABLE_ENHANCE_EVALUATION_DEFINITION ? 'opacity-80 hover:opacity-100' : 'opacity-30 cursor-not-allowed'}
+            ${isEnhancing ? 'bg-gray-500/20' : ENABLE_ENHANCE_EVALUATION_DEFINITION ? 'bg-purple-500/10' : 'bg-gray-500/10'}
+            border ${ENABLE_ENHANCE_EVALUATION_DEFINITION ? 'border-purple-500/20' : 'border-gray-500/20'}
+            ${ENABLE_ENHANCE_EVALUATION_DEFINITION ? 'hover:bg-purple-500/20 hover:border-purple-500/30' : ''}
+            ${ENABLE_ENHANCE_EVALUATION_DEFINITION ? 'hover:shadow-glow-purple' : ''}
             disabled:hover:bg-gray-500/10 disabled:hover:border-gray-500/20
             disabled:hover:shadow-none disabled:cursor-not-allowed
             group
@@ -341,7 +341,7 @@ export const ExecutionReadInput = ({
         {/* Save template */}
         <button
           onClick={handleSaveTemplate}
-          disabled={!definitionOfRead.trim() || isProcessing || definitionOfRead === initialDefinitionOfNeed}
+          disabled={!definitionOfRead.trim() || isProcessing || definitionOfRead === initialDefinitionOfEvaluation}
           className={`
             flex items-center justify-center w-10 h-10
             transition-all duration-300

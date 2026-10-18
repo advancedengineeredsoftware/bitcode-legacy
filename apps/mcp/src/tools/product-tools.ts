@@ -53,13 +53,13 @@ const DepositSynthesizeSchema = z.object({
 
 const ReadSynthesizeSchema = z.object({
   repository: RepositoryAnchorSchema,
-  need: z
+  evaluation: z
     .object({
-      prompt: z.string().min(10).describe('Need prompt / Read instruction'),
+      prompt: z.string().min(10).describe('Evaluation prompt / Read instruction'),
       accepted: z.boolean().optional(),
-      needId: z.string().optional(),
+      evaluationId: z.string().optional(),
     })
-    .describe('Need configuration (required; same gate as website Read)'),
+    .describe('Evaluation configuration (required; same gate as website Read)'),
   streaming: z.boolean().optional().default(true),
   organizationId: z.string().optional(),
   attachments: z.array(z.any()).optional(),
@@ -203,7 +203,7 @@ export function registerProductTools(): MCPTool[] {
       execute: async (args: z.infer<typeof ReadSynthesizeSchema>, context: MCPAuthContext) => {
         return executePipelineWithMonitoring(
           {
-            task: args.need.prompt,
+            task: args.evaluation.prompt,
             repository: args.repository,
             subtype: 'implementation_plan',
             streaming: args.streaming,
@@ -213,7 +213,7 @@ export function registerProductTools(): MCPTool[] {
             modelPreferences: args.modelPreferences,
             options: {
               productSurface: 'read',
-              need: args.need,
+              evaluation: args.evaluation,
             },
           },
           context,

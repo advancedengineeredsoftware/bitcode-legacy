@@ -69,13 +69,13 @@ export const CONVERSATION_PRODUCT_HANDOFF_WORKFLOWS: Array<{
     workflow: 'reading',
     label: 'Reading',
     productDetail: 'transaction',
-    summaryPlaceholder: 'Summarize the Read Request or reviewed Need the product workspace should prepare.',
+    summaryPlaceholder: 'Summarize the Read Request or reviewed Evaluation the product workspace should prepare.',
   },
   {
     workflow: 'finding_fits',
     label: 'Finding Fits',
     productDetail: 'activity',
-    summaryPlaceholder: 'Summarize the reviewed Need and source-safe fit request.',
+    summaryPlaceholder: 'Summarize the reviewed Evaluation and source-safe fit request.',
   },
   {
     workflow: 'exchange',
@@ -106,7 +106,7 @@ export function inferConversationProductReadingStage(
   workflow: ConversationProductHandoffWorkflow,
 ): EnterpriseReadingStepId | null {
   if (workflow === 'depositing') return 'request-read';
-  if (workflow === 'reading') return 'review-synthesized-need';
+  if (workflow === 'reading') return 'review-synthesized-evaluation';
   if (workflow === 'finding_fits') return 'request-fit';
   if (workflow === 'exchange') return 'review-synthesized-asset-pack';
   if (workflow === 'settlement' || workflow === 'delivery') return 'buy-asset-pack-settle';

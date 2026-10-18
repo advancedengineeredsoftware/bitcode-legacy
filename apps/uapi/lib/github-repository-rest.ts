@@ -3,7 +3,7 @@
  * - installation token resolution (refreshing expired tokens) for a user,
  * - branch HEAD SHA (settle PR ships from the request SHA),
  * - recursive tree paths + primary language (request checkout catalog for
- *   demonstration synthesis provenance and needinesses).
+ *   demonstration synthesis provenance and relatives).
  *
  * Fail-soft: every read returns null / [] on error so callers keep their own
  * fail-closed posture (e.g. settle records a projected ship without a SHA).

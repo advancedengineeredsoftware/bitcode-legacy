@@ -75,8 +75,8 @@ export function buildDepositRouteInput(args: BuildDepositRouteInputArgs) {
     depositoryDemandSignals: settledDemandSignals.depositoryDemandSignals,
     readingDemandSignals: settledDemandSignals.readingDemandSignals,
     existingDepositorySignals: settledDemandSignals.existingDepositorySignals,
-    unfitNeedOpportunitySignals:
-      settledDemandSignals.unfitNeedOpportunitySignals,
+    unfitEvaluationOpportunitySignals:
+      settledDemandSignals.unfitEvaluationOpportunitySignals,
     settledDemandEstimate: settledDemandEstimate
       ? {
           estimatable: settledDemandEstimate.estimatable,

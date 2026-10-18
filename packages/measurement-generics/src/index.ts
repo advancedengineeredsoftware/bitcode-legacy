@@ -3,7 +3,7 @@
  *
  * Measurement primitive package.
  * Agent implementer: packages/generic-agents/agent-measure/
- * Category bases: packages/generic-measurements/{absolutes,needinesses}/
+ * Category bases: packages/generic-measurements/{absolutes,relatives}/
  * Product: packages/generic-asset-packs/{synthesis,settle}/
  */
 

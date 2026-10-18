@@ -900,9 +900,9 @@ importers:
       '@bitcode/generic-llms':
         specifier: workspace:*
         version: link:../../generic-llms/registry
-      '@bitcode/generic-measurements-needinesses':
+      '@bitcode/generic-measurements-relatives':
         specifier: workspace:*
-        version: link:../../generic-measurements/needinesses
+        version: link:../../generic-measurements/relatives
       '@bitcode/generic-pipelines-execution-pipeline-sdivf':
         specifier: workspace:*
         version: link:../../generic-pipelines/execution-pipeline-sdivf
@@ -1037,9 +1037,9 @@ importers:
       '@bitcode/generic-llms':
         specifier: workspace:*
         version: link:../../../generic-llms/registry
-      '@bitcode/generic-measurements-needinesses':
+      '@bitcode/generic-measurements-relatives':
         specifier: workspace:*
-        version: link:../../../generic-measurements/needinesses
+        version: link:../../../generic-measurements/relatives
       '@bitcode/generic-pipelines-execution-pipeline-sdivf':
         specifier: workspace:*
         version: link:../../../generic-pipelines/execution-pipeline-sdivf
@@ -1152,9 +1152,9 @@ importers:
       '@bitcode/generic-measurements-domain-data-pack-material-identity':
         specifier: workspace:*
         version: link:../../../generic-measurements/domain/data-pack-material-identity
-      '@bitcode/generic-measurements-needinesses':
+      '@bitcode/generic-measurements-relatives':
         specifier: workspace:*
-        version: link:../../../generic-measurements/needinesses
+        version: link:../../../generic-measurements/relatives
       '@bitcode/generic-pipelines-execution-pipeline-sdivf':
         specifier: workspace:*
         version: link:../../../generic-pipelines/execution-pipeline-sdivf
@@ -1261,9 +1261,9 @@ importers:
       '@bitcode/generic-llms':
         specifier: workspace:*
         version: link:../../../generic-llms/registry
-      '@bitcode/generic-measurements-needinesses':
+      '@bitcode/generic-measurements-relatives':
         specifier: workspace:*
-        version: link:../../../generic-measurements/needinesses
+        version: link:../../../generic-measurements/relatives
       '@bitcode/generic-pipelines-execution-pipeline-sdivf':
         specifier: workspace:*
         version: link:../../../generic-pipelines/execution-pipeline-sdivf
@@ -4599,7 +4599,7 @@ importers:
         specifier: ^5.0.0
         version: 5.9.3
 
-  packages/generic-measurements/needinesses:
+  packages/generic-measurements/relatives:
     dependencies:
       '@bitcode/generic-agents-agent-measure':
         specifier: workspace:*
@@ -4610,7 +4610,7 @@ importers:
     devDependencies:
       typescript:
         specifier: ^5.0.0
-        version: 5.8.3
+        version: 5.9.3
 
   packages/generic-measurements/shared/absolute-measure-input:
     dependencies:

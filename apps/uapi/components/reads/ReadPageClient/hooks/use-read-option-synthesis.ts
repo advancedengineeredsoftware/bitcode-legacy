@@ -29,9 +29,9 @@ export type ReadSynthesizedOption = {
   confidence?: number | null;
   measurements?: {
     absolutes?: MeasurementReadingLike[];
-    needinesses?: MeasurementReadingLike[];
+    relatives?: MeasurementReadingLike[];
   };
-  needFit?: number | null;
+  evaluationFit?: number | null;
   /** 0–1 catalog coverage when catalog denominator is known; else omitted. */
   coverageRatio?: number | null;
   /** 0–100 convenience percent; omit when coverageRatio omitted. */
@@ -53,7 +53,7 @@ export type ReadSelectionEnvelope = {
   surface?: string;
   purpose?: string;
   nextPipeline?: string;
-  need?: string | null;
+  evaluation?: string | null;
   repositoryFullName?: string | null;
   options?: ReadSynthesizedOption[];
   readyToPresent?: boolean;
@@ -62,7 +62,7 @@ export type ReadSelectionEnvelope = {
 
 export function useReadOptionSynthesis(input: {
   repositoryContext: RepositoryContextState | null;
-  need: string;
+  evaluation: string;
   /** Deposit permissibleSources twin — paths that should steer need comprehension. */
   relevantPaths?: string[];
   /** Deposit impermissibleSources twin — paths to de-emphasize / exclude from fit. */
@@ -78,7 +78,7 @@ export function useReadOptionSynthesis(input: {
 }) {
   const {
     repositoryContext,
-    need,
+    evaluation,
     relevantPaths = [],
     irrelevantPaths = [],
     activeRunId = null,
@@ -173,8 +173,8 @@ export function useReadOptionSynthesis(input: {
       setStatus("failed");
       return;
     }
-    if (!need.trim()) {
-      setError("Enter a Need before synthesizing read options.");
+    if (!evaluation.trim()) {
+      setError("Enter an Evaluation before synthesizing read options.");
       setStatus("failed");
       return;
     }
@@ -202,7 +202,7 @@ export function useReadOptionSynthesis(input: {
           repositoryFullName: fullName,
           sourceBranch: repositoryContext?.selectedBranch || null,
           sourceCommit: repositoryContext?.selectedCommit || null,
-          need: need.trim(),
+          evaluation: evaluation.trim(),
           // Deposit twin path steering (obfuscations inclusions/exclusions).
           relevantPaths,
           irrelevantPaths,
@@ -227,7 +227,7 @@ export function useReadOptionSynthesis(input: {
       setError(err instanceof Error ? err.message : "Read option synthesis failed.");
     }
   }, [
-    need,
+    evaluation,
     relevantPaths,
     irrelevantPaths,
     onRunDispatched,

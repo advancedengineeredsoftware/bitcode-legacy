@@ -109,6 +109,10 @@ complete MVP:
 - 46 frozen historical gate scripts reference Need vocabulary; they stay
   unedited and unexecuted. The living CI step `gate-test-read-need` is renamed
   in Gate 2.
+- The `@bitcode/specifying` test script still ran frozen `test/v47-*` suites
+  under pointer V48; Gate 2 (whose rename breaks a V47 source predicate)
+  narrows it to active `v48-*` plus draft `v49-*` per specifying law §13.1.
+  V47 suites stay on disk unedited.
 
 ## Changed contracts
 

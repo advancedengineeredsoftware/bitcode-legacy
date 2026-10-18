@@ -5,14 +5,14 @@ import {
   summarizeAssetPackPreviewBoundary,
 } from '../asset-pack-preview-boundary';
 import {
-  acceptReadNeed,
+  acceptReadEvaluation,
   buildAssetPackSourceSafePreview,
-  synthesizeReadNeedForPipelineInput,
-} from '../../../read/src/read-need';
+  synthesizeReadEvaluationForPipelineInput,
+} from '../../../read/src/read-evaluation';
 
-function acceptedNeed() {
-  return acceptReadNeed(
-    synthesizeReadNeedForPipelineInput({
+function acceptedEvaluation() {
+  return acceptReadEvaluation(
+    synthesizeReadEvaluationForPipelineInput({
       read: {
         id: 'read-gate6',
         prompt: 'Find deposited source evidence and synthesize a source-safe AssetPack preview for settlement review.',
@@ -141,16 +141,16 @@ function fitResult(finalScore = 0.91): any {
 
 describe('AssetPack preview quote boundary', () => {
   it('wraps source-safe preview, deterministic BTC quote, settlement instructions, and delivery lock', () => {
-    const need = acceptedNeed();
+    const evaluation = acceptedEvaluation();
     const fit = fitResult();
     const boundary = buildAssetPackPreviewBoundary({
-      need,
+      evaluation,
       fitResult: fit,
       pullRequestTarget: 'https://github.com/octocat/Spoon-Knife/pull/39',
       createdAt: '2026-05-21T00:00:00.000Z',
     });
     const repeated = buildAssetPackPreviewBoundary({
-      need,
+      evaluation,
       fitResult: fit,
       pullRequestTarget: 'https://github.com/octocat/Spoon-Knife/pull/39',
       createdAt: '2026-05-21T00:00:00.000Z',
@@ -217,7 +217,7 @@ describe('AssetPack preview quote boundary', () => {
   });
 
   it('records blocked preview repair posture when no worthy fit exists', () => {
-    const need = acceptedNeed();
+    const evaluation = acceptedEvaluation();
     const blockedFit = {
       ...fitResult(0),
       resultState: 'no_worthy_fit',
@@ -232,27 +232,27 @@ describe('AssetPack preview quote boundary', () => {
         rejectedCandidateCount: 2,
       },
     };
-    const boundary = buildAssetPackPreviewBoundary({ need, fitResult: blockedFit as any });
+    const boundary = buildAssetPackPreviewBoundary({ evaluation, fitResult: blockedFit as any });
 
     expect(boundary.sourceSafePreview.fit.resultState).toBe('no_worthy_fit');
     expect(boundary.settlementInstructions.state).toBe('blocked_until_worthy_fit');
     expect(boundary.deliveryPosture.state).toBe('blocked_until_worthy_fit');
     expect(boundary.repairPosture.blockers).toContain('worthy_fit_missing');
     expect(boundary.repairPosture.nextActions).toEqual(
-      expect.arrayContaining(['run_read_fits_finding', 'adjust_need_constraints_or_thresholds']),
+      expect.arrayContaining(['run_read_fits_finding', 'adjust_evaluation_constraints_or_thresholds']),
     );
   });
 
   it('fails closed when an externally supplied preview carries protected source', () => {
-    const need = acceptedNeed();
+    const evaluation = acceptedEvaluation();
     const sourceSafePreview = buildAssetPackSourceSafePreview({
-      need,
+      evaluation,
       fitResult: fitResult(),
     }) as any;
     sourceSafePreview.protectedSourceContent = 'diff --git a/app.ts b/app.ts';
 
     expect(() => buildAssetPackPreviewBoundary({
-      need,
+      evaluation,
       sourceSafePreview,
       fitResult: fitResult(),
     })).toThrow(/protected source/);
@@ -261,7 +261,7 @@ describe('AssetPack preview quote boundary', () => {
   it('persists boundary projections to execution storage', () => {
     const execution = new Execution('pipeline:asset-pack');
     const boundary = buildAssetPackPreviewBoundary({
-      need: acceptedNeed(),
+      evaluation: acceptedEvaluation(),
       fitResult: fitResult(),
     });
 

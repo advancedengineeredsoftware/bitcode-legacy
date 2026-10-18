@@ -1,5 +1,5 @@
 /**
- * ExecutionPipelineSimpleSettleAssetPack — 1:1 option, needinesses BTD mint to depositor, ERC1155 co-own.
+ * ExecutionPipelineSimpleSettleAssetPack — 1:1 option, relatives BTD mint to depositor, ERC1155 co-own.
  */
 
 import { Execution } from '@bitcode/execution-generics';
@@ -11,7 +11,7 @@ import {
 import {
   balanceOf,
   BITCODE_BTD_TOKEN_ID,
-  computeSettlementBtdFromNeedinesses,
+  computeSettlementBtdFromRelatives,
 } from '@bitcode/btd/erc1155';
 
 describe('ExecutionPipelineSimpleSettleAssetPack', () => {
@@ -29,7 +29,7 @@ describe('ExecutionPipelineSimpleSettleAssetPack', () => {
           unit: 'functions',
         },
       ],
-      needinesses: [
+      relatives: [
         { kind: 'language-fit', volume: 0.9, weight: 0.35 },
         { kind: 'domain-fit', volume: 0.8, weight: 0.35 },
         { kind: 'interface-fit', volume: 0.7, weight: 0.3 },
@@ -74,9 +74,9 @@ describe('ExecutionPipelineSimpleSettleAssetPack', () => {
 
     const mint = result.mintBtd;
     expect(mint.agent).toBe('mint-btd');
-    expect(mint.settlementBtd.needinessesCount).toBe(3);
-    expect(mint.settlementBtd.needFitVolume).toBeGreaterThan(0.7);
-    expect(mint.settlementBtd.needFitVolume).toBeLessThan(1);
+    expect(mint.settlementBtd.relativesCount).toBe(3);
+    expect(mint.settlementBtd.evaluationFitVolume).toBeGreaterThan(0.7);
+    expect(mint.settlementBtd.evaluationFitVolume).toBeLessThan(1);
 
     const settleBtd = result.settleBtd;
     expect(settleBtd.agent).toBe('settle-btd');
@@ -91,9 +91,9 @@ describe('ExecutionPipelineSimpleSettleAssetPack', () => {
 
     const activity = result.packActivity;
     expect(activity.packActivityType).toBe('settled-assetpack');
-    expect(activity.mintBtd?.needFitVolume).toBe(mint.settlementBtd.needFitVolume);
+    expect(activity.mintBtd?.evaluationFitVolume).toBe(mint.settlementBtd.evaluationFitVolume);
     expect(activity.settleAssetPack?.removedPriorOwner).toBe(false);
-    expect(activity.measurements.some((m) => m.category === 'neediness')).toBe(true);
+    expect(activity.measurements.some((m) => m.category === 'relative')).toBe(true);
 
     const state = result.erc1155State;
     // Full BTD escrowed on master; buyer co-owns AP without fungible mint.
@@ -106,14 +106,14 @@ describe('ExecutionPipelineSimpleSettleAssetPack', () => {
   });
 
   it('mint volume ignores absolutes entirely', () => {
-    const withAbs = computeSettlementBtdFromNeedinesses({
+    const withAbs = computeSettlementBtdFromRelatives({
       absolutes: [{ kind: 'functions', volume: 1, magnitude: 999, weight: 1 }],
-      needinesses: [{ kind: 'language-fit', volume: 0.5, weight: 1 }],
+      relatives: [{ kind: 'language-fit', volume: 0.5, weight: 1 }],
     });
-    const withoutAbs = computeSettlementBtdFromNeedinesses({
-      needinesses: [{ kind: 'language-fit', volume: 0.5, weight: 1 }],
+    const withoutAbs = computeSettlementBtdFromRelatives({
+      relatives: [{ kind: 'language-fit', volume: 0.5, weight: 1 }],
     });
     expect(withAbs.amountBaseUnits).toBe(withoutAbs.amountBaseUnits);
-    expect(withAbs.needFitVolume).toBe(0.5);
+    expect(withAbs.evaluationFitVolume).toBe(0.5);
   });
 });

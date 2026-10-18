@@ -8,11 +8,11 @@ import {
 import type { DepositoryFitResultEvidence } from './depository-search';
 import {
   buildAssetPackSourceSafePreview,
-  isAcceptedReadNeed,
+  isAcceptedReadEvaluation,
   type AssetPackSourceSafePreview,
-  type ReadNeed,
+  type ReadEvaluation,
   type ShareToFeeQuote,
-} from '../../read/src/read-need';
+} from '../../read/src/read-evaluation';
 
 export type AssetPackPreviewStorageRecordKind =
   | 'source_safe_preview'
@@ -26,9 +26,9 @@ export type AssetPackPreviewStorageRecordKind =
   | 'repair_posture';
 
 export type AssetPackPreviewRepairAction =
-  | 'accept_read_need'
+  | 'accept_read_evaluation'
   | 'run_read_fits_finding'
-  | 'adjust_need_constraints_or_thresholds'
+  | 'adjust_evaluation_constraints_or_thresholds'
   | 'repair_preview_leakage'
   | 'prepare_reader_wallet_payment'
   | 'continue_to_settlement';
@@ -50,8 +50,8 @@ export interface AssetPackPreviewQuoteReceipt {
   quoteId: string;
   deterministic: true;
   formula: ShareToFeeQuote['formula'];
-  needId: string;
-  needMeasurementRoot: string;
+  evaluationId: string;
+  evaluationMeasurementRoot: string;
   measurementVector: ShareToFeeQuote['measurementVector'];
   admittedFitQuality: number;
   weightedRequestedVolume: number;
@@ -237,8 +237,8 @@ function quoteReceiptFor(preview: AssetPackSourceSafePreview): AssetPackPreviewQ
     quoteId: `quote-${sha256(quote.quoteRoot).slice(0, 16)}`,
     deterministic: true as const,
     formula: quote.formula,
-    needId: quote.needId,
-    needMeasurementRoot: quote.needMeasurementRoot,
+    evaluationId: quote.evaluationId,
+    evaluationMeasurementRoot: quote.evaluationMeasurementRoot,
     measurementVector: quote.measurementVector,
     admittedFitQuality: quote.admittedFitQuality,
     weightedRequestedVolume: preview.measurements.weightedRequestedVolume,
@@ -346,7 +346,7 @@ function deliveryPostureFor(preview: AssetPackSourceSafePreview): AssetPackPrevi
 }
 
 function repairPostureFor(input: {
-  acceptedNeed: boolean;
+  acceptedEvaluation: boolean;
   preview: AssetPackSourceSafePreview;
   disclosureReview: AssetPackDisclosureReview;
 }): AssetPackPreviewRepairPosture {
@@ -354,13 +354,13 @@ function repairPostureFor(input: {
   const warnings: string[] = [];
   const nextActions: AssetPackPreviewRepairAction[] = [];
 
-  if (!input.acceptedNeed) {
-    blockers.push('accepted_read_need_missing');
-    nextActions.push('accept_read_need');
+  if (!input.acceptedEvaluation) {
+    blockers.push('accepted_read_evaluation_missing');
+    nextActions.push('accept_read_evaluation');
   }
   if (input.preview.fit.resultState !== 'worthy_fit') {
     blockers.push('worthy_fit_missing');
-    nextActions.push('run_read_fits_finding', 'adjust_need_constraints_or_thresholds');
+    nextActions.push('run_read_fits_finding', 'adjust_evaluation_constraints_or_thresholds');
   }
   if (input.disclosureReview.sourceLeakage.protectedSourceDetected) {
     blockers.push('protected_source_leakage_detected');
@@ -454,7 +454,7 @@ function replayReceiptFor(input: {
 }
 
 export function buildAssetPackPreviewBoundary(input: {
-  need?: ReadNeed | null;
+  evaluation?: ReadEvaluation | null;
   fitResult?: DepositoryFitResultEvidence | null;
   sourceSafePreview?: AssetPackSourceSafePreview | null;
   assetPackId?: string | null;
@@ -462,11 +462,11 @@ export function buildAssetPackPreviewBoundary(input: {
   createdAt?: string;
   btcNetwork?: AssetPackPreviewSettlementInstructions['btcNetwork'];
 }): AssetPackPreviewBoundary {
-  if (!input.sourceSafePreview && !input.need) {
-    throw new Error('AssetPack preview boundary requires a source-safe preview or ReadNeed.');
+  if (!input.sourceSafePreview && !input.evaluation) {
+    throw new Error('AssetPack preview boundary requires a source-safe preview or ReadEvaluation.');
   }
   const preview = input.sourceSafePreview || buildAssetPackSourceSafePreview({
-    need: input.need!,
+    evaluation: input.evaluation!,
     fitResult: input.fitResult,
     assetPackId: input.assetPackId,
     pullRequestTarget: input.pullRequestTarget,
@@ -479,7 +479,7 @@ export function buildAssetPackPreviewBoundary(input: {
   const settlementInstructions = settlementInstructionsFor(preview, input.btcNetwork || 'testnet');
   const deliveryPosture = deliveryPostureFor(preview);
   const repairPosture = repairPostureFor({
-    acceptedNeed: isAcceptedReadNeed(input.need) || preview.need.reviewState === 'accepted',
+    acceptedEvaluation: isAcceptedReadEvaluation(input.evaluation) || preview.evaluation.reviewState === 'accepted',
     preview,
     disclosureReview,
   });

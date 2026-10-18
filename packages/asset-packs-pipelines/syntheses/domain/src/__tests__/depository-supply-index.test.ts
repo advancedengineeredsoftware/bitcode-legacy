@@ -121,7 +121,7 @@ describe('Depository supply index', () => {
         payee: 'depositing-wallet',
         priceAsset: 'BTC',
         allocationMethod: 'source-to-shares-largest-remainder',
-        sourceToSharesProofState: 'not-created-until-accepted-need-fit-and-settlement',
+        sourceToSharesProofState: 'not-created-until-accepted-evaluation-fit-and-settlement',
         btdMintBoundary: 'not-minted-by-deposit-admission',
         btdRightsTransferBoundary: 'reader-receives-rights-only-after-btc-settlement',
       },

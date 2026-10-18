@@ -1,7 +1,7 @@
 # Reads experience (`Reads*`)
 
 Commercial IP-buyer surface for `/reads`: master-detail pipelines, shared
-repository·branch·commit source package (`DepositSourceSelection`), Need +
+repository·branch·commit source package (`DepositSourceSelection`), Evaluation +
 Relevant/Irrelevant path steering, SynthesizeReadAssetPacks (SDIVF), option
 select, SettleAssetPack → `/exchange`.
 
@@ -11,7 +11,7 @@ select, SettleAssetPack → `/exchange`.
 | --- | --- | --- | --- |
 | `/exchange` | Activity table | Selected AssetPack / proof detail | Via selection |
 | `/deposits` | Pipelines table | Source + Obfuscations + options | Back to Deposit |
-| `/reads` | Pipelines table | Source + Need + options | Back to Read |
+| `/reads` | Pipelines table | Source + Evaluation + options | Back to Read |
 
 ## Layout
 
@@ -44,8 +44,8 @@ reads/
       use-read-option-synthesis.ts
   ReadsPipelinesMaster/                  # table + New (+) + Back
   ReadsPipelineTelemetry/
-  ReadsNeedComposePanel/                 # Need + path pickers + synthesize CTA
-  ReadsNeedPathPickers/
+  ReadsEvaluationComposePanel/                 # Evaluation + path pickers + synthesize CTA
+  ReadsEvaluationPathPickers/
   ReadsAssetPackOptions/                 # options + ETH/BTC/SOL checkout + quote
   ReadsOptionCard/
   ReadsRouteStateAside/
@@ -53,8 +53,8 @@ reads/
 
 ## Multi-rail settle checkout (Gate 5)
 
-1. Select synthesized option(s) with needinesses measurements.
-2. `POST /api/read/settle/quote` → BTD volume (needinesses × decay) + ETH/BTC/SOL pay amounts.
+1. Select synthesized option(s) with relatives measurements.
+2. `POST /api/read/settle/quote` → BTD volume (relatives × decay) + ETH/BTC/SOL pay amounts.
 3. Choose pay rail (ETH P0). Buyer `0x` from Auxillaries wallet when connected.
 4. `POST /api/read/settle` with `payAsset`, `buyerEthereumAddress`, payment observation.
 5. Escrow mint + AP co-own + pending seller payout → finalize on `/exchange`.

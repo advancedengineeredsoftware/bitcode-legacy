@@ -113,7 +113,7 @@ describe("ReadPageClient", () => {
         agentic_execution: {
           canonicalType: "agentic-execution:read-measurement",
           lens: "read",
-          proofStatus: "read Need accepted",
+          proofStatus: "read Evaluation accepted",
           closureFocus: "read measurement + Finding Fits admission",
         },
         context: {
@@ -180,7 +180,7 @@ describe("ReadPageClient", () => {
     expect(screen.getByTestId("reads-open-compose")).toBeInTheDocument();
   });
 
-  it("opens compose detail from New and shows Need + source selector", async () => {
+  it("opens compose detail from New and shows Evaluation + source selector", async () => {
     mockQuery = "";
     render(<ReadPageClient />);
 
@@ -193,8 +193,8 @@ describe("ReadPageClient", () => {
     expect(
       await screen.findByLabelText("Repository source selector"),
     ).toBeInTheDocument();
-    expect(screen.getByTestId("reads-need-compose")).toBeInTheDocument();
-    expect(screen.getByTestId("reads-need-input")).toBeInTheDocument();
+    expect(screen.getByTestId("reads-evaluation-compose")).toBeInTheDocument();
+    expect(screen.getByTestId("reads-evaluation-input")).toBeInTheDocument();
     expect(screen.getByTestId("reads-synthesize-options")).toBeInTheDocument();
     expect(screen.getByTestId("reads-asset-pack-options")).toBeInTheDocument();
     expect(
@@ -225,7 +225,7 @@ describe("ReadPageClient", () => {
     unmount();
   });
 
-  it("locks Need/source and hides synthesize on pipeline run detail (deposit parity)", async () => {
+  it("locks Evaluation/source and hides synthesize on pipeline run detail (deposit parity)", async () => {
     mockQuery = "transactionId=read-admission-1";
     render(<ReadPageClient />);
 
@@ -233,9 +233,9 @@ describe("ReadPageClient", () => {
     expect(detail).toHaveAttribute("data-locked", "true");
     expect(detail).toHaveAttribute("data-compose", "false");
 
-    expect(screen.getByTestId("reads-need-compose")).toBeInTheDocument();
-    expect(screen.getByTestId("reads-need-input")).toBeDisabled();
-    expect(screen.getByTestId("reads-need-run-loaded-note")).toBeInTheDocument();
+    expect(screen.getByTestId("reads-evaluation-compose")).toBeInTheDocument();
+    expect(screen.getByTestId("reads-evaluation-input")).toBeDisabled();
+    expect(screen.getByTestId("reads-evaluation-run-loaded-note")).toBeInTheDocument();
     expect(screen.queryByTestId("reads-synthesize-options")).not.toBeInTheDocument();
     expect(screen.getByTestId("deposit-source-selection")).toHaveAttribute(
       "data-disabled",

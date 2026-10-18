@@ -1,7 +1,7 @@
 /**
  * Pure helpers for settled-Depository demand estimation.
  *
- * Tokenization, Jaccard affinity, lifecycle filters, and neediness roots —
+ * Tokenization, Jaccard affinity, lifecycle filters, and relative roots —
  * never touches raw source bodies.
  */
 
@@ -95,11 +95,11 @@ export function stateForDemand(demand: number): SettledDemandEstimateState {
   return 'weak-likely-demand';
 }
 
-export function needinessRootFor(neediness: {
+export function relativeRootFor(relative: {
   volume: number;
   demand: number;
   saturation: number;
   rationale: string;
 }) {
-  return root('deposit-option-neediness', neediness);
+  return root('deposit-option-relative', relative);
 }

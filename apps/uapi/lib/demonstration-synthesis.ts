@@ -3,7 +3,7 @@
  *
  * Stand in for the SDIVF host/pipeline step ONLY. Each runner:
  * 1. reads the real request checkout (GitHub App tree + language) so option
- *    provenance, coverage, and needinesses reflect the selected repository;
+ *    provenance, coverage, and relatives reflect the selected repository;
  * 2. replays a paced ExecutionPipelineSDIVF telemetry script through the same
  *    host-telemetry bridge live sandbox runs use (identical UI log rows);
  * 3. returns catalog options in the exact Implementation shape.
@@ -240,13 +240,13 @@ export async function runDemonstrationReadSynthesis(
     userId: string;
     execution: Execution;
     sourceBranch: string;
-    need: string;
+    evaluation: string;
     relevantPaths: string[];
     irrelevantPaths: string[];
   },
 ) {
   await input.emitStatus(
-    'Demonstration mode: replaying a curated SDIVF read run (no live inference); checkout, needinesses, and Finish projection are live.',
+    'Demonstration mode: replaying a curated SDIVF read run (no live inference); checkout, relatives, and Finish projection are live.',
   );
   const accessToken = await resolveGitHubAccessTokenForUser(input.userId);
   const [checkout, supplyByPackId] = await Promise.all([
@@ -259,7 +259,7 @@ export async function runDemonstrationReadSynthesis(
   ]);
   const { inScope } = scopeCheckoutPaths(checkout.paths, input.relevantPaths, input.irrelevantPaths);
   const options = buildDemonstrationReadImplementationOptions({
-    need: input.need,
+    evaluation: input.evaluation,
     catalogPaths: inScope,
     repositoryLanguage: checkout.language,
     steering: { permissibleSources: input.relevantPaths, impermissibleSources: input.irrelevantPaths },
@@ -274,7 +274,7 @@ export async function runDemonstrationReadSynthesis(
   const [owner, name] = input.repositoryFullName.split('/');
   const execution = input.execution;
   storeCrossPhaseArtifact(execution, 'implementation', 'options', options);
-  storeCrossPhaseArtifact(execution, 'read', 'need', input.need);
+  storeCrossPhaseArtifact(execution, 'read', 'evaluation', input.evaluation);
   storeCrossPhaseArtifact(execution, 'read', 'repository', {
     owner,
     name,
@@ -291,7 +291,7 @@ export async function runDemonstrationReadSynthesis(
   storeCrossPhaseArtifact(execution, 'validation', 'readyToFinish', {
     recommendation: 'finish',
     readyToFinish: true,
-    summary: `${options.length} measured DataPack option(s) ranked by need-fit for this Need.`,
+    summary: `${options.length} measured DataPack option(s) ranked by evaluation-fit for this Evaluation.`,
     issues: [],
   });
   return runReadFinishSynthesizeRunAgent({}, execution);

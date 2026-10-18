@@ -17,7 +17,7 @@ describe('AssetPack economic traceability', () => {
     const readId = 'read-economic-traceability-1';
     const readRequestId = 'request-economic-traceability-1';
     const assetPackId = 'asset-pack-economic-traceability-1';
-    const acceptedNeedRoot = 'sha256:accepted-need-root';
+    const acceptedEvaluationRoot = 'sha256:accepted-evaluation-root';
     const findingFitsResultRoot = 'sha256:finding-fits-root';
     const sourceSafePreviewRoot = 'sha256:source-safe-preview-root';
     const sourceManifestRoot = 'sha256:source-manifest-root';
@@ -33,7 +33,7 @@ describe('AssetPack economic traceability', () => {
     const sourceToShares = buildSourceToSharesProof({
       readId,
       assetPackId,
-      acceptedNeedRoot,
+      acceptedEvaluationRoot,
       findingFitsResultRoot,
       fitDeposits: [
         {
@@ -126,7 +126,7 @@ describe('AssetPack economic traceability', () => {
       assetPackId,
       readId,
       readRequestId,
-      acceptedNeedRoot,
+      acceptedEvaluationRoot,
       findingFitsResultRoot,
       readerWalletId,
       depositorWalletId,
@@ -174,7 +174,7 @@ describe('AssetPack economic traceability', () => {
       assetPackId,
       readId,
       readRequestId,
-      acceptedNeedRoot,
+      acceptedEvaluationRoot,
       findingFitsResultRoot,
       readerWalletId,
       depositorWalletId,

@@ -34,9 +34,9 @@ describe('pipeline host manifest', () => {
     expect(manifest.host.defaultWorkingDirectory).toBe('/vercel/sandbox');
     expect(manifest.stages).toEqual(ASSET_PACK_HOST_STAGES);
     expect(manifest.stages).toEqual(
-      expect.arrayContaining(['need-synthesis', 'need-review', 'need-fit-search'])
+      expect.arrayContaining(['evaluation-synthesis', 'evaluation-review', 'evaluation-fit-search'])
     );
-    expect(manifest.requireAcceptedReadNeed).toBe(true);
+    expect(manifest.requireAcceptedReadEvaluation).toBe(true);
     expect(manifest.expectedEvidenceTables).toEqual(ASSET_PACK_HOST_EVIDENCE_TABLES);
     // Vocabulary lives once in @bitcode/host-generics — never re-list literals here.
     expect(manifest.resultStates).toBe(ASSET_PACK_HOST_RESULT_STATES);

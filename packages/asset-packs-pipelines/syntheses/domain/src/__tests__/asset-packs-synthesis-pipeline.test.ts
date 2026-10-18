@@ -75,8 +75,8 @@ describe('AssetPacksSynthesis formal prompt build-up (Gate 3 chunk F)', () => {
     const read = render('read');
     expect(deposit).toContain('Product pipeline: synthesize-deposits');
     expect(read).toContain('Product pipeline: synthesize-reads');
-    expect(read).toContain('Need fit');
-    expect(deposit).not.toContain('Need fit');
+    expect(read).toContain('Evaluation fit');
+    expect(deposit).not.toContain('Evaluation fit');
     expect(deposit).toContain('Demand alignment');
   });
 });

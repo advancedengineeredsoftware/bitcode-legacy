@@ -232,7 +232,7 @@ export function buildBtdApiSchemaCompatibilityRows(): BtdApiSchemaCompatibilityR
         'pnpm --dir apps/mcp run test:mcp -- --runTestsByPath src/__tests__/unit/pipeline-ingress-contract.test.ts --runInBand',
       example: {
         request: {
-          task: 'Synthesize a source-safe AssetPack preview for a reviewed ReadNeed.',
+          task: 'Synthesize a source-safe AssetPack preview for a reviewed ReadEvaluation.',
           repository: { provider: 'github', owner: 'octocat', name: 'Spoon-Knife' },
         },
         response: {

@@ -75,18 +75,18 @@ export const DEPOSIT_SYNTHESIS_POLICY_CATALOG: AssetPackMeasurementSpec[] = [
 
 export const READ_SYNTHESIS_POLICY_CATALOG: AssetPackMeasurementSpec[] = [
   {
-    measurementKind: 'need-fit',
-    label: 'Need fit',
+    measurementKind: 'evaluation-fit',
+    label: 'Evaluation fit',
     weight: 0.44,
     guidance:
-      'Policy (not an absolute): prefer packs that appear to fit the reviewed Need (host measures needinesses later).',
+      'Policy (not an absolute): prefer packs that appear to fit the reviewed Evaluation (host measures relatives later).',
   },
   {
     measurementKind: 'source-coverage',
     label: 'Source coverage',
     weight: 0.28,
     guidance:
-      'Policy (not a measured absolute): prefer packs covering Need-relevant source knowledge.',
+      'Policy (not a measured absolute): prefer packs covering Evaluation-relevant source knowledge.',
   },
   {
     measurementKind: 'reuse-likelihood',
@@ -114,9 +114,9 @@ export function measurementCatalogForLens(
   return synthesisPolicyCatalogForMode(lens);
 }
 
-export const DEPOSIT_NEEDINESS_MEASUREMENT = {
-  measurementKind: 'neediness',
-  label: 'Neediness (REMOVED from deposit)',
+export const DEPOSIT_RELATIVE_MEASUREMENT = {
+  measurementKind: 'relative',
+  label: 'Relative (REMOVED from deposit)',
   guidance:
-    'Deprecated. Deposit DataPacks use measurements.absolutes only; needinesses are read-path only.',
+    'Deprecated. Deposit DataPacks use measurements.absolutes only; relatives are read-path only.',
 } as const;

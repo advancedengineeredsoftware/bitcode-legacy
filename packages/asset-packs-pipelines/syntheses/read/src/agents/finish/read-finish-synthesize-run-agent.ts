@@ -42,7 +42,7 @@ export default async function runReadFinishSynthesizeRunAgent(input: any, execut
     findValue(execution, 'read', 'repository') ??
     findValue(execution, 'deposit', 'repository') ??
     {};
-  const need = findValue(execution, 'read', 'need');
+  const evaluation = findValue(execution, 'read', 'evaluation');
   const workspacePath = findValue(execution, 'repository', 'workspacePath');
   const catalogSourcePathCount = resolveCatalogSourcePathCount(execution);
 
@@ -58,10 +58,10 @@ export default async function runReadFinishSynthesizeRunAgent(input: any, execut
       opt?.measurements && typeof opt.measurements === 'object' && !Array.isArray(opt.measurements)
         ? {
             absolutes: opt.measurements.absolutes ?? [],
-            needinesses: opt.measurements.needinesses ?? [],
+            relatives: opt.measurements.relatives ?? [],
           }
-        : { absolutes: opt?.absolutes ?? [], needinesses: [] },
-    needFit: opt?.needFit ?? null,
+        : { absolutes: opt?.absolutes ?? [], relatives: [] },
+    evaluationFit: opt?.evaluationFit ?? null,
     metadata: {
       measurementRationale: opt?.measurementRationale ?? null,
     },
@@ -75,7 +75,7 @@ export default async function runReadFinishSynthesizeRunAgent(input: any, execut
   const { selectionEnvelope, unpaidOptions, fullOptions: retainedFull } =
     buildUnpaidReadSelectionEnvelope({
       options: fullOptions,
-      need: need || null,
+      evaluation: evaluation || null,
       repositoryFullName:
         repository.fullName ||
         (repository.owner && repository.name ? `${repository.owner}/${repository.name}` : null),

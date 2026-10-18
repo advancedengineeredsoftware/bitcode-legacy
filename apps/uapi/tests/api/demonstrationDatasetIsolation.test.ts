@@ -2,7 +2,7 @@
  * @jest-environment node
  *
  * Demonstration dataset isolation: in demonstration mode only wallet + GitHub
- * connections are real — pipeline history, recorded admissions/Need anchors,
+ * connections are real — pipeline history, recorded admissions/Evaluation anchors,
  * and Exchange activity are demonstration data. Live mode never shows
  * demonstration rows.
  */
@@ -98,7 +98,7 @@ describe('demonstration dataset isolation', () => {
     expect(rows.map((row: { id: string }) => row.id)).toEqual(['live-run']);
   });
 
-  it('recorded admissions / Need anchors join the demonstration dataset', async () => {
+  it('recorded admissions / Evaluation anchors join the demonstration dataset', async () => {
     process.env = { ...env, BITCODE_DEMONSTRATION_MODE: '1' };
     signedIn();
     const { insert } = installExecutions([]);

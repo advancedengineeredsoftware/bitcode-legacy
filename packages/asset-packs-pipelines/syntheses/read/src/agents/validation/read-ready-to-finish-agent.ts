@@ -1,10 +1,10 @@
 /**
  * Read Validation ready-to-finish — product shell (STAB-4).
  *
- * Uses Need-first domain validation prompts (not deposit identity).
+ * Uses Evaluation-first domain validation prompts (not deposit identity).
  * A) Prior phases
- * B) Pack quality: patch + measurements.absolutes + measurements.needinesses (*-fit)
- * C) Need guidance honored (topics present; no empty needinesses)
+ * B) Pack quality: patch + measurements.absolutes + measurements.relatives (*-fit)
+ * C) Evaluation guidance honored (topics present; no empty relatives)
  *
  * Never imports the deposit product package.
  */
@@ -21,8 +21,8 @@ import {
   mergeDepositValidationVerdict,
   smokeCheckAssetPacks,
 } from '@bitcode/asset-packs-pipelines-syntheses-domain/agents/validation/asset-packs-validation-checks';
-import { hasRequiredAbsolutes, resolvePackAbsolutes, resolvePackNeedinesses } from '@bitcode/asset-packs-pipelines-syntheses-domain/asset-pack-measurements';
-import { assertNeedinessKindSuffix } from '../../read-neediness-measurements';
+import { hasRequiredAbsolutes, resolvePackAbsolutes, resolvePackRelatives } from '@bitcode/asset-packs-pipelines-syntheses-domain/asset-pack-measurements';
+import { assertRelativeKindSuffix } from '../../read-relative-measurements';
 import { resolveSourceCheckoutCatalog } from '@bitcode/asset-packs-pipelines-syntheses-domain/resolve-source-checkout-catalog';
 import { projectInventoryForPrompt } from '@bitcode/asset-packs-pipelines-syntheses-domain/asset-packs-synthesis';
 import { ensureDepositCheckoutSourceFiles } from '@bitcode/asset-packs-pipelines-syntheses-domain/ensure-checkout-source-files';
@@ -32,7 +32,7 @@ const prompt = createReadValidationPrompt();
 const ReadReadyToFinishCore = factoryPTRRAgent<any, DepositValidationResult>({
   name: 'ReadReadyToFinishAssetPacksSynthesisReadPipeline',
   description:
-    'Read Validation gate: prior-phase sanity, pack quality (patch+absolutes+*-fit needinesses), Need compliance.',
+    'Read Validation gate: prior-phase sanity, pack quality (patch+absolutes+*-fit relatives), Evaluation compliance.',
   outputSchema: DepositValidationOutputSchema,
   tools: [],
   prompt,
@@ -78,7 +78,7 @@ function phaseSanityIssues(execution: any): string[] {
   return issues;
 }
 
-function needinessIssues(packs: any[]): string[] {
+function relativeIssues(packs: any[]): string[] {
   const issues: string[] = [];
   for (const pack of packs) {
     if (!hasRequiredAbsolutes(pack)) {
@@ -86,16 +86,16 @@ function needinessIssues(packs: any[]): string[] {
         `Pack "${pack?.title || '?'}" missing required measurements.absolutes (magnitude+volume).`,
       );
     }
-    const needinesses = resolvePackNeedinesses(pack);
-    if (needinesses.length === 0) {
+    const relatives = resolvePackRelatives(pack);
+    if (relatives.length === 0) {
       issues.push(
-        `Pack "${pack?.title || '?'}" missing measurements.needinesses (*-fit readings required on read).`,
+        `Pack "${pack?.title || '?'}" missing measurements.relatives (*-fit readings required on read).`,
       );
     } else {
-      for (const row of needinesses) {
-        if (!assertNeedinessKindSuffix(String(row.measurementKind || ''))) {
+      for (const row of relatives) {
+        if (!assertRelativeKindSuffix(String(row.measurementKind || ''))) {
           issues.push(
-            `Pack "${pack?.title || '?'}" neediness "${row.measurementKind}" must end with -fit.`,
+            `Pack "${pack?.title || '?'}" relative "${row.measurementKind}" must end with -fit.`,
           );
         }
       }
@@ -125,15 +125,15 @@ export default async function runReadReadyToFinishAgent(input: any, execution: a
   );
   const catalogForPrompt = projectInventoryForPrompt(catalog);
 
-  const needComprehension =
-    findValue(execution, 'setup', 'needComprehension') ??
+  const evaluationComprehension =
+    findValue(execution, 'setup', 'evaluationComprehension') ??
     findValue(execution, 'setup', 'inputComprehension') ??
-    findValue(execution, 'read', 'needComprehension');
-  const needText =
-    findValue(execution, 'read', 'need') ??
-    findValue(execution, 'implementation', 'need') ??
-    input?.need ??
-    (typeof needComprehension?.summary === 'string' ? needComprehension.summary : null);
+    findValue(execution, 'read', 'evaluationComprehension');
+  const evaluationText =
+    findValue(execution, 'read', 'evaluation') ??
+    findValue(execution, 'implementation', 'evaluation') ??
+    input?.evaluation ??
+    (typeof evaluationComprehension?.summary === 'string' ? evaluationComprehension.summary : null);
   const depositoryHits =
     findValue(execution, 'implementation', 'depositoryHits') ??
     findValue(execution, 'discovery', 'depositoryHits') ??
@@ -156,13 +156,13 @@ export default async function runReadReadyToFinishAgent(input: any, execution: a
       assetPacks: packs,
       sourceCheckoutCatalog: catalogForPrompt,
       priorPhaseIssues: priorIssues,
-      need: needText,
-      needComprehension: needComprehension
+      evaluation: evaluationText,
+      evaluationComprehension: evaluationComprehension
         ? {
-            summary: needComprehension.summary,
-            needTopics: needComprehension.needTopics,
-            acceptanceCriteria: needComprehension.acceptanceCriteria,
-            dynamicNeedinesses: needComprehension.dynamicNeedinesses,
+            summary: evaluationComprehension.summary,
+            evaluationTopics: evaluationComprehension.evaluationTopics,
+            acceptanceCriteria: evaluationComprehension.acceptanceCriteria,
+            dynamicRelatives: evaluationComprehension.dynamicRelatives,
           }
         : null,
       discovery: {
@@ -177,7 +177,7 @@ export default async function runReadReadyToFinishAgent(input: any, execution: a
   );
   const agentOutput = (raw as any)?.finalOutput ?? (raw as any)?.output ?? raw;
   const smokeIssues = smokeCheckAssetPacks(packs, [], []);
-  const nIssues = needinessIssues(packs);
+  const nIssues = relativeIssues(packs);
 
   const merged = mergeDepositValidationVerdict(agentOutput, [
     ...smokeIssues,

@@ -185,7 +185,7 @@ export function buildRealDepositAssetPackOptionSynthesis(
       settlementBoundary: 'future-reader-settlement-required-for-source-bearing-assetpack' as const,
     };
     // Project through SynthesisAssetPack → deposit contents.
-    // Deposit measurements = absolutes only. Neediness is Read-pipeline only.
+    // Deposit measurements = absolutes only. Relative is Read-pipeline only.
     // Rehydrate modify bodies from checkout inventory when Implementation lost
     // content through projection — depositor must see full .patch material.
     const hostExtra = candidate as unknown as {
@@ -277,9 +277,9 @@ export function buildRealDepositAssetPackOptionSynthesis(
           ...(m.descriptor ? { descriptor: m.descriptor } : {}),
           ...(m.status ? { status: m.status } : {}),
         })),
-        // Deposit options are absolutes-only; neediness is Read-pipeline only.
+        // Deposit options are absolutes-only; relative is Read-pipeline only.
         // SynthesisMeasurementsByKind still requires the nested key present.
-        needinesses: [],
+        relatives: [],
       },
       provenantSourcePaths: candidate.coveredSourcePaths,
     });

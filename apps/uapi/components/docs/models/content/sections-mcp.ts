@@ -11,12 +11,12 @@ export const mcpSections = [
     summary:
       'MCP exposes exactly eight product tools: measure, synthesize-asset-packs-for-deposit, synthesize-asset-packs-for-reads, packs, and four Auxillaries panes.',
     detail:
-      'Keep the MCP surface narrow and explicit. Deposit/Read synthesize mirror website Synthesize DataPacks (obfuscations vs Need). Measure returns source-safe evidence. Packs and Auxillaries reread product posture.',
+      'Keep the MCP surface narrow and explicit. Deposit/Read synthesize mirror website Synthesize DataPacks (obfuscations vs Evaluation). Measure returns source-safe evidence. Packs and Auxillaries reread product posture.',
     reason:
       'Programmability only helps when it preserves DataPack proof parity with product routes.',
     points: [
       'synthesize-asset-packs-for-deposit requires obfuscations configuration (empty allowed).',
-      'synthesize-asset-packs-for-reads requires Need configuration.',
+      'synthesize-asset-packs-for-reads requires Evaluation configuration.',
       'measure returns source-safe measurement evidence only.',
       'packs and auxiliary-* tools point at Packs/Auxillaries product routes.',
       'Writes are confirmation-gated; results point back to Packs-readable activity.',

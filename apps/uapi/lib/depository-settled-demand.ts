@@ -3,11 +3,11 @@
  * earnings (source-safe metadata only).
  *
  * Also maps packs into DepositoryAsset shape for Discovery search (lexical +
- * optional vector) on both deposit relevants and read need-fits.
+ * optional vector) on both deposit relevants and read evaluation-fits.
  *
  * Dispatch preload: call `loadDepositorySearchAssets` before SDIVF Discovery so
  * `depository.settledAssets` / `deposit.settledDepositoryAssets` are non-empty
- * when supply exists (finding APs is critical for read Need-fits).
+ * when supply exists (finding APs is critical for read Evaluation-fits).
  */
 
 import { supabaseAdmin } from '@bitcode/supabase';

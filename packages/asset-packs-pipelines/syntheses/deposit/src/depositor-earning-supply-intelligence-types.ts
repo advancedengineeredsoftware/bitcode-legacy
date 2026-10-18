@@ -1,7 +1,7 @@
 /**
  * Depositor earning and supply intelligence types.
  *
- * Estimate-labeled compensation ranges, unfit-Need opportunities, and supply
+ * Estimate-labeled compensation ranges, unfit-Evaluation opportunities, and supply
  * recommendations for /deposits — never value-bearing mainnet admissions.
  */
 
@@ -31,7 +31,7 @@ export type DepositorSupplyRecommendationAction =
 
 export interface DepositorEarningSupplyIntelligenceInput {
   policyReport: DepositAssetPackOptionPolicyReport;
-  unfitNeedOpportunitySignals?: DepositOptionDemandSignal[] | null;
+  unfitEvaluationOpportunitySignals?: DepositOptionDemandSignal[] | null;
   createdAt?: string | null;
   /**
    * When true (or when no demand signals and no settled estimate), likely demand
@@ -44,7 +44,7 @@ export interface DepositorEarningSupplyIntelligenceInput {
   settledPackCount?: number | null;
 }
 
-export interface DepositorUnfitNeedOpportunity {
+export interface DepositorUnfitEvaluationOpportunity {
   id: string;
   label: string;
   weight: number;
@@ -76,7 +76,7 @@ export interface DepositorEarningStatement {
   sourceToShares: {
     allocationMethod: 'source-to-shares-largest-remainder';
     depositorShareBasisPoints: number;
-    proofState: 'not-created-until-accepted-need-fit-and-settlement';
+    proofState: 'not-created-until-accepted-evaluation-fit-and-settlement';
   };
   blockers: string[];
   warnings: string[];
@@ -105,10 +105,10 @@ export interface DepositorEarningSupplyIntelligence {
     strongDemandOptionCount: number;
     demandRoot: string;
   };
-  unfitNeedOpportunities: {
+  unfitEvaluationOpportunities: {
     state: DepositorDemandOpportunityState;
     opportunityCount: number;
-    opportunities: DepositorUnfitNeedOpportunity[];
+    opportunities: DepositorUnfitEvaluationOpportunity[];
     opportunityRoot: string;
   };
   earningStatements: DepositorEarningStatement[];
@@ -126,7 +126,7 @@ export interface DepositorEarningSupplyIntelligence {
       priceAsset: 'BTC';
     };
     sourceSafeSupplyRecommendationCount: number;
-    unfitNeedOpportunityCount: number;
+    unfitEvaluationOpportunityCount: number;
     aggregateRoot: string;
   };
   disclosure: {
@@ -145,7 +145,7 @@ export interface DepositorEarningSupplyIntelligence {
     intelligenceRoot: string;
     policyReportRoot: string;
     likelyDemandRoot: string;
-    unfitNeedOpportunityRoot: string;
+    unfitEvaluationOpportunityRoot: string;
     earningStatementRoots: string[];
     supplyRecommendationRoots: string[];
     aggregateRoot: string;

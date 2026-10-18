@@ -112,7 +112,7 @@ describe('AssetPack depository search', () => {
     expect(result.queryPlan).toMatchObject({
       schema: 'bitcode.asset-pack.depository-search.query-plan',
       pipelineName: 'ReadFitsFindingSynthesis',
-      derivedFrom: 'accepted-read-need',
+      derivedFrom: 'accepted-read-evaluation',
       channelIds: [
         'lexical',
         'symbolic',

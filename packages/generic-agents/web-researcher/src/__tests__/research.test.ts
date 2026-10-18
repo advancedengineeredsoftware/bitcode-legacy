@@ -19,7 +19,7 @@ const finding = {
 describe('Bitcode read-synthesis web research PTRR schemas', () => {
   test('plans source selection from a Bitcode read boundary', () => {
     const parsed = BitcodeExternalEvidenceResearchPlanSchema.parse({
-      normalizedNeed: 'Find official context for a repeated-read payment interface.',
+      normalizedEvaluation: 'Find official context for a repeated-read payment interface.',
       normalizedQuery: 'official repeated-read payment API reference',
       preferredSourceClasses: ['primary', 'official'],
       sourceSelectionRationale: ['Primary sources are required before commentary.'],
@@ -59,7 +59,7 @@ describe('Bitcode read-synthesis web research PTRR schemas', () => {
       synthesis: {
         summary: 'Primary outside evidence is present.',
         discoveryPhaseUse: ['Supports read synthesis during discovery before any proof closure claim.'],
-        needRelevance: ['Supports interface planning.'],
+        evaluationRelevance: ['Supports interface planning.'],
         sourceBackedClaims: ['The source documents the relevant external behavior.'],
         contradictions: [],
         unresolvedGaps: ['Static Bitcode proof still must validate repository-owned behavior.']

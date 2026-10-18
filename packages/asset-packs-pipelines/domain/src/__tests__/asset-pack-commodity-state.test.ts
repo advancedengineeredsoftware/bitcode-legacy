@@ -19,8 +19,8 @@ describe('AssetPack commodity state vocabulary', () => {
     'depository-assetpack-admitted': { depositoryAssetPackAdmitted: true },
     'fit-candidates-recalled': { fitCandidatesRecalled: true },
     'fit-set-selected': { selectedFitAssetIds: ['fit-deposit-1'] },
-    'need-fit-assetpack-synthesized': { needFitAssetPackSynthesized: true },
-    'need-fit-assetpack-quoted': { quoteIssued: true },
+    'evaluation-fit-assetpack-synthesized': { evaluationFitAssetPackSynthesized: true },
+    'evaluation-fit-assetpack-quoted': { quoteIssued: true },
     'settlement-observed': { quoteIssued: true, settlementObserved: true, btc: { paymentObserved: true } },
     'btd-settled-rights-transferred': {
       quoteIssued: true,
@@ -52,7 +52,7 @@ describe('AssetPack commodity state vocabulary', () => {
   const btdInputs: Record<BtdScalarVolumeState, AssetPackCommodityStateInput> = {
     'btd-not-applicable': {},
     'btd-potential-measured': { btd: { potentialMeasured: true } },
-    'need-fit-measurements-admitted': { btd: { measurementsAdmitted: true } },
+    'evaluation-fit-measurements-admitted': { btd: { measurementsAdmitted: true } },
     'measurement-weight-policy-locked': { btd: { weightPolicyLocked: true } },
     'weighted-scalar-volume-computed': { btd: { weightedScalarVolumeComputed: true } },
     'btd-quantized': { btd: { quantized: true } },
@@ -109,7 +109,7 @@ describe('AssetPack commodity state vocabulary', () => {
     expect(ASSET_PACK_LIFECYCLE_STATES).toHaveLength(12);
     expect(BTD_SCALAR_VOLUME_STATES).toHaveLength(13);
     expect(BTC_SETTLEMENT_STATES).toHaveLength(16);
-    expect(ASSET_PACK_LIFECYCLE_STATES).toContain('need-fit-assetpack-quoted');
+    expect(ASSET_PACK_LIFECYCLE_STATES).toContain('evaluation-fit-assetpack-quoted');
     expect(BTD_SCALAR_VOLUME_STATES).toContain('weighted-scalar-volume-computed');
     expect(BTC_SETTLEMENT_STATES).toContain('btc-psbt-signed');
   });
@@ -135,7 +135,7 @@ describe('AssetPack commodity state vocabulary', () => {
   it('builds source-safe display projection from Pack activity payloads', () => {
     const projection = projectAssetPackCommodityStateForPayload({
       type: 'pipeline:read-fits',
-      assetPackLifecycleState: 'need-fit-assetpack-quoted',
+      assetPackLifecycleState: 'evaluation-fit-assetpack-quoted',
       btdScalarVolumeState: 'btd-quote-bound',
       quoteRoot: 'quote-root-abc',
       measurementRoot: 'measurement-root-abc',
@@ -145,7 +145,7 @@ describe('AssetPack commodity state vocabulary', () => {
 
     expect(display).toMatchObject({
       schema: 'bitcode.asset-pack.commodity-state-display',
-      assetPackState: 'need-fit-assetpack-quoted',
+      assetPackState: 'evaluation-fit-assetpack-quoted',
       btdState: 'btd-quote-bound',
       btcState: 'btc-quote-issued',
       disclosureBoundary: 'after-quote',
@@ -197,7 +197,7 @@ describe('AssetPack commodity state vocabulary', () => {
     const payment = buildAssetPackCommodityStateProjection({ btc: { paymentObserved: true } });
     const assetPackQuoteCollapsedWithObservation = {
       ...payment,
-      states: { ...payment.states, assetPack: 'need-fit-assetpack-quoted' as const },
+      states: { ...payment.states, assetPack: 'evaluation-fit-assetpack-quoted' as const },
       blockers: [],
     };
     const settlementObservationCollapsedWithRightsTransfer = {

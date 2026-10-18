@@ -22,5 +22,5 @@
     "impermissibleSources": ["**/.env*", "**/secrets/**", "**/node_modules/**", "**/*credential*"],
     "demandContext": ["library-api", "type-safety", "plain-object-check"]
   },
-  "requireAcceptedReadNeed": false
+  "requireAcceptedReadEvaluation": false
 }

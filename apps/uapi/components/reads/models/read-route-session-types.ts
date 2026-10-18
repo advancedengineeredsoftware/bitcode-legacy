@@ -20,7 +20,7 @@ export type ReadRouteSessionInput = EnterpriseReadingUxStateInput & {
   repositoryFullName?: string | null;
   sourceBranch?: string | null;
   sourceCommit?: string | null;
-  readNeedId?: string | null;
+  readEvaluationId?: string | null;
   assetPackPreviewId?: string | null;
   settlementQuoteId?: string | null;
   budgetEnvelopeSats?: number | null;
@@ -52,7 +52,7 @@ export type ReadRouteSessionInput = EnterpriseReadingUxStateInput & {
 };
 
 export type ReadFitMeasurementVisualizationId =
-  | 'need-coverage'
+  | 'evaluation-coverage'
   | 'specificity'
   | 'novelty'
   | 'reuse'
@@ -213,8 +213,8 @@ export type ReadRouteSession = {
   steps: ProductEnterpriseReadingStepView[];
   readObjects: {
     readRequestRecorded: boolean;
-    synthesizedNeedReviewed: boolean;
-    acceptedNeedPresent: boolean;
+    synthesizedEvaluationReviewed: boolean;
+    acceptedEvaluationPresent: boolean;
     findingFitsRequested: boolean;
     sourceSafeAssetPackPreviewPresent: boolean;
     settlementQuotePresent: boolean;
@@ -226,14 +226,14 @@ export type ReadRouteSession = {
     repositoryFullName: string | null;
     sourceBranch: string | null;
     sourceCommit: string | null;
-    readNeedId: string | null;
+    readEvaluationId: string | null;
     assetPackPreviewId: string | null;
     settlementQuoteId: string | null;
   };
   pipelineOwnership: {
-    readNeedPipeline: 'ReadNeedComprehensionSynthesis';
+    readEvaluationPipeline: 'ReadEvaluationComprehensionSynthesis';
     findingFitsPipeline: 'ReadFitsFindingSynthesis';
-    acceptedNeedRequiredBeforeFindingFits: true;
+    acceptedEvaluationRequiredBeforeFindingFits: true;
     previewSourceSafeBeforeSettlement: true;
     deliveryRequiresPaidReadRights: true;
     retainedPipelineDebugCompatible: true;

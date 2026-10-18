@@ -6,7 +6,7 @@
 import type {
   AbsoluteReadingForSettlement,
   AssetPackMeasurementsForSettlement,
-  NeedinessRowInput,
+  RelativeRowInput,
 } from '@bitcode/btd/erc1155';
 import type { SettleAssetPackOption, SettleAssetPackPatch } from './settle-types';
 
@@ -14,7 +14,7 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function parseNeedinessRow(raw: unknown): NeedinessRowInput | null {
+function parseRelativeRow(raw: unknown): RelativeRowInput | null {
   if (!isObject(raw)) return null;
   const volume = typeof raw.volume === 'number' ? raw.volume : null;
   if (volume === null || !Number.isFinite(volume)) return null;
@@ -29,7 +29,7 @@ function parseNeedinessRow(raw: unknown): NeedinessRowInput | null {
       weight,
       magnitude,
       unit,
-      category: 'neediness',
+      category: 'relative',
     };
   }
   if (typeof raw.kind === 'string' && raw.kind.trim()) {
@@ -39,7 +39,7 @@ function parseNeedinessRow(raw: unknown): NeedinessRowInput | null {
       weight,
       magnitude,
       unit,
-      category: 'neediness',
+      category: 'relative',
     };
   }
   return null;
@@ -62,14 +62,14 @@ function parseAbsoluteRow(raw: unknown): AbsoluteReadingForSettlement | null {
 
 function parseMeasurements(raw: unknown): AssetPackMeasurementsForSettlement | null {
   if (!isObject(raw)) return null;
-  const needinessesRaw = Array.isArray(raw.needinesses) ? raw.needinesses : null;
-  if (!needinessesRaw) return null;
-  const needinesses: NeedinessRowInput[] = [];
-  for (const row of needinessesRaw) {
-    const parsed = parseNeedinessRow(row);
-    if (parsed) needinesses.push(parsed);
+  const relativesRaw = Array.isArray(raw.relatives) ? raw.relatives : null;
+  if (!relativesRaw) return null;
+  const relatives: RelativeRowInput[] = [];
+  for (const row of relativesRaw) {
+    const parsed = parseRelativeRow(row);
+    if (parsed) relatives.push(parsed);
   }
-  if (needinesses.length === 0) return null;
+  if (relatives.length === 0) return null;
   const absolutes: AbsoluteReadingForSettlement[] = [];
   if (Array.isArray(raw.absolutes)) {
     for (const row of raw.absolutes) {
@@ -77,7 +77,7 @@ function parseMeasurements(raw: unknown): AssetPackMeasurementsForSettlement | n
       if (parsed) absolutes.push(parsed);
     }
   }
-  return { needinesses, absolutes };
+  return { relatives, absolutes };
 }
 
 function parsePatch(raw: unknown): SettleAssetPackPatch | null {
@@ -102,7 +102,7 @@ function parsePatch(raw: unknown): SettleAssetPackPatch | null {
 
 /**
  * Parse one wire option into SettleAssetPackOption.
- * Requires measurements.needinesses with at least one valid *-fit row.
+ * Requires measurements.relatives with at least one valid *-fit row.
  */
 export function parseSettleAssetPackOption(raw: unknown): SettleAssetPackOption | null {
   if (!isObject(raw)) return null;

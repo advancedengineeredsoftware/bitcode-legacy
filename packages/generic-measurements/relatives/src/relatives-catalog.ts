@@ -1,38 +1,38 @@
 /**
- * Static **reading** needinesses catalogue (hybrid law).
+ * Static **reading** relatives catalogue (hybrid law).
  *
- * Needinesses are a measurement KIND (alongside absolutes). They are
- * reader/Need-relative and used only during **reading** (not deposit).
+ * Relatives are a measurement KIND (alongside absolutes). They are
+ * reader/Evaluation-relative and used only during **reading** (not deposit).
  *
  * Hybrid model:
  * - **Static catalogue** rows (e.g. language-fit) are fixed dimensions with weights.
  * - **Dynamic** rows may be inferred per Read Request (additional dimensions).
- * - **need-fit** is NOT measured as a raw catalogue row: it is the **weighted mean**
- *   of all needinesses readings for that pack under the active Need.
+ * - **evaluation-fit** is NOT measured as a raw catalogue row: it is the **weighted mean**
+ *   of all relatives readings for that pack under the active Evaluation.
  *
- * Full NeedinessesMeasureAgent product wiring is Gate 4 / synthesize-reads.
+ * Full RelativesMeasureAgent product wiring is Gate 4 / synthesize-reads.
  */
 
-export type NeedinessPropertyClass = 'static-catalog' | 'dynamic-inferred' | 'composite';
+export type RelativePropertyClass = 'static-catalog' | 'dynamic-inferred' | 'composite';
 
-export interface AssetPackNeedinessSpec {
+export interface AssetPackRelativeSpec {
   measurementKind: string;
   label: string;
   weight: number;
   unit: 'estimate' | 'normalized';
-  propertyClass: NeedinessPropertyClass;
+  propertyClass: RelativePropertyClass;
   guidance: string;
 }
 
 /**
- * Static reading needinesses catalogue (weights sum to 1 among static rows).
+ * Static reading relatives catalogue (weights sum to 1 among static rows).
  * Dynamic inferred rows (when present) re-normalize weights with static rows
- * when computing need-fit.
+ * when computing evaluation-fit.
  */
 /**
- * Static reading needinesses — every kind MUST end with `-fit` (product law).
+ * Static reading relatives — every kind MUST end with `-fit` (product law).
  */
-export const ASSET_PACK_NEEDINESSES_CATALOG: AssetPackNeedinessSpec[] = [
+export const ASSET_PACK_RELATIVES_CATALOG: AssetPackRelativeSpec[] = [
   {
     measurementKind: 'language-fit',
     label: 'Language fit',
@@ -40,7 +40,7 @@ export const ASSET_PACK_NEEDINESSES_CATALOG: AssetPackNeedinessSpec[] = [
     unit: 'estimate',
     propertyClass: 'static-catalog',
     guidance:
-      'How well the AssetPack’s languages/stack match the Need’s target languages and runtime.',
+      'How well the AssetPack’s languages/stack match the Evaluation’s target languages and runtime.',
   },
   {
     measurementKind: 'domain-fit',
@@ -49,7 +49,7 @@ export const ASSET_PACK_NEEDINESSES_CATALOG: AssetPackNeedinessSpec[] = [
     unit: 'estimate',
     propertyClass: 'static-catalog',
     guidance:
-      'How well the pack’s knowledge domain matches the Need’s problem domain (not absolute size).',
+      'How well the pack’s knowledge domain matches the Evaluation’s problem domain (not absolute size).',
   },
   {
     measurementKind: 'interface-fit',
@@ -58,33 +58,33 @@ export const ASSET_PACK_NEEDINESSES_CATALOG: AssetPackNeedinessSpec[] = [
     unit: 'estimate',
     propertyClass: 'static-catalog',
     guidance:
-      'How well pack surfaces/APIs/integration shape match what the Need requires to consume.',
+      'How well pack surfaces/APIs/integration shape match what the Evaluation requires to consume.',
   },
 ];
 
 /** Composite kind id — derived only; never a raw measure-agent target. */
-export const NEED_FIT_COMPOSITE_KIND = 'need-fit' as const;
+export const EVALUATION_FIT_COMPOSITE_KIND = 'evaluation-fit' as const;
 
-export type NeedinessReadingLike = {
+export type RelativeReadingLike = {
   measurementKind: string;
   volume: number;
   weight?: number;
 };
 
 /**
- * need-fit = weighted mean of needinesses volumes.
+ * evaluation-fit = weighted mean of relatives volumes.
  * Uses reading.weight when present; else catalogue weight; else equal weight.
  * Empty set → 0.
  */
-export function computeNeedFitVolume(
-  needinesses: NeedinessReadingLike[],
-  catalog: AssetPackNeedinessSpec[] = ASSET_PACK_NEEDINESSES_CATALOG,
+export function computeEvaluationFitVolume(
+  relatives: RelativeReadingLike[],
+  catalog: AssetPackRelativeSpec[] = ASSET_PACK_RELATIVES_CATALOG,
 ): number {
-  if (!Array.isArray(needinesses) || needinesses.length === 0) return 0;
+  if (!Array.isArray(relatives) || relatives.length === 0) return 0;
   const weightByKind = new Map(catalog.map((s) => [s.measurementKind, s.weight]));
   let sumW = 0;
   let sum = 0;
-  for (const row of needinesses) {
+  for (const row of relatives) {
     if (!row || typeof row.volume !== 'number' || !Number.isFinite(row.volume)) continue;
     const w =
       typeof row.weight === 'number' && Number.isFinite(row.weight) && row.weight > 0

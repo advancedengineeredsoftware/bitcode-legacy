@@ -7,13 +7,13 @@ import {
   buildBtdBtcCompensationStatements,
 } from '../btd-btc-compensation-statements';
 import {
-  acceptReadNeed,
-  synthesizeReadNeedForPipelineInput,
-} from '../../../syntheses/read/src/read-need';
+  acceptReadEvaluation,
+  synthesizeReadEvaluationForPipelineInput,
+} from '../../../syntheses/read/src/read-evaluation';
 
-function acceptedNeed() {
-  return acceptReadNeed(
-    synthesizeReadNeedForPipelineInput({
+function acceptedEvaluation() {
+  return acceptReadEvaluation(
+    synthesizeReadEvaluationForPipelineInput({
       read: {
         id: 'read-accounting',
         prompt: 'Settle an AssetPack, account for BTD/BTC rights, compensate contributors, and reconcile projections.',
@@ -143,7 +143,7 @@ function fitResult(finalScore = 0.93): any {
 
 function previewBoundary() {
   return buildAssetPackPreviewBoundary({
-    need: acceptedNeed(),
+    evaluation: acceptedEvaluation(),
     fitResult: fitResult(),
     pullRequestTarget: 'https://github.com/octocat/Spoon-Knife/pull/441',
     createdAt: '2026-05-29T00:00:00.000Z',

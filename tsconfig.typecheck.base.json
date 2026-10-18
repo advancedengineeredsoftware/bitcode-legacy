@@ -107,8 +107,8 @@
       "@bitcode/generic-measurements-absolutes": [
         "packages/generic-measurements/absolutes/src/index.ts"
       ],
-      "@bitcode/generic-measurements-needinesses": [
-        "packages/generic-measurements/needinesses/src/index.ts"
+      "@bitcode/generic-measurements-relatives": [
+        "packages/generic-measurements/relatives/src/index.ts"
       ],
       "@bitcode/generic-asset-packs-synthesis": [
         "packages/generic-asset-packs/synthesis/src/index.ts"

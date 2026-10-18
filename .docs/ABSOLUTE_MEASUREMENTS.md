@@ -26,8 +26,8 @@ hybrid search facets; package map. Expand that file when adding or redefining ki
 3. Design the absolute catalog we want next (deposit side first).  
 4. Brainstorm how better absolutes make DataPacks more discoverable, lucrative, and honestly measured.
 
-**Out of first pass:** needinesses redesign (read-side). Boundary only: deposit
-always carries `measurements.needinesses: []`.
+**Out of first pass:** relatives redesign (read-side). Boundary only: deposit
+always carries `measurements.relatives: []`.
 
 **Product language (required):** the commodity is a **DataPack** everywhere in
 product, design, and new identifiers (`DataPack = patch + measurements + metadata`).
@@ -49,7 +49,7 @@ Measurement is the singular key to valuable IP commoditization on Bitcode.
 | **Measurement before price** | Deposit options and commercial readback ground decisions in measured readings, not free-form model claims |
 | **Models do not invent absolute volumes** | Hosts and tools measure quantity; agents may judge quality only over source-safe descriptors + measured counts |
 | **DataPack identity** | `DataPack = patch + measurements + metadata` |
-| **Deposit needinesses** | Always empty — reader-relative kinds are **not** deposit absolutes |
+| **Deposit relatives** | Always empty — reader-relative kinds are **not** deposit absolutes |
 | **Weights sum to 1** | `DATA_PACK_ABSOLUTES_CATALOG` is the fixed product catalog for absolute kinds |
 
 Commercial UI rows (criticality, ROI, earnings policy) are **not** absolute
@@ -92,7 +92,7 @@ depository_search_documents + /exchange UX       # absolute_kinds/volumes + buye
 | Index + UX | depository index + exchange descriptors | `absolute_kinds` / `absolute_volumes`; buyer chips |
 
 **Shared base decision:** keep one category-parameterized `MeasureAgent`. Absolutes
-and needinesses differ by framing and validation (`-fit` on needinesses), not by
+and relatives differ by framing and validation (`-fit` on relatives), not by
 PTRR plumbing. Product code should enter through category factories, not free-form
 category strings.
 
@@ -104,7 +104,7 @@ category strings.
 
 | Area | Evidence |
 | --- | --- |
-| Nested carrier | `measurements: { absolutes, needinesses }` in primitives + deposit Finish |
+| Nested carrier | `measurements: { absolutes, relatives }` in primitives + deposit Finish |
 | Quantity tool | `SourceStaticAnalysisTool` — deterministic counts; source-safe report only |
 | Merge law | Quantity kinds tool-authoritative; quality from agent when inference enabled |
 | Fail-closed Validation | Ready-to-finish requires non-empty absolutes with magnitude+volume |
@@ -336,7 +336,7 @@ absoluteComposite = Σ (weight_i × volume_i)   // over DATA_PACK_ABSOLUTES_CATA
 ```
 
 - Used for **supply legibility** and depositor comparison.  
-- **Not** settlement BTD. Read-side BTD uses needinesses / need-fit family only.
+- **Not** settlement BTD. Read-side BTD uses relatives / evaluation-fit family only.
 
 ---
 
@@ -345,7 +345,7 @@ absoluteComposite = Σ (weight_i × volume_i)   // over DATA_PACK_ABSOLUTES_CATA
 | Name | Status | Correct home |
 | --- | --- | --- |
 | `source-coverage`, `demand-alignment`, `reuse-likelihood` | Legacy `DEPOSIT_MEASUREMENT_CATALOG` | Commercial / synthesis prompt policy — **not** `measurements.absolutes` |
-| `need-fit`, `language-fit`, … | Needinesses | Read-only measurement KIND |
+| `evaluation-fit`, `language-fit`, … | Relatives | Read-only measurement KIND |
 | Criticality, ROI, earnings estimates | Product policy projections | UI / earnings intelligence — may *use* absolutes as inputs |
 
 ---
@@ -377,7 +377,7 @@ Goals for the next absolute catalog revision:
 | --- | --- | --- |
 | Split `correctness-estimate` into coherence vs completeness | Better depositor trust | Requires stronger descriptors + tools |
 | `source-safety-confidence` | Explicit non-leakage of obfuscations | Must be tool-checkable where possible |
-| Keep `objectives-fidelity` | Core deposit steering | Needs objectives in source-safe descriptor |
+| Keep `objectives-fidelity` | Core deposit steering | Evaluations objectives in source-safe descriptor |
 | Revisit `computational-usage` | Often weak without runtime | Consider demote weight or tool-ground with complexity proxies |
 
 ### 5.3 Target posture (v1 design intent)
@@ -488,11 +488,11 @@ Out of scope for this doc’s implementation, but design boundary:
 
 | Future KIND | Role |
 | --- | --- |
-| needinesses | Read fit (exists) |
+| relatives | Read fit (exists) |
 | marketness? | Demand-grounded commercial dynamics (if ever) — **not** absolute |
 | runtime-performance | Could become absolute quantity if tool-measured |
 
-Do not overload absolutes with market or Need-relative signal.
+Do not overload absolutes with market or Evaluation-relative signal.
 
 ---
 
@@ -500,7 +500,7 @@ Do not overload absolutes with market or Need-relative signal.
 
 | ID | Question | Options | Decision |
 | --- | --- | --- | --- |
-| Q1 | Keep shared `agent-measure` base? | Shared vs split absolute/neediness packages | **Shared** — PTRR plumbing is identical |
+| Q1 | Keep shared `agent-measure` base? | Shared vs split absolute/relative packages | **Shared** — PTRR plumbing is identical |
 | Q2 | Should quality inference be default on deposit Implementation? | Always when execution present vs flag | Prefer always with deterministic fallback (align with `preferQualityInference`) |
 | Q3 | Retire `DEPOSIT_MEASUREMENT_CATALOG` when? | Immediate vs after prompt rewrite | After prompts no longer depend on it |
 | Q4 | Next quantity kinds priority? | test-surface / api-surface / lang-span | **Landed P1** — all three in catalog (2026-07) |
@@ -521,7 +521,7 @@ Do not overload absolutes with market or Need-relative signal.
 | 6 | Depository absolute facets (filter/sort) | depository search + index | Possibly parity row |
 | 7 | P1 quantity kinds (lang-span, test-surface, api-surface) | catalog + tool + SPEC | **Done** (2026-07) |
 | 8 | UI: absolute radar / measured-vs-estimated on deposits | apps/uapi deposits | Product |
-| 9 | Needinesses deep pass | later | Gate read |
+| 9 | Relatives deep pass | later | Gate read |
 
 ---
 

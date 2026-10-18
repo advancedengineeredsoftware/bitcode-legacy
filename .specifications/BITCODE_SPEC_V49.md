@@ -1584,14 +1584,19 @@ verb in prose) are not renamed.
 | `syntheses/read/src/read-need.ts` | `syntheses/read/src/read-evaluation.ts` |
 | `syntheses/read/src/read-neediness-measurements.ts` | `syntheses/read/src/read-relative-measurements.ts` |
 | `syntheses/read/src/agents/setup/read-need-comprehension-agent.ts` | `.../read-evaluation-comprehension-agent.ts` |
-| `syntheses/domain/src/asset-packs-synthesis-neediness.ts` | `.../asset-packs-synthesis-relatives.ts` |
+| `syntheses/read/src/agents/discovery/read-depository-search-for-need-fits-agent.ts` | `.../read-depository-search-for-evaluation-fits-agent.ts` |
+| `syntheses/read/src/read-need-review-resynthesis.ts` | `.../read-evaluation-review-resynthesis.ts` |
+| `syntheses/domain/src/asset-packs-synthesis-neediness.ts` | `.../asset-packs-synthesis-relative.ts` |
 | `packages/btd/src/erc1155/settlement-btd-from-needinesses.ts` | `.../settlement-btd-from-relatives.ts` |
-| `apps/uapi/components/reads/ReadsNeedComposePanel/` | `.../ReadsEvaluationsComposePanel/` |
+| `apps/uapi/components/reads/ReadsNeedComposePanel/` | `.../ReadsEvaluationComposePanel/` |
 | `apps/uapi/components/reads/ReadsNeedAnchorControls/` | `.../ReadsEvaluationAnchorControls/` |
 | `apps/uapi/components/reads/ReadsNeedPathPickers/` | `.../ReadsEvaluationPathPickers/` |
 
-The codemod lives under `.codemods/v49-evaluations/` (temporary per
-`.codemods/README.md`) and is deleted after Gate 2 is verified. Prompt
+The codemod was `.codemods/v49-evaluations-rename.cjs` (temporary per
+`.codemods/README.md`, removed in the Gate 2 commit after verification; TypeScript-AST rewrite of identifiers, string and
+template literals, JSX text, and comments with a case-preserving token map;
+historical-artifact tokens and English verb uses of "needs" are protected). Execution store namespaces move with it
+(`read/need` → `read/evaluation`). Prompt
 PromptParts (`comprehendread_*`, `synthesizereads_*`,
 `assetpacksynthesizeartifacts_*`, read synthesis / commercial-nl / validation
 read prompts) are rewritten in prose, not token-substituted.
@@ -1613,12 +1618,17 @@ read prompts) are rewritten in prose, not token-substituted.
 One idempotent Supabase migration:
 
 1. `ALTER TABLE depository_search_index RENAME COLUMN neediness_kinds TO relative_kinds`.
-2. Rewrite jsonb keys on `executions` (`context`, `output`, option arrays):
-   `need` → `evaluation`, `needText` → `evaluationText`, `needId` →
-   `evaluationId`, `needinesses` → `relatives`, `needFit` → `evaluationFit`,
-   `needFitVolume` → `evaluationFitVolume`; `category: 'neediness'` →
-   `'relative'`; `contextSource: 'read-need-anchor'` → `'read-evaluation-anchor'`.
-3. Rewrite the same keys on `execution_events.payload` where present.
+2. Rewrite exact quoted JSON tokens (keys and whole string values) in
+   `executions.input/output/context/items/config/error` and exact text values
+   of `executions.type`, using the codemod's token map (e.g. `need` →
+   `evaluation`, `needText` → `evaluationText`, `needinesses` → `relatives`,
+   `needFit` → `evaluationFit`, `neediness` → `relative`, `read-need-anchor` →
+   `read-evaluation-anchor`, `read/need` → `read/evaluation`).
+3. Apply the same rewrite to `execution_events.event_data` and exact text
+   values of `event_type`, `phase`, and `agent_name`.
+
+Migration file: `supabase/migrations/20261018120000_v49_evaluations_rename.sql`.
+English prose inside stored strings is not rewritten.
 
 The migration must be idempotent (re-running is a no-op) and must not touch
 frozen historical migrations. After it runs, no product code reads V48 keys.

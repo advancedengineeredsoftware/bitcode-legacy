@@ -7,7 +7,7 @@
  *   factoryExecutionPipelineSDIVFSynthesizeReadAssetPacks
  *     → ExecutionPipelineSDIVFSynthesizeReadAssetPacks
  *
- * Reader's accepted Need is satisfied by finding + synthesizing
+ * Reader's accepted Evaluation is satisfied by finding + synthesizing
  * ReadSynthesizedAssetPack options. Settlement is settle-asset-pack-pipeline
  * (ExecutionPipelineSimpleSettleAssetPack) — one run per bought option.
  */
@@ -76,8 +76,8 @@ export const executionPipelineSDIVFSynthesizeReadAssetPacks: ExecutionPipelineSD
 export const runExecutionPipelineSDIVFSynthesizeReadAssetPacks = executionPipelineSDIVFSynthesizeReadAssetPacks;
 
 // Co-located read domain (moved from syntheses/domain)
-export * from './read-need';
-export * from './read-need-review-resynthesis';
+export * from './read-evaluation';
+export * from './read-evaluation-review-resynthesis';
 export * from './read-fits-finding-runtime';
 export * from './reading-pipeline-contract';
 export * from './reading-pipeline-observability';
@@ -85,5 +85,5 @@ export * from './reading-interface-product-parity';
 export * from './reading-local-staging-rehearsal';
 export * from './reading-operational-telemetry-repair-readback';
 export * from './interface-disclosure-boundary';
-export * from './read-neediness-measurements';
+export * from './read-relative-measurements';
 export * from './phases/execution-pipeline-sdivf-execution-phase-synthesis-read-asset-packs';

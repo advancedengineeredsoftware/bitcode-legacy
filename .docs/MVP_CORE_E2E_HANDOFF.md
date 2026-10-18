@@ -11,8 +11,8 @@
 | Deposit options / admit | Source-safe admission report; no protected bodies unpaid | Option cards show measurements honesty + commercial NL |
 | `GET /api/deposit/demand-estimate` | Session; thin corpus → `estimatable:false` (no invented %) | UI shows Unestimatable; never fabricate demand |
 | `POST /api/depository/index` | Session + assetId; commercial NL + fixtures on document | Index status toast only |
-| Read synthesize | Session + Need + repository; Need length only in journal input | Need form + path pickers |
-| `POST /api/read/settle/quote` | Needinesses `*-fit` → mock multi-rail quote; no mainnet finality | Quote rail picker UI |
+| Read synthesize | Session + Evaluation + repository; Evaluation length only in journal input | Evaluation form + path pickers |
+| `POST /api/read/settle/quote` | Relatives `*-fit` → mock multi-rail quote; no mainnet finality | Quote rail picker UI |
 | `POST /api/read/settle` | `synthesisRunId` + `selectedIndexes` rehydrate only; measurement buy gate; 1:1 settle runs | Settle CTA must not post full options |
 | `POST /api/packs/payout/finalize` | Session + settle owner; pending payout only; `sellerBtdBps` 0..10000 | Seller slider + finalize CTA; no mainnet claim |
 | Packs activity | Source-safe records only (`assertPackActivitySourceSafe`); mine-only skips network merge | Master-detail chrome |
@@ -30,7 +30,7 @@ Path-only must never present as full measured quality.
 | --- | --- |
 | `none` | Happy path `ok: true` |
 | `reject-admission` | `admittedCount=0`, error `no_admitted_options` |
-| `empty-needinesses-quote` | Quote fails, error `quote_failed_empty_needinesses` |
+| `empty-relatives-quote` | Quote fails, error `quote_failed_empty_relatives` |
 | `empty-search-corpus` | `hitCount=0`, error `empty_search_corpus` |
 
 ## Test entrypoints

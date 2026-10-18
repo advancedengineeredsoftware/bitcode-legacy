@@ -721,7 +721,7 @@ describe('runDepositInBoxHost (#25)', () => {
       coveredSourcePaths: ['.docs/README.md'],
       confidence: 0.8,
       selectable: true,
-      measurements: { absolutes: nestedAbsolutes, needinesses: [] },
+      measurements: { absolutes: nestedAbsolutes, relatives: [] },
       patch: { fileChanges: [{ path: '.docs/README.md', op: 'modify' }], patchSummary: 'docs' },
     };
     const fakeHost = {

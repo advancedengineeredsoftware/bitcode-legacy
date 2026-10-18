@@ -9,7 +9,7 @@
  *         → ReadSynthesizedSettledAssetPack
  *
  * Measurements are part of the primitive shape via @bitcode/measurement-generics
- * (nested absolutes | needinesses kinds). Product packages refine commercial
+ * (nested absolutes | relatives kinds). Product packages refine commercial
  * fields; they do not re-own the measurements carrier type.
  */
 
@@ -25,10 +25,10 @@ export type AssetPackDeliveryMechanism = 'pull-request';
 /**
  * Primitive AssetPack — identity + source-safe binding + patch + measurements.
  *
- * - `measurements.absolutes` / `measurements.needinesses` are the only formal
+ * - `measurements.absolutes` / `measurements.relatives` are the only formal
  *   measurement kinds on the pack (V48).
- * - Deposit product law: `needinesses` is always `[]`.
- * - Read product law: `needinesses` populated; need-fit is a composite, not a
+ * - Deposit product law: `relatives` is always `[]`.
+ * - Read product law: `relatives` populated; evaluation-fit is a composite, not a
  *   raw row stored as an absolute.
  * - Obfuscations are never stored on an AssetPack (sensitive; deposit input only).
  */

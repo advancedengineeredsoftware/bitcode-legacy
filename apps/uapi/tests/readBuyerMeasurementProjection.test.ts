@@ -4,33 +4,33 @@
 import {
   assessSelectedOptionsForSettle,
   buildReadBuyerMeasurementProjection,
-  computeNeedFitFromReadings,
+  computeEvaluationFitFromReadings,
   recommendationLabel,
 } from '@/components/reads/models/read-buyer-measurement-projection';
 
 describe('read-buyer-measurement-projection', () => {
-  it('computes need-fit as weighted mean of static *-fit rows', () => {
-    const needFit = computeNeedFitFromReadings([
+  it('computes evaluation-fit as weighted mean of static *-fit rows', () => {
+    const evaluationFit = computeEvaluationFitFromReadings([
       { measurementKind: 'language-fit', volume: 1, weight: 0.35 },
       { measurementKind: 'domain-fit', volume: 0.5, weight: 0.35 },
       { measurementKind: 'interface-fit', volume: 0, weight: 0.3 },
     ]);
     // (0.35*1 + 0.35*0.5 + 0.3*0) / 1 = 0.525
-    expect(needFit).toBeCloseTo(0.525, 5);
+    expect(evaluationFit).toBeCloseTo(0.525, 5);
   });
 
-  it('ignores composite need-fit row when computing from needinesses', () => {
-    const needFit = computeNeedFitFromReadings([
-      { measurementKind: 'need-fit', volume: 0.99, weight: 1 },
+  it('ignores composite evaluation-fit row when computing from relatives', () => {
+    const evaluationFit = computeEvaluationFitFromReadings([
+      { measurementKind: 'evaluation-fit', volume: 0.99, weight: 1 },
       { measurementKind: 'language-fit', volume: 0.2, weight: 1 },
     ]);
-    expect(needFit).toBeCloseTo(0.2, 5);
+    expect(evaluationFit).toBeCloseTo(0.2, 5);
   });
 
   it('recommends buy when fit is strong and gates pass', () => {
     const p = buildReadBuyerMeasurementProjection({
-      needFit: 0.72,
-      needinesses: [
+      evaluationFit: 0.72,
+      relatives: [
         { measurementKind: 'language-fit', volume: 0.8, label: 'Language fit' },
         { measurementKind: 'domain-fit', volume: 0.7, label: 'Domain fit' },
         { measurementKind: 'interface-fit', volume: 0.65, label: 'Interface fit' },
@@ -63,8 +63,8 @@ describe('read-buyer-measurement-projection', () => {
       ],
     });
     expect(p.recommendation).toBe('buy_recommended');
-    expect(p.needFitVolume).toBeCloseTo(0.72, 5);
-    expect(p.needFitSource).toBe('option');
+    expect(p.evaluationFitVolume).toBeCloseTo(0.72, 5);
+    expect(p.evaluationFitSource).toBe('option');
     expect(p.fitRows).toHaveLength(3);
     expect(p.fitRows.every((r) => r.present)).toBe(true);
     expect(recommendationLabel(p.recommendation)).toMatch(/Buy recommended/i);
@@ -72,8 +72,8 @@ describe('read-buyer-measurement-projection', () => {
 
   it('hard-blocks buy when a safety gate is insufficient_evidence', () => {
     const p = buildReadBuyerMeasurementProjection({
-      needFit: 0.9,
-      needinesses: [
+      evaluationFit: 0.9,
+      relatives: [
         { measurementKind: 'language-fit', volume: 0.9 },
         { measurementKind: 'domain-fit', volume: 0.9 },
         { measurementKind: 'interface-fit', volume: 0.9 },
@@ -95,9 +95,9 @@ describe('read-buyer-measurement-projection', () => {
     expect(p.recommendationReasons.join(' ')).toMatch(/Secret safety|secret-safety|gate/i);
   });
 
-  it('do_not_buy on low need-fit even if gates look fine', () => {
+  it('do_not_buy on low evaluation-fit even if gates look fine', () => {
     const p = buildReadBuyerMeasurementProjection({
-      needinesses: [
+      relatives: [
         { measurementKind: 'language-fit', volume: 0.1 },
         { measurementKind: 'domain-fit', volume: 0.1 },
         { measurementKind: 'interface-fit', volume: 0.1 },
@@ -108,29 +108,29 @@ describe('read-buyer-measurement-projection', () => {
         { measurementKind: 'license-cleanliness', volume: 0.9, status: 'measured' },
       ],
     });
-    expect(p.needFitVolume).toBeCloseTo(0.1, 5);
+    expect(p.evaluationFitVolume).toBeCloseTo(0.1, 5);
     expect(p.recommendation).toBe('do_not_buy');
   });
 
-  it('cannot_assess when needinesses are missing', () => {
+  it('cannot_assess when relatives are missing', () => {
     const p = buildReadBuyerMeasurementProjection({
-      needinesses: [],
+      relatives: [],
       absolutes: [
         { measurementKind: 'correctness-estimate', volume: 0.8, status: 'estimated' },
       ],
     });
     expect(p.recommendation).toBe('cannot_assess');
-    expect(p.needFitVolume).toBeNull();
+    expect(p.evaluationFitVolume).toBeNull();
     expect(p.honesty.estimated).toBe(1);
   });
 
-  it('assessSelectedOptionsForSettle blocks low need-fit selection', () => {
+  it('assessSelectedOptionsForSettle blocks low evaluation-fit selection', () => {
     const blocked = assessSelectedOptionsForSettle([
       {
         index: 0,
         title: 'Weak fit pack',
         measurements: {
-          needinesses: [
+          relatives: [
             { measurementKind: 'language-fit', volume: 0.1 },
             { measurementKind: 'domain-fit', volume: 0.1 },
             { measurementKind: 'interface-fit', volume: 0.1 },
@@ -148,12 +148,12 @@ describe('read-buyer-measurement-projection', () => {
     expect(blocked.blockers[0]).toMatch(/Weak fit pack/);
   });
 
-  it('assessSelectedOptionsForSettle blocks missing needinesses', () => {
+  it('assessSelectedOptionsForSettle blocks missing relatives', () => {
     const blocked = assessSelectedOptionsForSettle([
       {
         index: 1,
         title: 'No fit rows',
-        measurements: { needinesses: [], absolutes: [] },
+        measurements: { relatives: [], absolutes: [] },
       },
     ]);
     expect(blocked.allowed).toBe(false);
@@ -165,9 +165,9 @@ describe('read-buyer-measurement-projection', () => {
       {
         index: 0,
         title: 'Solid pack',
-        needFit: 0.7,
+        evaluationFit: 0.7,
         measurements: {
-          needinesses: [
+          relatives: [
             { measurementKind: 'language-fit', volume: 0.7 },
             { measurementKind: 'domain-fit', volume: 0.7 },
             { measurementKind: 'interface-fit', volume: 0.7 },
@@ -192,8 +192,8 @@ describe('read-buyer-measurement-projection', () => {
 
   it('soft-warns on high copyleft risk mass', () => {
     const p = buildReadBuyerMeasurementProjection({
-      needFit: 0.7,
-      needinesses: [
+      evaluationFit: 0.7,
+      relatives: [
         { measurementKind: 'language-fit', volume: 0.7 },
         { measurementKind: 'domain-fit', volume: 0.7 },
         { measurementKind: 'interface-fit', volume: 0.7 },

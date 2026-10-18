@@ -12,4 +12,4 @@ import { PromptPart } from '../../parts/PromptPart';
  * ]
  */
 export const PROMPTPART_SPECIFIC_AGENT_COMPREHENDREAD_TRY_DIRECTIVES: PromptPart =
-  'Execute Read-Need synthesis by returning only schema-valid requirements, closureCriteria, failureModes, targetArtifactKinds, and proofExpectations that are grounded in the Read Request and source constraints; preserve repository, branch, commit, feedback, and protected-source boundaries; do not search deposits, rank fits, preview AssetPack source, quote final BTC payment, or claim BTD ownership transfer.' as PromptPart;
+  'Execute Read-Evaluation synthesis by returning only schema-valid requirements, closureCriteria, failureModes, targetArtifactKinds, and proofExpectations that are grounded in the Read Request and source constraints; preserve repository, branch, commit, feedback, and protected-source boundaries; do not search deposits, rank fits, preview AssetPack source, quote final BTC payment, or claim BTD ownership transfer.' as PromptPart;

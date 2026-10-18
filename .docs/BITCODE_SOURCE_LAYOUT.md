@@ -283,7 +283,7 @@ packages/generic-<family>/ # README only (no package.json)
 | `asset-packs-pipelines/` | `domain/` (all 3), `syntheses/domain/` (both synths), `syntheses/deposit/`, `syntheses/read/`, `settle/` | co-located product pipelines + tiered domain |
 | `generic-llms/` | `xAI/`, `OpenAI/`, `Anthropic/`, `Google/`, `defaults/`, `registry/`, `models/` | `@bitcode/generic-llms-*` (+ aggregator) |
 | `generic-generations/` | `failsafes/`, `thinkings/` | `@bitcode/generic-generations-*` |
-| `generic-measurements/` | `absolutes/`, `needinesses/`, `tech-types/` | `@bitcode/generic-measurements-*` |
+| `generic-measurements/` | `absolutes/`, `relatives/`, `tech-types/` | `@bitcode/generic-measurements-*` |
 | `generic-vcs/` | `github/`, `gitlab/`, `bitbucket/`, `git/` | `@bitcode/generic-vcs-*` |
 | `vcs-generics/` | (package root) | `@bitcode/vcs-generics` |
 | `host-generics/` | (package root) | `@bitcode/host-generics` |
@@ -421,7 +421,7 @@ bitcode/
 │ │ └── … # specialized agents
 │ ├── generic-measurements/
 │ │ ├── absolutes/ # AbsolutesMeasureAgent (category framing)
-│ │ └── needinesses/ # Needinesses surface (Gate 4)
+│ │ └── relatives/ # Relatives surface (Gate 4)
 │ ├── asset-packs/
 │ │ ├── synthesis/ # SynthesizeDataPacks measurements/catalogs
 │ │ └── settle/ # SettleDataPack product surface

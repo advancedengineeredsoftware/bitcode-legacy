@@ -5,7 +5,7 @@
  * - BTD (id 0): fungible, max 21_000_000 * 10^18, freely transferable
  * - AssetPack (ids ≥ 1): add-only co-ownership NFT; burn forbidden
  * - Never pay in BTD; buyers pay ETH | BTC | SOL at spot
- * - Mint BTD on settle only, to depositor BTD payout slices (needinesses volume)
+ * - Mint BTD on settle only, to depositor BTD payout slices (relatives volume)
  */
 
 import { BTD_MAX_MINTABLE_SUPPLY } from '../constants';
@@ -71,12 +71,12 @@ export interface SettleQuote {
   assetPackKey: string;
   buyer: string;
   payAsset: PayAsset;
-  /** V after needinesses + decay (max mintable notional). */
+  /** V after relatives + decay (max mintable notional). */
   btdVolume: bigint;
   /** Exact pay units (wei / sats / lamports). */
   payAmount: bigint;
   rateMicro: number;
-  needFitMicro: number;
+  evaluationFitMicro: number;
   decayMicro: number;
   shares: SharePayout[];
   metadataRoot: string;
@@ -115,7 +115,7 @@ export interface BtdEarnedReceipt {
   depositor: string;
   amountBaseUnits: bigint;
   assetPackKey: string;
-  needFitMicro: number;
+  evaluationFitMicro: number;
   settlementSequence: bigint;
   issuedAt: string;
 }

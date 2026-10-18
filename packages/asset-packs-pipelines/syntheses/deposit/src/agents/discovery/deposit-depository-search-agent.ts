@@ -5,7 +5,7 @@
  * queries can use wave-1 grounding (especially comprehend-codebase).
  *
  * Deposit purpose: find **relevant** settled Depository supply / demand
- * alignment for this deposit synthesis run (not Need-fits — that is read).
+ * alignment for this deposit synthesis run (not Evaluation-fits — that is read).
  *
  * Plan: synthesize search queries from wave-1 signals, sourceCheckoutCatalog,
  * obfuscations, measurements, and demand context.
@@ -67,7 +67,7 @@ const IDENTITY = part(
     'AssetPack supply **relevant** to this deposit synthesis run. Build search queries from ' +
     'wave-1 comprehension signals, sourceCheckoutCatalog, obfuscations, checkout measurements, ' +
     'and demand context so synthesized packs align with likely demand. Be source-safe. ' +
-    'This is deposit relevance search — not Need-fit search (that is the read product agent).',
+    'This is deposit relevance search — not Evaluation-fit search (that is the read product agent).',
 );
 
 const REQUIREMENTS = part(

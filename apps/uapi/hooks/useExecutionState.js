@@ -48,7 +48,7 @@ const useExecutionState = () => {
         }
         catch { }
     } };
-    const setDefinitionOfNeed = (definitionOfRead) => {
+    const setDefinitionOfEvaluation = (definitionOfRead) => {
         setState(prev => ({ ...prev, definitionOfRead }));
     };
     /**
@@ -254,7 +254,7 @@ const useExecutionState = () => {
     }, []);
     return {
         ...state,
-        setDefinitionOfNeed,
+        setDefinitionOfEvaluation,
         submitAssetPackPipeline,
         appendInstructionToLog,
         resetState

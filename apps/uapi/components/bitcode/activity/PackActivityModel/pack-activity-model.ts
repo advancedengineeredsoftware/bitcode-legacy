@@ -25,7 +25,7 @@ import { expandAbsoluteMeasurementsToFullCatalog } from '@/components/exchange/m
 export type PackActivityType =
   | 'deposit-option'
   | 'depository-assetpack'
-  | 'read-need-fit-preview'
+  | 'read-evaluation-fit-preview'
   | 'settled-assetpack'
   | 'settlement'
   | 'compensation'
@@ -53,7 +53,7 @@ export interface PackActivityMeasurement {
   root: string | null;
   /** Buyer-facing source-safe descriptor paragraph (optional). */
   descriptor?: string | null;
-  /** Absolute / neediness kind id when known. */
+  /** Absolute / relative kind id when known. */
   kind?: string | null;
   weight?: number | null;
   volume?: number | null;
@@ -265,7 +265,7 @@ export interface PackActivitySummary {
 export type PackMarketSignalKind =
   | 'demand'
   | 'supply'
-  | 'unfit-need'
+  | 'unfit-evaluation'
   | 'settlement'
   | 'compensation'
   | 'delivery'
@@ -292,7 +292,7 @@ export interface PackPortfolioPositionProjection {
   proofRootCount: number;
   demandSignalCount: number;
   supplySignalCount: number;
-  unfitNeedSignalCount: number;
+  unfitEvaluationSignalCount: number;
   settlementState: string | null;
   compensationState: string | null;
   deliveryState: string | null;
@@ -341,7 +341,7 @@ const SOURCE_SAFETY: PackActivitySourceSafety = {
 const PACK_ACTIVITY_TYPES: PackActivityType[] = [
   'deposit-option',
   'depository-assetpack',
-  'read-need-fit-preview',
+  'read-evaluation-fit-preview',
   'settled-assetpack',
   'settlement',
   'compensation',
@@ -530,7 +530,7 @@ function inferPackActivityType(record: BitcodeActivityRecord): PackActivityType 
       'data pack preview',
     ])
   ) {
-    return 'read-need-fit-preview';
+    return 'read-evaluation-fit-preview';
   }
   if (
     includesAny(haystack, [
@@ -591,7 +591,7 @@ function inferDataPackTitle(record: BitcodeActivityRecord) {
 }
 
 /**
- * Project nested DataPack measurement kinds (absolutes + needinesses *-fit)
+ * Project nested DataPack measurement kinds (absolutes + relatives *-fit)
  * into flat source-safe PackActivity measurement rows.
  */
 function collectNestedKindMeasurements(
@@ -609,7 +609,7 @@ function collectNestedKindMeasurements(
   // Settled packActivity.measurements[] rows: { kind, category, volume, magnitude }
   // Prefer magnitude+unit for absolute size properties (functions/files/types);
   // fall back to volume (0..1 weighted component) when magnitude absent.
-  if (typeof record.kind === 'string' && (record.category === 'absolute' || record.category === 'neediness')) {
+  if (typeof record.kind === 'string' && (record.category === 'absolute' || record.category === 'relative')) {
     const kind = record.kind;
     const id = `${record.category}:${kind}`;
     if (!seen.has(id)) {
@@ -637,7 +637,7 @@ function collectNestedKindMeasurements(
           unit:
             typeof record.unit === 'string'
               ? record.unit
-              : record.category === 'neediness'
+              : record.category === 'relative'
                 ? 'fit'
                 : catalog?.unit || null,
           root: null,
@@ -650,7 +650,7 @@ function collectNestedKindMeasurements(
       }
     }
   }
-  // Nested shape measurements: { absolutes: [...], needinesses: [...] }
+  // Nested shape measurements: { absolutes: [...], relatives: [...] }
   const absolutes = Array.isArray(record.absolutes) ? record.absolutes : [];
   for (const raw of absolutes) {
     if (!raw || typeof raw !== 'object') continue;
@@ -688,13 +688,13 @@ function collectNestedKindMeasurements(
       status: typeof a.status === 'string' ? a.status : null,
     });
   }
-  const needinesses = Array.isArray(record.needinesses) ? record.needinesses : [];
-  for (const raw of needinesses) {
+  const relatives = Array.isArray(record.relatives) ? record.relatives : [];
+  for (const raw of relatives) {
     if (!raw || typeof raw !== 'object') continue;
     const n = raw as Record<string, unknown>;
     const kind = typeof n.kind === 'string' ? n.kind : typeof n.id === 'string' ? n.id : null;
     if (!kind) continue;
-    const id = `neediness:${kind}`;
+    const id = `relative:${kind}`;
     if (seen.has(id)) continue;
     seen.add(id);
     const value = typeof n.volume === 'number' ? n.volume : null;
@@ -721,7 +721,7 @@ function buildMeasurements(record: BitcodeActivityRecord): PackActivityMeasureme
     packType === 'depository-assetpack' || packType === 'settled-assetpack';
   const measurements: PackActivityMeasurement[] = [];
 
-  // Absolute / neediness kind rows first (commercial material properties).
+  // Absolute / relative kind rows first (commercial material properties).
   collectNestedKindMeasurements(payload, measurements);
 
   // Session-aggregate counters are NOT pack measurements. A deposited DataPack
@@ -804,7 +804,7 @@ function buildMeasurements(record: BitcodeActivityRecord): PackActivityMeasureme
       'measurementRoot',
       'depositMeasurementRoot',
       'assetPackMeasurementRoot',
-      'readNeedMeasurementRoot',
+      'readEvaluationMeasurementRoot',
     ]);
     if (measurementRoot) {
       ordered.push({
@@ -1259,7 +1259,7 @@ export function normalizePackActivityRecord(record: BitcodeActivityRecord): Pack
 
 export function assertPackActivitySourceSafe(record: PackActivityRecord | PackActivityDetailProjection) {
   const serialized = JSON.stringify(record).toLowerCase();
-  const unsafeNeedles = [
+  const unsafeEvaluationles = [
     'protected source body',
     'unpaid assetpack source',
     'raw prompt text',
@@ -1276,7 +1276,7 @@ export function assertPackActivitySourceSafe(record: PackActivityRecord | PackAc
     record.sourceSafety.interpolatedPromptVisible === false &&
     record.sourceSafety.rawProviderResponseVisible === false &&
     record.sourceSafety.sourceSnippetVisible === false &&
-    unsafeNeedles.every((needle) => !serialized.includes(needle))
+    unsafeEvaluationles.every((needle) => !serialized.includes(needle))
   );
 }
 
@@ -1303,7 +1303,7 @@ function flattenMetadataSearchTokens(value: unknown, depth = 0): string[] {
 
 /**
  * Full-text corpus for /exchange search: every source-safe field buyers use to
- * find DataPacks — titles, absolute/neediness measurements, values, proofs,
+ * find DataPacks — titles, absolute/relative measurements, values, proofs,
  * states, accounting/governance roots, and shallow metadata.
  */
 function buildSearchText(record: PackActivityRecord) {
@@ -1340,10 +1340,10 @@ function buildSearchText(record: PackActivityRecord) {
       typeof measurement.volume === 'number' ? String(measurement.volume) : null,
       typeof measurement.weight === 'number' ? String(measurement.weight) : null,
       measurement.descriptor || null,
-      // Common absolute / neediness phrasing so partial queries hit.
+      // Common absolute / relative phrasing so partial queries hit.
       'absolute',
       'measurement',
-      'neediness',
+      'relative',
       measurement.kind ? `absolute ${measurement.kind}` : null,
       measurement.kind ? `absolute:${measurement.kind}` : null,
       `${measurement.label} ${measurement.value}`,
@@ -1407,7 +1407,7 @@ function isOpenRepairState(value: string | null) {
 function inferSignalKinds(record: PackActivityRecord): PackMarketSignalKind[] {
   const text = buildSearchText(record);
   const kinds = new Set<PackMarketSignalKind>();
-  if (record.type === 'read-need-fit-preview' || includesAny(text, ['read demand', 'need demand', 'finding fits'])) {
+  if (record.type === 'read-evaluation-fit-preview' || includesAny(text, ['read demand', 'need demand', 'finding fits'])) {
     kinds.add('demand');
   }
   if (
@@ -1418,7 +1418,7 @@ function inferSignalKinds(record: PackActivityRecord): PackMarketSignalKind[] {
     kinds.add('supply');
   }
   if (includesAny(text, ['unfit', 'no worthy fit', 'no_worthy_fit', 'no fit', 'blocked readiness'])) {
-    kinds.add('unfit-need');
+    kinds.add('unfit-evaluation');
   }
   if (record.type === 'settlement' || record.settlementState) kinds.add('settlement');
   if (record.type === 'compensation' || record.compensationState) kinds.add('compensation');
@@ -1754,8 +1754,8 @@ export function buildPackPortfolioMarketIntelligence(
         (current?.demandSignalCount || 0) + (signalKinds.includes('demand') ? 1 : 0),
       supplySignalCount:
         (current?.supplySignalCount || 0) + (signalKinds.includes('supply') ? 1 : 0),
-      unfitNeedSignalCount:
-        (current?.unfitNeedSignalCount || 0) + (signalKinds.includes('unfit-need') ? 1 : 0),
+      unfitEvaluationSignalCount:
+        (current?.unfitEvaluationSignalCount || 0) + (signalKinds.includes('unfit-evaluation') ? 1 : 0),
       settlementState: record.settlementState || current?.settlementState || null,
       compensationState: record.compensationState || current?.compensationState || null,
       deliveryState: record.deliveryState || current?.deliveryState || null,
@@ -1806,8 +1806,8 @@ export function buildPackPortfolioMarketIntelligence(
       {
         id: 'market-demand',
         label: 'Demand signals',
-        description: 'Read Need and Finding Fits activity that indicates buyer demand.',
-        query: { type: 'read-need-fit-preview' },
+        description: 'Read Evaluation and Finding Fits activity that indicates buyer demand.',
+        query: { type: 'read-evaluation-fit-preview' },
         signalKind: 'demand',
       },
       {

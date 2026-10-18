@@ -25,8 +25,8 @@ measurement-generics
 ```
 
 **Commodity:** a **DataPack** = patch + measurements + metadata (never a raw repository).  
-**Deposit needinesses:** always `[]`. Need-relative kinds are read-side only.  
-**No `learning-gain`:** BTD / need-fit owns exchange value; learning-gain is not a deposit absolute.  
+**Deposit relatives:** always `[]`. Evaluation-relative kinds are read-side only.
+**No `learning-gain`:** BTD / evaluation-fit owns exchange value; learning-gain is not a deposit absolute.
 **Snapshot:** 2026-07-24 (aligned with hierarchy + hybrid search wiring).
 
 ---
@@ -41,7 +41,7 @@ Bitcode sells **measured knowledge**, not guesses. Absolutes are the **supply-si
 | **Depositors** | See what the host measured after synthesis; resynthesize when weak; understand gates (secrets/PII) |
 | **Search (deposit + read)** | Facets on `absolute_kinds` / `absolute_volumes`; hybrid re-rank with absolute composite |
 | **Exchange / activity** | Buyer chips + descriptors without unpaid source |
-| **Settlement** | Absolutes are substrate; BTD mint is need-fit × rights, not raw absolute composite alone |
+| **Settlement** | Absolutes are substrate; BTD mint is evaluation-fit × rights, not raw absolute composite alone |
 
 Laws (unchanged):
 
@@ -327,7 +327,7 @@ Admit → depository_search_documents.absolute_kinds / absolute_volumes
 Hybrid search: lexical + vector + absolute facet filters & re-rank
 ```
 
-**Read path:** same host measure for synthesized options; needinesses computed separately for Need-fit.
+**Read path:** same host measure for synthesized options; relatives computed separately for Evaluation-fit.
 
 ---
 

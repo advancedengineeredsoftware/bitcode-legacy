@@ -66,7 +66,7 @@ export default async function runDepositLedgerizeAgent(input: any, execution: an
     measurementRoot: stableHash(opt?.absolutes || opt?.measurements || []),
     metadataRoot: stableHash({
       confidence: opt?.confidence,
-      needinessSignal: opt?.needinessSignal,
+      relativeSignal: opt?.relativeSignal,
     }),
   }));
 

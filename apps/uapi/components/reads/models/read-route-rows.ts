@@ -29,8 +29,8 @@ export function buildReadSessionRows(session: ReadRouteSession): ReadLabelValueR
       value: shortIdentifier(session.routeState.transactionId),
     },
     {
-      label: 'Need pipeline',
-      value: session.pipelineOwnership.readNeedPipeline,
+      label: 'Evaluation pipeline',
+      value: session.pipelineOwnership.readEvaluationPipeline,
     },
     {
       label: 'Fits pipeline',

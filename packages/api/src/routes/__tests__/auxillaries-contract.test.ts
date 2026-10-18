@@ -245,14 +245,14 @@ describe('Auxillaries package route contracts', () => {
           ]),
           supportedActions: expect.arrayContaining([
             'request_read',
-            'review_need',
+            'review_evaluation',
             'request_finding_fits',
             'pay_btc_fee',
             'deliver_asset_pack',
           ]),
           allowedActions: expect.arrayContaining([
             'request_read',
-            'review_need',
+            'review_evaluation',
             'request_finding_fits',
           ]),
           sourceSafetyClass: 'source_safe',

@@ -1,7 +1,7 @@
 /**
  * SynthesizeAssetPacks measurement product types.
  *
- * Measurement KINDS: absolutes | needinesses (nested carrier on DataPacks).
+ * Measurement KINDS: absolutes | relatives (nested carrier on DataPacks).
  * Hierarchy: product measurement types over Measurement / MeasureAgent bases.
  */
 
@@ -12,8 +12,8 @@ export type SynthesizeAssetPacksMode = 'deposit' | 'read';
 
 /**
  * Synthesis **policy** row (steering language only).
- * Not an absolute or neediness measurement reading — do not put volumes in
- * `measurements.absolutes` / `measurements.needinesses` from these keys alone.
+ * Not an absolute or relative measurement reading — do not put volumes in
+ * `measurements.absolutes` / `measurements.relatives` from these keys alone.
  */
 export interface AssetPackMeasurementSpec {
   measurementKind: string;
@@ -54,15 +54,15 @@ export interface AssetPackCandidateMeasurement {
   descriptor?: string;
 }
 
-/** One neediness reading (read path only). Same numeric law as absolutes for fields. */
-export interface AssetPackNeedinessMeasurement {
+/** One relative reading (read path only). Same numeric law as absolutes for fields. */
+export interface AssetPackRelativeMeasurement {
   measurementKind: string;
   label: string;
   weight: number;
   volume: number;
   magnitude: number;
   unit: string;
-  category: 'neediness';
+  category: 'relative';
   rationale?: string;
   /** Source-safe instance prose for this reading (when attached). */
   descriptor?: string;
@@ -70,14 +70,14 @@ export interface AssetPackNeedinessMeasurement {
 
 /**
  * Canonical nested measurement kinds object on a DataPack / deposit option.
- * Deposit: needinesses is always [].
- * Read: needinesses populated; need-fit composite derived separately.
+ * Deposit: relatives is always [].
+ * Read: relatives populated; evaluation-fit composite derived separately.
  */
 export interface AssetPackMeasurementsByKind {
   absolutes: AssetPackCandidateMeasurement[];
-  needinesses: AssetPackNeedinessMeasurement[];
+  relatives: AssetPackRelativeMeasurement[];
 }
 
 export function emptyAssetPackMeasurements(): AssetPackMeasurementsByKind {
-  return { absolutes: [], needinesses: [] };
+  return { absolutes: [], relatives: [] };
 }

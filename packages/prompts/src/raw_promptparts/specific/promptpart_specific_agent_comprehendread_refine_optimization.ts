@@ -12,4 +12,4 @@ import { PromptPart } from '../../parts/PromptPart';
  * ]
  */
 export const PROMPTPART_SPECIFIC_AGENT_COMPREHENDREAD_REFINE_OPTIMIZATION: PromptPart =
-  'Refine the synthesized Need by checking every field against the original Read Request, source constraints, feedback, and parser schema; remove overreach, speculative domain enrichment, searched-fit language, settlement finality, delivery guarantees, and any protected-source disclosure; tighten measurable closure criteria while keeping unknowns explicit and reviewable.' as PromptPart;
+  'Refine the synthesized Evaluation by checking every field against the original Read Request, source constraints, feedback, and parser schema; remove overreach, speculative domain enrichment, searched-fit language, settlement finality, delivery guarantees, and any protected-source disclosure; tighten measurable closure criteria while keeping unknowns explicit and reviewable.' as PromptPart;

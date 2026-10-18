@@ -157,7 +157,7 @@ describe('deposit-route-model', () => {
     expect(assertDepositRouteSessionSourceSafe(session).admitted).toBe(true);
   });
 
-  it('projects source-safe depositor earnings and unfit Need opportunities', () => {
+  it('projects source-safe depositor earnings and unfit Evaluation opportunities', () => {
     const session = buildDepositRouteSession({
       repositoryFullName: 'octocat/Spoon-Knife',
       sourceBranch: 'main',
@@ -188,9 +188,9 @@ describe('deposit-route-model', () => {
           weight: 0.82,
         },
       ],
-      unfitNeedOpportunitySignals: [
+      unfitEvaluationOpportunitySignals: [
         {
-          id: 'unfit-need-route-proof',
+          id: 'unfit-evaluation-route-proof',
           label: 'Unfit Reads need route proof and source-safe delivery evidence.',
           weight: 0.84,
         },
@@ -202,7 +202,7 @@ describe('deposit-route-model', () => {
     });
 
     expect(session.earningSupplyIntelligence.likelyDemand.state).toBe('strong-demand-opportunity');
-    expect(session.earningSupplyIntelligence.unfitNeedOpportunities.opportunityCount).toBe(1);
+    expect(session.earningSupplyIntelligence.unfitEvaluationOpportunities.opportunityCount).toBe(1);
     expect(session.earningSupplyIntelligence.aggregate.totalExpectedCompensationSats).toBeGreaterThan(0);
     expect(session.earningSupplyIntelligence.aggregate.expectedCompensationRangeSats.priceAsset).toBe('BTC');
     expect(
@@ -235,7 +235,7 @@ describe('deposit-route-model', () => {
       depositoryDemandSignals: [
         { id: 'fake', label: 'Should be ignored when unestimatable.', weight: 0.99 },
       ],
-      unfitNeedOpportunitySignals: [
+      unfitEvaluationOpportunitySignals: [
         { id: 'fake-unfit', label: 'Should be ignored when unestimatable.', weight: 0.99 },
       ],
       depositorWalletId: 'wallet-depositor-1',
@@ -245,10 +245,10 @@ describe('deposit-route-model', () => {
     });
 
     expect(session.earningSupplyIntelligence.likelyDemand.state).toBe('unestimatable-demand');
-    expect(session.earningSupplyIntelligence.unfitNeedOpportunities.state).toBe(
+    expect(session.earningSupplyIntelligence.unfitEvaluationOpportunities.state).toBe(
       'unestimatable-demand',
     );
-    expect(session.earningSupplyIntelligence.unfitNeedOpportunities.opportunityCount).toBe(0);
+    expect(session.earningSupplyIntelligence.unfitEvaluationOpportunities.opportunityCount).toBe(0);
     expect(session.earningSupplyIntelligence.aggregate.totalExpectedCompensationSats).toBe(0);
     expect(
       session.policy.evaluations.every(

@@ -42,7 +42,7 @@ export type ReadSettlePayTo = {
 
 export type ReadSettleQuote = {
   provider: string;
-  needFitVolume: number;
+  evaluationFitVolume: number;
   rawVolumeBaseUnits: string;
   btdVolume: string;
   btdVolumeDisplay: string;
@@ -81,7 +81,7 @@ export function ReadsAssetPackOptions(props: {
   /** Connected buyer Ethereum address (0x…). */
   buyerEthereumAddress?: string | null;
   /**
-   * Measurement-only buy gate (needinesses + absolute gates).
+   * Measurement-only buy gate (relatives + absolute gates).
    * When false, quote/settle must not proceed.
    */
   measurementGateAllowed?: boolean;
@@ -121,7 +121,7 @@ export function ReadsAssetPackOptions(props: {
     quote?.payTo?.find((rail) => rail.payAsset === asset) ?? null;
   const selectedPayTo = payToFor(payAsset);
   const livePayment = Boolean(selectedPayTo?.address && selectedPayTo.liveVerification);
-  // Measurement-only buy gate: need-fit + safety (do_not_buy / cannot_assess block).
+  // Measurement-only buy gate: evaluation-fit + safety (do_not_buy / cannot_assess block).
   // Payment-required checkouts also need a live rail for the selected asset.
   const canSettle =
     hasSelection &&
@@ -182,7 +182,7 @@ export function ReadsAssetPackOptions(props: {
           className="mt-3 border border-white/10 bg-black/20 px-4 py-6 text-sm text-neutral-400"
         >
           Measured AssetPack options appear here after synthesis — select a repository
-          and SHA, describe the Need, set Relevant / Irrelevant paths, then Synthesize.
+          and SHA, describe the Evaluation, set Relevant / Irrelevant paths, then Synthesize.
         </div>
       ) : (
         <div className="mt-3 grid min-w-0 gap-3 tablet:grid-cols-2">
@@ -268,7 +268,7 @@ export function ReadsAssetPackOptions(props: {
           >
             <div>
               <p className="text-[0.6rem] uppercase tracking-[0.16em] text-neutral-500">
-                BTD volume (needinesses × decay)
+                BTD volume (relatives × decay)
               </p>
               <p className="mt-1 font-mono text-sm text-emerald-100">
                 {quoteBusy
@@ -281,7 +281,7 @@ export function ReadsAssetPackOptions(props: {
               </p>
               {quote ? (
                 <p className="mt-0.5 text-[0.7rem] text-neutral-500">
-                  needFit {quote.needFitVolume.toFixed(4)} · decay{" "}
+                  evaluationFit {quote.evaluationFitVolume.toFixed(4)} · decay{" "}
                   {(quote.decay * 100).toFixed(2)}% · {quote.provider}
                 </p>
               ) : null}
@@ -338,7 +338,7 @@ export function ReadsAssetPackOptions(props: {
               <ul className="mt-1 list-disc space-y-0.5 pl-4">
                 {(measurementGateBlockers.length
                   ? measurementGateBlockers
-                  : ["Selected options fail need-fit or safety measurements."]
+                  : ["Selected options fail evaluation-fit or safety measurements."]
                 )
                   .slice(0, 5)
                   .map((b) => (
@@ -346,7 +346,7 @@ export function ReadsAssetPackOptions(props: {
                   ))}
               </ul>
               <p className="mt-1 text-[0.7rem] text-rose-100/80">
-                Needinesses (*-fit) price BTD volume; safety gates can hard-block.
+                Relative measurements price BTD volume; safety gates can hard-block.
                 Review option cards above.
               </p>
             </div>

@@ -75,7 +75,7 @@ export const ReadImplementationAgentAssetPacksCommercialNl = factoryPTRRAgent<
 >({
   name: 'ReadImplementationAgentAssetPacksCommercialNl',
   description:
-    'Implementation commercial-NL (read): Need-first buyer brief grounded in patch + measurements + fit.',
+    'Implementation commercial-NL (read): Evaluation-first buyer brief grounded in patch + measurements + fit.',
   outputSchema: depositCommercialNlSetSchemaNormalized,
   tools: [],
   prompt: readCommercialPrompt,
@@ -341,15 +341,15 @@ export default async function runDepositImplementationAgentAssetPacksCommercialN
 
   const measured = resolveMeasuredOptions(input, execution);
   const basePacket = buildCommercialNlPacket(measured) as Record<string, unknown>;
-  const needComprehension =
-    input?.needComprehension ??
-    findValue(execution, 'setup', 'needComprehension') ??
-    findValue(execution, 'read', 'needComprehension');
-  const needText =
-    input?.need ??
-    findValue(execution, 'implementation', 'need') ??
-    findValue(execution, 'read', 'need') ??
-    (typeof needComprehension?.summary === 'string' ? needComprehension.summary : null);
+  const evaluationComprehension =
+    input?.evaluationComprehension ??
+    findValue(execution, 'setup', 'evaluationComprehension') ??
+    findValue(execution, 'read', 'evaluationComprehension');
+  const evaluationText =
+    input?.evaluation ??
+    findValue(execution, 'implementation', 'evaluation') ??
+    findValue(execution, 'read', 'evaluation') ??
+    (typeof evaluationComprehension?.summary === 'string' ? evaluationComprehension.summary : null);
   const toolResult =
     findValue(execution, 'discovery', 'depositorySearchToolResult') ??
     findValue(execution, 'tools', 'depository-asset-pack-search');
@@ -362,12 +362,12 @@ export default async function runDepositImplementationAgentAssetPacksCommercialN
       ? {
           ...basePacket,
           productLens: 'read',
-          need: needText,
-          needComprehension: needComprehension
+          evaluation: evaluationText,
+          evaluationComprehension: evaluationComprehension
             ? {
-                summary: needComprehension.summary,
-                needTopics: needComprehension.needTopics,
-                acceptanceCriteria: needComprehension.acceptanceCriteria,
+                summary: evaluationComprehension.summary,
+                evaluationTopics: evaluationComprehension.evaluationTopics,
+                acceptanceCriteria: evaluationComprehension.acceptanceCriteria,
               }
             : null,
           depositoryHits,
@@ -382,7 +382,7 @@ export default async function runDepositImplementationAgentAssetPacksCommercialN
   let items: DepositCommercialNlItem[] = [];
   try {
     const raw = await commercialAgent(
-      { commercialNlPacket: packet, packs: packet, need: needText, productLens },
+      { commercialNlPacket: packet, packs: packet, evaluation: evaluationText, productLens },
       execution,
     );
     items = unwrapCommercialSet(raw);

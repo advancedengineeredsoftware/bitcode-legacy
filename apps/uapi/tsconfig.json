@@ -158,11 +158,11 @@
       "@bitcode/asset-packs-pipelines-syntheses-domain": [
         "../../packages/asset-packs-pipelines/syntheses/domain/src/index.ts"
       ],
-      "@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-need": [
-        "../../packages/asset-packs-pipelines/syntheses/read/src/read-need.ts"
+      "@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-evaluation": [
+        "../../packages/asset-packs-pipelines/syntheses/read/src/read-evaluation.ts"
       ],
-      "@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-need-review-resynthesis": [
-        "../../packages/asset-packs-pipelines/syntheses/read/src/read-need-review-resynthesis.ts"
+      "@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-evaluation-review-resynthesis": [
+        "../../packages/asset-packs-pipelines/syntheses/read/src/read-evaluation-review-resynthesis.ts"
       ],
       "@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/reading-pipeline-contract": [
         "../../packages/asset-packs-pipelines/syntheses/read/src/reading-pipeline-contract.ts"

@@ -8,7 +8,7 @@
  *       discovery:comprehend-codebase,
  *       discovery:inherent-regurgitation,
  *     ),
- *     discovery:search-depository-for-{deposit-relevants|read-need-fits},
+ *     discovery:search-depository-for-{deposit-relevants|read-evaluation-fits},
  *   )
  *
  * Wave 1 builds grounded checkout understanding. Wave 2 builds Depository
@@ -16,7 +16,7 @@
  * search — never racing wave 1.
  *
  *   Deposit search: find **relevant** settled supply / demand alignment.
- *   Read search: find **fits to Need**.
+ *   Read search: find **fits to Evaluation**.
  *
  * ## Discovery budget (deposit vs read) — product law
  *
@@ -25,7 +25,7 @@
  * | Product | Default budget | Knobs |
  * | --- | --- | --- |
  * | **Deposit** | **bounded**: full PTRR codebase comprehension only; inherent-regurgitation + depository-search are deterministic stubs (still write Validation-required store keys). Leaves host time for Implementation/Validation/Finish. | `BITCODE_DEPOSIT_DISCOVERY_PROFILE=bounded\|full` (host default `bounded`). `BITCODE_DEBUG_FAST_DISCOVERY=0` forces **full** (all three agents real PTRR). Progressive QA: `BITCODE_DEBUG_STOP_AGENT_FILTER`. |
- * | **Read** | **full three-agent Discovery** — need-fits depository search is product-critical (Need → multi-query hybrid → rank). No deposit-style bounded skip of search. | Progressive QA only (`BITCODE_DEBUG_STOP_AGENT_FILTER`, `BITCODE_DEBUG_DISCOVERY_SERIAL`). Do **not** mirror deposit bounded as a product default for read. |
+ * | **Read** | **full three-agent Discovery** — evaluation-fits depository search is product-critical (Evaluation → multi-query hybrid → rank). No deposit-style bounded skip of search. | Progressive QA only (`BITCODE_DEBUG_STOP_AGENT_FILTER`, `BITCODE_DEBUG_DISCOVERY_SERIAL`). Do **not** mirror deposit bounded as a product default for read. |
  *
  * Host: `apps/uapi/lib/pipeline-host-command-env.ts` seeds deposit profile when unset.
  * Resolver: `resolveDepositDiscoveryProfile` in deposit Discovery phase file.
@@ -41,9 +41,9 @@ export const DISCOVERY_INHERENT_REGURGITATION = 'discovery:inherent-regurgitatio
 export const DISCOVERY_SEARCH_DEPOSITORY_FOR_DEPOSIT_RELEVANTS =
   'discovery:search-depository-for-deposit-relevants';
 
-/** Read: Depository search for Need-fits (after wave 1). */
-export const DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_NEED_FITS =
-  'discovery:search-depository-for-read-need-fits';
+/** Read: Depository search for Evaluation-fits (after wave 1). */
+export const DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_EVALUATION_FITS =
+  'discovery:search-depository-for-read-evaluation-fits';
 
 /**
  * Register Discovery agents for one product pipeline.
@@ -62,8 +62,8 @@ export function registerDiscoveryAgents(
 
   const isRead = mode === 'read';
   if (isRead) {
-    agentRegistry.registerAgent(DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_NEED_FITS, () =>
-      import('../../../read/src/agents/discovery/read-depository-search-for-need-fits-agent').then((m) => m.default),
+    agentRegistry.registerAgent(DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_EVALUATION_FITS, () =>
+      import('../../../read/src/agents/discovery/read-depository-search-for-evaluation-fits-agent').then((m) => m.default),
     );
   } else {
     // deposit (default) and any non-read product path

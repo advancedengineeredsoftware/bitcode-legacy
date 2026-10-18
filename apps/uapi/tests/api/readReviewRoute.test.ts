@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  *
- * Product /api/read-review — Read-Need synthesis and review actions only.
+ * Product /api/read-review — Read-Evaluation synthesis and review actions only.
  * Protocol-demo host surfaces (scenario GET / specifying reviewRead) are removed.
  */
 
@@ -24,12 +24,12 @@ describe('/api/read-review', () => {
     expect(payload.error).toMatch(/Unsupported read-review action/i);
   });
 
-  it('synthesizes a reviewable Read-Need before Finding Fits', async () => {
+  it('synthesizes a reviewable Read-Evaluation before Finding Fits', async () => {
     const response = await POST(
       new Request('http://localhost/api/read-review', {
         method: 'POST',
         body: JSON.stringify({
-          action: 'synthesize_read_need',
+          action: 'synthesize_read_evaluation',
           readId: 'read-activity',
           readPrompt: 'Find a source-bound product AssetPack fit.',
           sourceRevision: {
@@ -45,19 +45,19 @@ describe('/api/read-review', () => {
     const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(payload.pipelineName).toBe('ReadNeedComprehensionSynthesis');
-    expect(payload.stage).toBe('review_synthesized_need');
-    expect(payload.action).toBe('synthesize_read_need');
-    expect(payload.readNeed?.schema).toBe('bitcode.read.need');
-    expect(payload.telemetry?.schema).toBe('bitcode.read-need.synthesis-telemetry');
+    expect(payload.pipelineName).toBe('ReadEvaluationComprehensionSynthesis');
+    expect(payload.stage).toBe('review_synthesized_evaluation');
+    expect(payload.action).toBe('synthesize_read_evaluation');
+    expect(payload.readEvaluation?.schema).toBe('bitcode.read.need');
+    expect(payload.telemetry?.schema).toBe('bitcode.read-evaluation.synthesis-telemetry');
   });
 
-  it('resynthesizes a Read-Need from operator feedback', async () => {
+  it('resynthesizes a Read-Evaluation from operator feedback', async () => {
     const first = await POST(
       new Request('http://localhost/api/read-review', {
         method: 'POST',
         body: JSON.stringify({
-          action: 'synthesize_read_need',
+          action: 'synthesize_read_evaluation',
           readId: 'read-activity',
           readPrompt: 'Find a source-bound product AssetPack fit.',
           sourceRevision: {
@@ -75,8 +75,8 @@ describe('/api/read-review', () => {
       new Request('http://localhost/api/read-review', {
         method: 'POST',
         body: JSON.stringify({
-          action: 'resynthesize_read_need',
-          previousReadNeed: firstPayload.readNeed,
+          action: 'resynthesize_read_evaluation',
+          previousReadEvaluation: firstPayload.readEvaluation,
           feedback: ['Tighten source-bound constraints.'],
           readPrompt: 'Find a source-bound product AssetPack fit.',
           sourceRevision: {
@@ -90,16 +90,16 @@ describe('/api/read-review', () => {
     const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(payload.action).toBe('resynthesize_read_need');
-    expect(payload.stage).toBe('review_synthesized_need');
+    expect(payload.action).toBe('resynthesize_read_evaluation');
+    expect(payload.stage).toBe('review_synthesized_evaluation');
   });
 
-  it('accepts a synthesized Read-Need for Finding Fits admission', async () => {
+  it('accepts a synthesized Read-Evaluation for Finding Fits admission', async () => {
     const synthesized = await POST(
       new Request('http://localhost/api/read-review', {
         method: 'POST',
         body: JSON.stringify({
-          action: 'synthesize_read_need',
+          action: 'synthesize_read_evaluation',
           readId: 'read-activity',
           readPrompt: 'Find a source-bound product AssetPack fit.',
           sourceRevision: {
@@ -117,25 +117,25 @@ describe('/api/read-review', () => {
       new Request('http://localhost/api/read-review', {
         method: 'POST',
         body: JSON.stringify({
-          action: 'accept_read_need',
-          readNeed: synthesizedPayload.readNeed,
+          action: 'accept_read_evaluation',
+          readEvaluation: synthesizedPayload.readEvaluation,
         }),
       }),
     );
     const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(payload.action).toBe('accept_read_need');
+    expect(payload.action).toBe('accept_read_evaluation');
     expect(payload.stage).toBe('request_fit_ready');
-    expect(payload.acceptedReadNeed).toBeTruthy();
+    expect(payload.acceptedReadEvaluation).toBeTruthy();
   });
 
-  it('rejects a synthesized Read-Need without admitting Finding Fits', async () => {
+  it('rejects a synthesized Read-Evaluation without admitting Finding Fits', async () => {
     const synthesized = await POST(
       new Request('http://localhost/api/read-review', {
         method: 'POST',
         body: JSON.stringify({
-          action: 'synthesize_read_need',
+          action: 'synthesize_read_evaluation',
           readId: 'read-activity',
           readPrompt: 'Find a source-bound product AssetPack fit.',
           sourceRevision: {
@@ -153,16 +153,16 @@ describe('/api/read-review', () => {
       new Request('http://localhost/api/read-review', {
         method: 'POST',
         body: JSON.stringify({
-          action: 'reject_read_need',
-          readNeed: synthesizedPayload.readNeed,
-          feedback: ['Need is too broad.'],
+          action: 'reject_read_evaluation',
+          readEvaluation: synthesizedPayload.readEvaluation,
+          feedback: ['Evaluation is too broad.'],
         }),
       }),
     );
     const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(payload.action).toBe('reject_read_need');
-    expect(payload.rejectedReadNeed).toBeTruthy();
+    expect(payload.action).toBe('reject_read_evaluation');
+    expect(payload.rejectedReadEvaluation).toBeTruthy();
   });
 });

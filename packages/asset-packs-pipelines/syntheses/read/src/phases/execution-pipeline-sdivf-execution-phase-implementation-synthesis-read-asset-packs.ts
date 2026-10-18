@@ -2,9 +2,9 @@
  * Read Implementation phase: four sequential agents on the same AssetPack(s)
  * — deposit twin.
  *
- *   1. patch-plan — descriptors grounded in Need + Discovery
+ *   1. patch-plan — descriptors grounded in Evaluation + Discovery
  *   2. patchfile — write one AssetPackPatchArtifact per pack
- *   3. measurements — absolutes + needinesses (*-fit) + needFit
+ *   3. measurements — absolutes + relatives (*-fit) + evaluationFit
  *   4. commercial-nl — rich buyer title + description
  *
  * LLM providers receive full source/patch content. Product source-safety is for

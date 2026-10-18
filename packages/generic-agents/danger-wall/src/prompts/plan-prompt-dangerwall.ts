@@ -23,7 +23,7 @@ import { PROMPTPART_GENERIC_AGENT_GENERATION_STRUCTURED_OUTPUT } from '@bitcode/
  * ]
  * benchmarks: [
  *   { "name": "planning_clarity", "test": "Does the prompt enable clear Bitcode risk-admission planning?", "score": 0.45 },
- *   { "name": "need_boundary", "test": "Is read and AssetPack scope admission well-defined?", "score": 0.44 },
+ *   { "name": "evaluation_boundary", "test": "Is read and AssetPack scope admission well-defined?", "score": 0.44 },
  *   { "name": "proof_boundary", "test": "Can proof-gap and delivery-mechanism boundaries be identified?", "score": 0.45 }
  * ]
  */

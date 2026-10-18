@@ -43,7 +43,7 @@ DataPack = patch + measurements + metadata
 |--------|---------|----------------|
 | **Patch** | Source-safe **descriptor** of digital material: which paths the pack covers and what knowledge shape it encodes | `fileChanges[{ path, op }]`, `patchSummary` — **path + op only**, never code/diffs in prompts or review payloads by default |
 | **Measurements** | Formal **absolute** material-property readings of that patch (quantity + quality) | Required before Finish; host attaches via measure stack; LLM does **not** invent volumes |
-| **Metadata** | Human-legible, commercially steerable fields | `kind`, `title`, `summary`, `coveredSourcePaths`, `confidence`, optional `needinessSignal` |
+| **Metadata** | Human-legible, commercially steerable fields | `kind`, `title`, `summary`, `coveredSourcePaths`, `confidence`, optional `relativeSignal` |
 
 Hierarchy in code:
 
@@ -53,7 +53,7 @@ DataPack (primitive, @bitcode/asset-packs-generics)
         └── Deposit option / selection-envelope row / durable artifact projection
 ```
 
-`SynthesisDataPack` carries protocol identity, source binding, path+op patch, absolute (and optional neediness) measurements, and **provenant source paths** (depositor-owned path list — still no raw source blobs in the commercial object).
+`SynthesisDataPack` carries protocol identity, source binding, path+op patch, absolute (and optional relative) measurements, and **provenant source paths** (depositor-owned path list — still no raw source blobs in the commercial object).
 
 ### 1.2 Deposit option kinds (v0)
 
@@ -77,14 +77,14 @@ These are commercially legible **knowledge groups**, not file dumps.
 
 | | **Deposit** (this document’s focus) | **Read** (later section outline) |
 |--|-------------------------------------|----------------------------------|
-| Input | Depositor repository + Obfuscations + Forced In/Exclusions + demand context | Reader Need + depository supply |
+| Input | Depositor repository + Obfuscations + Forced In/Exclusions + demand context | Reader Evaluation + depository supply |
 | DataPack base | Measured patch against the **depositing** repo | Measured patch against the **reading** repo, built from fitted deposited packs |
-| Measurements | **Absolutes** (+ optional neediness **preview**) | Absolutes **+** fit/relative measurements (BTD from fit-only family) |
-| Finish | Store options for **/deposits** review selection | Settle / deliver for the Need (SettleDataPack / shippables — later) |
+| Measurements | **Absolutes** (+ optional relative **preview**) | Absolutes **+** fit/relative measurements (BTD from fit-only family) |
+| Finish | Store options for **/deposits** review selection | Settle / deliver for the Evaluation (SettleDataPack / shippables — later) |
 
 ---
 
-## 2. Measurement KINDS (absolutes + needinesses)
+## 2. Measurement KINDS (absolutes + relatives)
 
 **Absolute design / audit (living, non-canon):**
 [`.docs/ABSOLUTE_MEASUREMENTS.md`](./ABSOLUTE_MEASUREMENTS.md) (scaffold + stack audit) and
@@ -96,14 +96,14 @@ catalog, mechanisms, v-next weights). SPEC measurement law remains rebuild truth
 ```
 measurements: {
   absolutes: AbsoluteReading[];      // intrinsic material properties
-  needinesses: NeedinessReading[];   // reader/Need-relative — READ ONLY
+  relatives: RelativeReading[];   // reader/Evaluation-relative — READ ONLY
 }
 ```
 
 | Kind | Deposit | Read |
 |------|---------|------|
 | **absolutes** | Required | Required (from deposit / re-measure) |
-| **needinesses** | Always `[]` | Static catalogue + dynamic per-Need; **need-fit** = weighted mean |
+| **relatives** | Always `[]` | Static catalogue + dynamic per-Evaluation; **evaluation-fit** = weighted mean |
 
 **Absolute reading fields (always required):** `measurementKind`, `label`, `weight`,
 `volume` (0..1), `magnitude` (quantity = raw count; quality = mirrors volume), `unit`,
@@ -178,12 +178,12 @@ Stack:
 2. **`measureDataPackAbsolutes` / SynthesizeDataPacksAbsolutesMeasureAgent** — quality volumes grounded in quantity + source-safe descriptor.  
 3. Merge: quantity kinds tool-authoritative; quality from agent with deterministic fallback.
 
-### 2.4 Needinesses (read-only measurement KIND)
+### 2.4 Relatives (read-only measurement KIND)
 
-Needinesses are **not** used on deposit. On read: static catalogue (e.g. language-fit,
-domain-fit, interface-fit) + dynamic inferred dimensions for the Need; **need-fit**
-is the weighted mean of needinesses volumes (`computeNeedFitVolume`). See SPEC
-measurement law and `@bitcode/generic-measurements-needinesses`.
+Relatives are **not** used on deposit. On read: static catalogue (e.g. language-fit,
+domain-fit, interface-fit) + dynamic inferred dimensions for the Evaluation; **evaluation-fit**
+is the weighted mean of relatives volumes (`computeEvaluationFitVolume`). See SPEC
+measurement law and `@bitcode/generic-measurements-relatives`.
 
 ---
 
@@ -216,7 +216,7 @@ There is **no** separate “inventory agent” and **no** Fits Finding under dep
 | **sourceCheckoutCatalog** | Canonical path list + samples + optional full `sources[]` for measurement |
 | Obfuscations | Free-text “what to withhold” |
 | Permissible sources / Exclusions | Path bounds (exclusions fail-closed) |
-| demandContext | Optional demand signals for depository search / neediness |
+| demandContext | Optional demand signals for depository search / relative |
 | Hooks (optional) | `deposit:persistArtifacts`, `deposit:ledgerWrite` |
 
 **Canonical name:** `sourceCheckoutCatalog` (legacy dual-write `inventory` only for old stream filters).
@@ -381,7 +381,7 @@ Also stores `discovery:codebaseComprehension` (map alone) for Implementation.
 | **Output** | `{ guidance: { summary, likelyReadTopics?, demandAlignment?, underservedTopics?, readabilityNotes?, searchQueries? }, searchQueries? }` |
 | **Stores** | `discovery:depositorySearch`, `discovery:depositorySearchQueries`, `discovery:depositorySearchToolResult` |
 
-**Read product** uses the same tool with `product: 'read-need-fits'` and explicit multi-query fan-out (3–12 Need-grounded queries) so finding fits is real retrieval, not guidance-only.
+**Read product** uses the same tool with `product: 'read-evaluation-fits'` and explicit multi-query fan-out (3–12 Evaluation-grounded queries) so finding fits is real retrieval, not guidance-only.
 
 **Env / ops**
 
@@ -422,7 +422,7 @@ telemetry); `embedding-config.test.ts` (384/gte-small); `depositoryIndexJob.test
 | | |
 |--|--|
 | **Objective** | Synthesize **2–4** distinct DataPack candidates as digital material |
-| **LLM produces** | Patch descriptors + metadata + optional needinessSignal |
+| **LLM produces** | Patch descriptors + metadata + optional relativeSignal |
 | **Host attaches** | `absolutes[]` per option; materializes path+op via **DataPackPatchWriteTool** |
 
 #### Prompt parts (`deposit-asset-pack-synthesis-prompts.ts`)
@@ -451,7 +451,7 @@ telemetry); `embedding-config.test.ts` (384/gte-small); `depositoryIndexJob.test
       fileChanges: { path: string; op: 'create'|'modify'|'delete' }[];  // min 1
       patchSummary: string;
     };
-    needinessSignal?: {
+    relativeSignal?: {
       demand: number; saturation: number; rationale: string;
     };
     absolutes?: Record<string, unknown>[];  // attached by host after PTRR
@@ -551,7 +551,7 @@ Presentation envelope for UI selection:
   purpose: 'user-select-options-to-deposit';
   options: [{
     index, kind, title, summary, coveredSourcePaths, confidence,
-    patch, measurements /* absolutes */, metadata: { needinessSignal, … },
+    patch, measurements /* absolutes */, metadata: { relativeSignal, … },
     selectable: true
   }],
   readyToPresent, validationSummary
@@ -683,14 +683,14 @@ Bitcode does **not** claim a global optimum. It optimizes **depositor-facing sup
 
 1. **Scope control** — Permissible sources/Exclusion + Obfuscations shrink admissible knowledge.  
 2. **Measured structure** — Checkout absolutes + tree + LSP reveal real capability density.  
-3. **Demand alignment** — Depository search + needinessSignal bias packs toward underserved, buyable topics.  
+3. **Demand alignment** — Depository search + relativeSignal bias packs toward underserved, buyable topics.
 4. **Pattern prior** — Inherent regurgitation avoids naive or anti-pattern groupings.  
 5. **Multi-option synthesis** — 2–4 **distinct** kinds/slices, not one mega-pack.  
 6. **Fail-closed Validation** — Missing measurements, source leakage, exclusion hits, empty patches block “ready.”  
 7. **DIV loop** — Substrate can re-enter Discovery→Implementation when not ready (when `maxIterations` > 1).  
 8. **Human selection** — Depositor picks which measured options enter supply; resynthesis is the next optimization step with better steering.
 
-Commercial honesty: **absolute measurements** make packs comparable as digital material; **neediness** is only a preview of future read demand.
+Commercial honesty: **absolute measurements** make packs comparable as digital material; **relative** is only a preview of future read demand.
 
 ---
 
@@ -718,12 +718,12 @@ Depositor UI (/deposits)
 
 | Topic | Law |
 |-------|-----|
-| Shape | **Same SDIVF** as deposit: Setup (clone → LSP/MCP/**comprehend-needs** → danger-wall) → Discovery ∥ three agents → Implementation → Validation ready-to-finish → Finish selection envelope |
-| Instruction | **Need** free text (deposit uses Obfuscations) |
-| Measurements | `absolutes` + `needinesses` (every neediness kind ends with **`-fit`**; static catalogue + dynamic from Need; **need-fit** = weighted mean) |
+| Shape | **Same SDIVF** as deposit: Setup (clone → LSP/MCP/**comprehend-evaluations** → danger-wall) → Discovery ∥ three agents → Implementation → Validation ready-to-finish → Finish selection envelope |
+| Instruction | **Evaluation** free text (deposit uses Obfuscations) |
+| Measurements | `absolutes` + `relatives` (every relative kind ends with **`-fit`**; static catalogue + dynamic from Evaluation; **evaluation-fit** = weighted mean) |
 | API | `POST /api/read/synthesize-options` |
 | UI | `/reads` master-detail + option review (deposit twin) |
-| After select | **settle-asset-pack-pipeline** Simple (not SDIVF), **1:1 per bought option**: settle-btc → mint-btd (needinesses scalar → master) → settle-btd (master→buyer) → settle-asset-pack (ERC1155 co-own) → **PR** → `/exchange` |
+| After select | **settle-asset-pack-pipeline** Simple (not SDIVF), **1:1 per bought option**: settle-btc → mint-btd (relatives scalar → master) → settle-btd (master→buyer) → settle-asset-pack (ERC1155 co-own) → **PR** → `/exchange` |
 
 ## 14. SettleDataPack (not a synthesize pipeline)
 
@@ -757,7 +757,7 @@ ship DataPack patch PR → journal PackActivity. Package:
 |------|------------|
 | **DataPack** | Completely synthesized artifact = patch + measurements + metadata |
 | **Absolute** | Intrinsic material property (quantity/quality); shared catalog |
-| **Neediness** | Deposit-side preview of read demand (not an absolute) |
+| **Relative** | Deposit-side preview of read demand (not an absolute) |
 | **sourceCheckoutCatalog** | This-run Host path/sample/source material index |
 | **PTRR** | Plan → Try → Refine → Retry agent loop |
 | **SDIVF** | Setup, Discovery, Implementation, Validation, Finish |

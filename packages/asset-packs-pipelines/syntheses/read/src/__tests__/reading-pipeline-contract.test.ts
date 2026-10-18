@@ -1,8 +1,8 @@
 import {
   READ_FITS_FINDING_SYNTHESIS,
   READ_FITS_FINDING_SYNTHESIS_CONTRACT,
-  READ_NEED_COMPREHENSION_SYNTHESIS,
-  READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT,
+  READ_EVALUATION_COMPREHENSION_SYNTHESIS,
+  READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT,
   READING_PIPELINE_CONTRACTS,
   listReadingPipelineTelemetryTrace,
   listReadingPipelineContractSummaries,
@@ -11,7 +11,7 @@ import {
 describe('Reading pipeline contracts', () => {
   it('names the two V28 Reading pipelines and prefixes every contract id under the pipeline name', () => {
     expect(READING_PIPELINE_CONTRACTS.map((contract) => contract.pipelineName)).toEqual([
-      READ_NEED_COMPREHENSION_SYNTHESIS,
+      READ_EVALUATION_COMPREHENSION_SYNTHESIS,
       READ_FITS_FINDING_SYNTHESIS,
     ]);
 
@@ -69,31 +69,31 @@ describe('Reading pipeline contracts', () => {
     }
   });
 
-  it('locks ReadNeedComprehensionSynthesis to request, comprehend, measure, and review contracts', () => {
-    expect(READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT.uxStepIds).toEqual([
+  it('locks ReadEvaluationComprehensionSynthesis to request, comprehend, measure, and review contracts', () => {
+    expect(READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT.uxStepIds).toEqual([
       'request-read',
-      'review-synthesized-need',
+      'review-synthesized-evaluation',
     ]);
-    expect(READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT.phases.map((phase) => phase.phaseId)).toEqual([
-      'ReadNeedComprehensionSynthesis.request',
-      'ReadNeedComprehensionSynthesis.comprehend',
-      'ReadNeedComprehensionSynthesis.measure',
-      'ReadNeedComprehensionSynthesis.review',
+    expect(READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT.phases.map((phase) => phase.phaseId)).toEqual([
+      'ReadEvaluationComprehensionSynthesis.request',
+      'ReadEvaluationComprehensionSynthesis.comprehend',
+      'ReadEvaluationComprehensionSynthesis.measure',
+      'ReadEvaluationComprehensionSynthesis.review',
     ]);
-    const modelSteps = READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT.phases
+    const modelSteps = READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT.phases
       .flatMap((phase) => phase.agents)
       .flatMap((agent) => agent.ptrrSteps)
       .filter((step) => step.kind === 'model-structured');
     expect(modelSteps).toHaveLength(4);
     for (const modelStep of modelSteps) {
-      expect(modelStep.prompt?.templateId).toBe('ReadNeedComprehensionSynthesis.prompt.need-synthesis');
+      expect(modelStep.prompt?.templateId).toBe('ReadEvaluationComprehensionSynthesis.prompt.evaluation-synthesis');
       // Step outputs validate against STEP schemas: the plan step returns the
       // canonical plan shape; try/refine/retry return the agent output type.
-      expect(modelStep.outputType).toBe(modelStep.ptrrStepName === 'plan' ? 'PlanStepOutput' : 'ReadNeed');
+      expect(modelStep.outputType).toBe(modelStep.ptrrStepName === 'plan' ? 'PlanStepOutput' : 'ReadEvaluation');
     }
   });
 
-  it('locks ReadFitsFindingSynthesis to accepted-Need admission, depository search, synthesis, preview, and settlement contracts', () => {
+  it('locks ReadFitsFindingSynthesis to accepted-Evaluation admission, depository search, synthesis, preview, and settlement contracts', () => {
     expect(READ_FITS_FINDING_SYNTHESIS_CONTRACT.uxStepIds).toEqual([
       'request-fit',
       'review-synthesized-asset-pack',
@@ -125,7 +125,7 @@ describe('Reading pipeline contracts', () => {
   it('summarizes counts used by V28 promotion proof and product telemetry QA', () => {
     expect(listReadingPipelineContractSummaries()).toEqual([
       expect.objectContaining({
-        pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
+        pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
         phaseCount: 4,
         agentCount: 4,
         ptrrAgentCount: 4,
@@ -148,16 +148,16 @@ describe('Reading pipeline contracts', () => {
   });
 
   it('lists every PTRR step as telemetry-ready trace entries with ThinkingsGeneration substeps', () => {
-    const readNeedTrace = listReadingPipelineTelemetryTrace(READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT);
+    const readEvaluationTrace = listReadingPipelineTelemetryTrace(READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT);
     const fitsFindingTrace = listReadingPipelineTelemetryTrace(READ_FITS_FINDING_SYNTHESIS_CONTRACT);
 
-    expect(readNeedTrace).toHaveLength(16);
+    expect(readEvaluationTrace).toHaveLength(16);
     expect(fitsFindingTrace).toHaveLength(32);
-    expect(readNeedTrace.map((entry) => entry.ptrrStepId)).toContain(
-      'ReadNeedComprehensionSynthesis.comprehend.need-synthesizer.try',
+    expect(readEvaluationTrace.map((entry) => entry.ptrrStepId)).toContain(
+      'ReadEvaluationComprehensionSynthesis.comprehend.evaluation-synthesizer.try',
     );
 
-    for (const entry of [...readNeedTrace, ...fitsFindingTrace]) {
+    for (const entry of [...readEvaluationTrace, ...fitsFindingTrace]) {
       expect(entry.agentId.startsWith(`${entry.pipelineName}.`)).toBe(true);
       expect(entry.thinkingsGenerationIds).toHaveLength(3);
       expect(entry.thinkingsGenerations).toHaveLength(3);

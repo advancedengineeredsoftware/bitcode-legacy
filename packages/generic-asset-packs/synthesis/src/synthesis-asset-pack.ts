@@ -33,7 +33,7 @@ export interface SynthesisMeasurementReading extends MeasurementReading {
   weight: number;
   unit: string;
   label?: string;
-  category?: 'absolute' | 'neediness';
+  category?: 'absolute' | 'relative';
   id?: string;
   evidenceRoot?: string;
   /** Source-safe instance descriptor for this reading (attached at measure time). */
@@ -43,12 +43,12 @@ export interface SynthesisMeasurementReading extends MeasurementReading {
 /** Nested measurement kinds — only admitted shape on synthesis packs. */
 export interface SynthesisMeasurementsByKind {
   absolutes: SynthesisMeasurementReading[];
-  needinesses: SynthesisMeasurementReading[];
+  relatives: SynthesisMeasurementReading[];
 }
 
 /**
  * Shared synthesize AssetPack — title/summary/provenant paths over the primitive.
- * measurements is always nested { absolutes, needinesses }.
+ * measurements is always nested { absolutes, relatives }.
  */
 export interface SynthesisAssetPack extends AssetPack {
   identity: AssetPack['identity'] & {
@@ -86,7 +86,7 @@ export interface BuildSynthesisAssetPackInput {
 
 function normalizeMeasurementRow(
   row: SynthesisMeasurementReading,
-  category: 'absolute' | 'neediness',
+  category: 'absolute' | 'relative',
 ): SynthesisMeasurementReading {
   return {
     measurementKind: row.measurementKind,
@@ -110,14 +110,14 @@ function normalizeMeasurements(
   input: BuildSynthesisAssetPackInput['measurements'],
 ): SynthesisMeasurementsByKind {
   if (!input) {
-    return { absolutes: [], needinesses: [] };
+    return { absolutes: [], relatives: [] };
   }
   return {
     absolutes: (input.absolutes ?? []).map((row) =>
       normalizeMeasurementRow(row, 'absolute'),
     ),
-    needinesses: (input.needinesses ?? []).map((row) =>
-      normalizeMeasurementRow(row, 'neediness'),
+    relatives: (input.relatives ?? []).map((row) =>
+      normalizeMeasurementRow(row, 'relative'),
     ),
   };
 }

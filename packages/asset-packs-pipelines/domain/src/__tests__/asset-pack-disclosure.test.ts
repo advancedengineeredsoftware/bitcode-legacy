@@ -5,13 +5,13 @@ import {
   summarizeAssetPackDisclosureReview,
 } from '../asset-pack-disclosure';
 import {
-  acceptReadNeed,
+  acceptReadEvaluation,
   buildAssetPackSourceSafePreview,
-  synthesizeReadNeedForPipelineInput,
-} from '../../../syntheses/read/src/read-need';
+  synthesizeReadEvaluationForPipelineInput,
+} from '../../../syntheses/read/src/read-evaluation';
 
-const acceptedNeed = acceptReadNeed(
-  synthesizeReadNeedForPipelineInput({
+const acceptedEvaluation = acceptReadEvaluation(
+  synthesizeReadEvaluationForPipelineInput({
     read: {
       prompt: 'Find a source-safe AssetPack fit for product settlement proof.',
     },
@@ -25,7 +25,7 @@ const acceptedNeed = acceptReadNeed(
 );
 
 const preview = buildAssetPackSourceSafePreview({
-  need: acceptedNeed,
+  evaluation: acceptedEvaluation,
   fitResult: {
     schema: 'bitcode.asset-pack.fit-result',
     resultState: 'worthy_fit',

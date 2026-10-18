@@ -9,7 +9,7 @@ describe('ReadSynthesizedSettledAssetPack', () => {
     const readOption = buildReadSynthesizedAssetPack({
       assetPackId: 'read-settle-1',
       title: 'Auth fit',
-      summary: 'Need-fit option',
+      summary: 'Evaluation-fit option',
       measurements: {
         absolutes: [
           {
@@ -21,25 +21,25 @@ describe('ReadSynthesizedSettledAssetPack', () => {
             category: 'absolute',
           },
         ],
-        needinesses: [
+        relatives: [
           {
             measurementKind: 'language-fit',
             volume: 0.9,
             magnitude: 0.9,
             weight: 0.35,
             unit: 'fit',
-            category: 'neediness',
+            category: 'relative',
           },
         ],
       },
-      needFit: 0.9,
+      evaluationFit: 0.9,
       settleable: true,
     });
 
     const settled = buildReadSynthesizedSettledAssetPack({
       readOption,
       btdRights: {
-        needFitVolume: 0.9,
+        evaluationFitVolume: 0.9,
         amountBaseUnits: '900000000000000000',
         masterAccount: '0xmaster',
         buyerAccount: '0xbuyer',
@@ -67,7 +67,7 @@ describe('ReadSynthesizedSettledAssetPack', () => {
     });
 
     expect(settled.identity.schema).toBe(READ_SYNTHESIZED_SETTLED_ASSET_PACK_SCHEMA);
-    expect(settled.measurements.needinesses).toHaveLength(1);
+    expect(settled.measurements.relatives).toHaveLength(1);
     expect(settled.btdRights.status).toBe('transferred');
     expect(settled.btcSettlement.amountSats).toBe(12000);
     expect(settled.assetPackRights.removedPriorOwner).toBe(false);

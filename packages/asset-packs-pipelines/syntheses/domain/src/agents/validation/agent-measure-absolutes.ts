@@ -110,7 +110,7 @@ const REPORT_OWNED_QUANTITY_KINDS = new Set([
 const LENS_SUBJECT: Record<SynthesizeAssetPacksMode, string> = {
   deposit:
     'a synthesized source-safe deposit AssetPack patch the depositor will review and admit',
-  read: 'a synthesized source-safe Need-fitting AssetPack the reader will review and buy',
+  read: 'a synthesized source-safe Evaluation-fitting AssetPack the reader will review and buy',
 };
 
 /** Per-quantity normalizer: magnitude / divisor → 0..1 volume (saturates at the divisor). */

@@ -264,7 +264,7 @@ export async function indexDepositoryAssetPack(
     absolute_kinds: absoluteKinds,
     absolute_volumes: absoluteVolumes,
     absolute_fixtures: absoluteFixtures,
-    neediness_kinds: [] as string[],
+    relative_kinds: [] as string[],
     source_path_tokens: pathTokens,
     embed_text: embedTextValue,
     embed_text_root: embedTextRoot,

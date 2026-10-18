@@ -102,7 +102,7 @@ describe('EDGES: depository absolute facets', () => {
 
   it('vector-only hybrid path tolerates missing in-memory assets for unknown ids', async () => {
     const result = await runDepositDepositoryAssetPackSearch({
-      product: 'read-need-fits',
+      product: 'read-evaluation-fits',
       queries: ['auth'],
       assets: [],
       env: { BITCODE_DEPOSITORY_VECTOR_SEARCH: '1' } as any,

@@ -1,42 +1,42 @@
 import {
-  computeNeediness,
-  buildNeedinessFromSignal,
+  computeRelative,
+  buildRelativeFromSignal,
   validateDepositSynthesisOptions,
-  DEPOSIT_NEEDINESS_MEASUREMENT,
+  DEPOSIT_RELATIVE_MEASUREMENT,
 } from '../asset-packs-synthesis';
 
 /**
- * QA F24 v0 — neediness, the deposit-lens preview of read Need-fit.
- *   neediness = clamp01(demand × (0.5 + 0.5·(1 − saturation)))
+ * QA F24 v0 — relative, the deposit-lens preview of read Evaluation-fit.
+ *   relative = clamp01(demand × (0.5 + 0.5·(1 − saturation)))
  * Demand gates; scarcity (1 − saturation) boosts.
  */
-describe('neediness (deposit preview of read Need-fit, v0)', () => {
-  it('computes demand-gated, scarcity-boosted neediness', () => {
-    // No demand → no neediness regardless of scarcity.
-    expect(computeNeediness(0, 0)).toBe(0);
-    expect(computeNeediness(0, 1)).toBe(0);
+describe('relative (deposit preview of read Evaluation-fit, v0)', () => {
+  it('computes demand-gated, scarcity-boosted relative', () => {
+    // No demand → no relative regardless of scarcity.
+    expect(computeRelative(0, 0)).toBe(0);
+    expect(computeRelative(0, 1)).toBe(0);
     // Full demand, fully underserved (saturation 0) → max.
-    expect(computeNeediness(1, 0)).toBe(1);
+    expect(computeRelative(1, 0)).toBe(1);
     // Full demand, fully saturated → floored at half (demand × 0.5).
-    expect(computeNeediness(1, 1)).toBe(0.5);
+    expect(computeRelative(1, 1)).toBe(0.5);
     // Demanded + underserved beats demanded + saturated.
-    expect(computeNeediness(0.8, 0.1)).toBeGreaterThan(computeNeediness(0.8, 0.9));
+    expect(computeRelative(0.8, 0.1)).toBeGreaterThan(computeRelative(0.8, 0.9));
   });
 
   it('is NaN-safe and clamps out-of-range inputs', () => {
-    expect(computeNeediness(Number.NaN, 0.5)).toBe(0);
-    expect(computeNeediness(2, -1)).toBe(1); // demand→1, saturation→0
-    const n = buildNeedinessFromSignal({ demand: undefined, saturation: 'x' as any, rationale: 42 as any });
+    expect(computeRelative(Number.NaN, 0.5)).toBe(0);
+    expect(computeRelative(2, -1)).toBe(1); // demand→1, saturation→0
+    const n = buildRelativeFromSignal({ demand: undefined, saturation: 'x' as any, rationale: 42 as any });
     expect(n?.volume).toBe(0);
     expect(n?.rationale).toBe('42');
   });
 
   it('returns undefined for missing signal', () => {
-    expect(buildNeedinessFromSignal(null)).toBeUndefined();
-    expect(buildNeedinessFromSignal(undefined)).toBeUndefined();
+    expect(buildRelativeFromSignal(null)).toBeUndefined();
+    expect(buildRelativeFromSignal(undefined)).toBeUndefined();
   });
 
-  it('attaches neediness to deposit candidates and omits it for read', () => {
+  it('attaches relative to deposit candidates and omits it for read', () => {
     // Gate 3 Implementation attaches formal absolutes; the projector fails closed without them.
     const formalAbsolutes = [
       {
@@ -66,7 +66,7 @@ describe('neediness (deposit preview of read Need-fit, v0)', () => {
         measurementRationale: 'Covers the auth module thoroughly.',
         confidence: 0.8,
         absolutes: formalAbsolutes,
-        needinessSignal: { demand: 0.9, saturation: 0.2, rationale: 'High demand, few existing suppliers.' },
+        relativeSignal: { demand: 0.9, saturation: 0.2, rationale: 'High demand, few existing suppliers.' },
       },
     ];
     const context = {
@@ -77,11 +77,11 @@ describe('neediness (deposit preview of read Need-fit, v0)', () => {
 
     const deposit = validateDepositSynthesisOptions(raw, { ...context, lens: 'deposit' });
     expect(deposit.candidates).toHaveLength(1);
-    expect(deposit.candidates[0].neediness).toMatchObject({ demand: 0.9, saturation: 0.2 });
-    expect(deposit.candidates[0].neediness?.volume).toBe(computeNeediness(0.9, 0.2));
-    // neediness is NOT a member of the absolute composite (the measurements array).
+    expect(deposit.candidates[0].relative).toMatchObject({ demand: 0.9, saturation: 0.2 });
+    expect(deposit.candidates[0].relative?.volume).toBe(computeRelative(0.9, 0.2));
+    // relative is NOT a member of the absolute composite (the measurements array).
     expect(deposit.candidates[0].measurements.map((m) => m.measurementKind)).not.toContain(
-      DEPOSIT_NEEDINESS_MEASUREMENT.measurementKind,
+      DEPOSIT_RELATIVE_MEASUREMENT.measurementKind,
     );
     // Formal absolutes project onto the candidate measurements array.
     expect(deposit.candidates[0].measurements.map((m) => m.measurementKind)).toEqual(
@@ -89,6 +89,6 @@ describe('neediness (deposit preview of read Need-fit, v0)', () => {
     );
 
     const read = validateDepositSynthesisOptions(raw, { ...context, lens: 'read' });
-    expect(read.candidates[0].neediness).toBeUndefined();
+    expect(read.candidates[0].relative).toBeUndefined();
   });
 });

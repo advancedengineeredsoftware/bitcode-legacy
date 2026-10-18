@@ -5,7 +5,7 @@
  *
  * Law:
  * - Built from shared synthesis base (title, patch, absolutes, provenant paths).
- * - Neediness is entirely a Read-pipeline concept — deposit forces empty needinesses
+ * - Relative is entirely a Read-pipeline concept — deposit forces empty relatives
  *   at the generic boundary (product Implementation attaches absolutes only).
  * - **Obfuscations are never stored** on the AssetPack (sensitive deposit input).
  * - Deposit-only commercial fields: kind, confidence, coveredSourcePaths, etc.
@@ -39,12 +39,12 @@ export interface DepositSynthesizedAssetPack extends Omit<SynthesisAssetPack, 'i
     schema: typeof DEPOSIT_SYNTHESIZED_ASSET_PACK_SCHEMA | typeof SYNTHESIS_ASSET_PACK_SCHEMA;
   };
   /**
-   * Nested measurements with needinesses forced empty on deposit.
+   * Nested measurements with relatives forced empty on deposit.
    * Absolutes only for commercial deposit options.
    */
   measurements: {
     absolutes: SynthesisMeasurementReading[];
-    needinesses: [];
+    relatives: [];
   };
   /** Deposit option kind (capability-slice | implementation-pattern | proof-operations-slice). */
   kind?: string | null;
@@ -61,10 +61,10 @@ export function buildDepositSynthesizedAssetPack(
   },
 ): DepositSynthesizedAssetPack {
   const base = buildSynthesisAssetPack(input);
-  // Force needinesses empty — deposit law (even if input accidentally included them).
+  // Force relatives empty — deposit law (even if input accidentally included them).
   const measurements: DepositSynthesizedAssetPack['measurements'] = {
     absolutes: [...base.measurements.absolutes],
-    needinesses: [],
+    relatives: [],
   };
 
   return {

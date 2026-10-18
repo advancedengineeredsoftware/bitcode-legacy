@@ -12,7 +12,7 @@ test.describe('User Story: Marketing Homepage Scrolling', () => {
     ];
     for (const sec of sections) {
       await page.waitForSelector(sec.selector);
-      await page.locator(sec.selector).scrollIntoViewIfNeeded();
+      await page.locator(sec.selector).scrollIntoViewIfEvaluationed();
       await page.waitForTimeout(300);
       expect(await page.screenshot({ fullPage: true }))
         .toMatchSnapshot(`story-marketing-${sec.name}.png`);

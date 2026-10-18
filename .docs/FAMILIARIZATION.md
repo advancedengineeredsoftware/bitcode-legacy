@@ -54,7 +54,7 @@ Use **§12** whenever an acronym or hierarchy name is unfamiliar.
 Bitcode **commoditizes technical knowledge as DataPacks**: measured, source-safe
 artifacts. **Depositors** connect source, synthesize options (SynthesizeDataPacks
 SDIVF), review, and admit packs to the **Depository**. **Readers** request a Read,
-synthesize a Need, Finding Fits, preview source-safely, settle in **BTC-testnet**,
+synthesize an Evaluation, Finding Fits, preview source-safely, settle in **BTC-testnet**,
 receive **BTD** rights, then entitled delivery.
 
 | Term | Meaning |
@@ -64,7 +64,7 @@ receive **BTD** rights, then entitled delivery.
 | sourceCheckoutCatalog | This-run Host path/sample/source index (`deposit:sourceCheckoutCatalog`) |
 | BTD | Weighted scalar knowledge-volume; after settlement, rights-bearing receipt |
 | BTC | Settlement money; testnet-only value in V48 deployment |
-| Measurement | Basis of price (absolute on deposit; Need-relative fit on read) |
+| Measurement | Basis of price (absolute on deposit; Evaluation-relative fit on read) |
 | Pipeline | Product run language (UI tables, logs, history) |
 | Journal | BTD ledger language |
 | product | **Deleted** product surface — do not reintroduce |
@@ -107,9 +107,9 @@ line before body; each body line ≤ **72** chars (hard).
 Example:
 
 ```text
-V48 (impl-only): Extract NeedReviewPanel
+V48 (impl-only): Extract EvaluationReviewPanel
 
-Move review chrome into ReadsNeedReviewPanel with
+Move review chrome into ReadsEvaluationReviewPanel with
 co-located tests.
 ```
 
@@ -156,7 +156,7 @@ uapi → HTTP + React adapters only
  ↑
 @bitcode/generic-agents-agent-measure MeasureAgent (PTRR base)
 @bitcode/generic-agents-agent-measure-absolutes AbsolutesMeasureAgent (tools + framing)
-@bitcode/generic-measurements-needinesses Needinesses surface (Gate 4)
+@bitcode/generic-measurements-relatives Relatives surface (Gate 4)
  ↑
 @bitcode/generic-asset-packs-synthesis factoryDeposit|ReadAbsolutesMeasureAgent + catalogs
 @bitcode/asset-packs-pipelines-syntheses-domain measureDataPackAbsolutes host + deposit/read rosters
@@ -264,7 +264,7 @@ Packages: `@bitcode/asset-packs-generics`, `@bitcode/generic-asset-packs-synthes
 | Layer | Type | Role |
 | --- | --- | --- |
 | Primitive | `DataPack` | identity + source binding + patch descriptor + delivery |
-| Base | `SynthesisDataPack` | + measurements, neediness, provenant paths |
+| Base | `SynthesisDataPack` | + measurements, relative, provenant paths |
 | Product surfaces | synthesis / settle packages | catalogs + product measure agents |
 | Product pipelines | deposit options / pipeline outputs | project from SynthesisDataPack |
 
@@ -532,7 +532,7 @@ Grouped by role. Names are `@bitcode/<name>` unless noted.
 | `generic-agents-agent-measure-absolutes` | AbsolutesMeasureAgent base (framing + 46 measure tools) |
 | `generic-measurements-absolutes-*` | Bare absolute measure packages (one kind each) |
 | `generic-tools-tool-measure-*` | Execution tools wrapping bare absolutes |
-| `generic-measurements-needinesses` | Needinesses framing surface (Gate 4) |
+| `generic-measurements-relatives` | Relatives framing surface (Gate 4) |
 | `generic-measurements-tech-types` | Tech/stack signals as absolute measurement vocabulary |
 | `asset-packs-generics` | DataPack protocol primitive (`@bitcode/asset-packs-generics`) |
 | `generic-asset-packs-synthesis` | Weighted catalog + `factoryDeposit|ReadAbsolutesMeasureAgent` |
@@ -553,7 +553,7 @@ Grouped by role. Names are `@bitcode/<name>` unless noted.
 | `generic-pipelines/*` | Nested base: `execution-pipeline-sdivf`, `execution-pipeline-simple` |
 | `generic-llms/*` | Nested providers (xAI, OpenAI, Anthropic, Google), defaults, registry, **models** |
 | `generic-generations/*` | Nested generation bases: failsafes, thinkings |
-| `generic-measurements/*` | Measurement domain: absolutes, needinesses, tech-types (agent implementer is `generic-agents/agent-measure`) |
+| `generic-measurements/*` | Measurement domain: absolutes, relatives, tech-types (agent implementer is `generic-agents/agent-measure`) |
 | `generic-asset-packs/*` | Measured-patch base + synthesis/settle product surfaces |
 | `generic-vcs/*` | github, gitlab, bitbucket, git (`@bitcode/generic-vcs-*`) |
 | `generic-hosts/*` | Local, VercelSandbox |
@@ -606,14 +606,14 @@ helpers live in `deposit-source-safe-utils.ts`.
 **Store** = Supabase Postgres + **pgvector** only. **Embed** = open-source
 **gte-small (384d)** via Edge Function `embed` (`Supabase.ai.Session`) — not
 OpenAI Embeddings. Deposit Discovery uses `deposit-relevants`; read uses
-`read-need-fits`. Dispatch preloads supply before Discovery. Admit indexes via
+`read-evaluation-fits`. Dispatch preloads supply before Discovery. Admit indexes via
 `POST /api/depository/index`. Search quality telemetry on
 `discovery:depositorySearchTelemetry`. Law: `.docs/ASSET_PACKS.md` §5.2.
 
-**Read needinesses:** static catalogue + dynamic plan
-(`dynamicNeedinesses[{measurementKind,label,guidance,weight}]`) from Need
-comprehension; host attaches both `absolutes` and `needinesses` on read options;
-`need-fit` is weighted mean (static mass 0.6 / dynamic mass 0.4 when both present).
+**Read relatives:** static catalogue + dynamic plan
+(`dynamicRelatives[{measurementKind,label,guidance,weight}]`) from Evaluation
+comprehension; host attaches both `absolutes` and `relatives` on read options;
+`evaluation-fit` is weighted mean (static mass 0.6 / dynamic mass 0.4 when both present).
 
 ### 5.4 Auth, identity, VCS, externals
 
@@ -763,8 +763,8 @@ IP-seller MVP. Modular reference experience:
 
 ### 7.3 Reads (`/reads`)
 
-IP-buyer path: Read request → Need → Fits → preview → settle → delivery.
-Shares synthesis pipeline core; **read lens** / neediness finalization continues
+IP-buyer path: Read request → Evaluation → Fits → preview → settle → delivery.
+Shares synthesis pipeline core; **read lens** / relative finalization continues
 in later V48 gates. Workbench panels under `Reads*` + `models/deposit-read-*`
 (historical name; deposit+read shared workbench models).
 
@@ -1045,15 +1045,15 @@ in new code and docs. Deeper product law lives in the SPEC; packaging law in
 | **Demand** | Reader-side need signal; may be **Unestimatable** when supply cannot ground a price. |
 | **Deposit** | IP-seller path: connect source → synthesize options → review → admit. Route `/deposits`. |
 | **Delivery** | Post-settlement entitled handoff of DataPack material under rights. |
-| **Finding Fits** | Read path step: match Need against Depository supply. |
+| **Finding Fits** | Read path step: match Evaluation against Depository supply. |
 | **Permissible sources / Exclusions** | Deposit inputs that force path include/exclude sets (and secret exclusion). |
 | **Journal** | BTD ledger language (rows, reconciliation) — not “Pipeline”. |
-| **Measurement** | Grounded basis of price: absolute on deposit; Need-relative fit on read. |
-| **Need** | Reader-side demand descriptor synthesized for finding fits. |
+| **Measurement** | Grounded basis of price: absolute on deposit; Evaluation-relative fit on read. |
+| **Evaluation** | Reader-side demand descriptor synthesized for finding fits. |
 | **Obfuscations** | Deposit input that withholds/transforms sensitive material; empty → skip Setup LLM (Gate 3). |
 | **Exchange** | Master-detail portfolio / activity history experience (`/exchange`; UI components still under `packs/`; retired product name Packs). |
 | **Preview (source-safe)** | Show allowed DataPack disclosure without leaking unpaid/protected source. |
-| **Read** | Buyer path: Need → Finding Fits → settle → delivery. Route `/reads`. |
+| **Read** | Buyer path: Evaluation → Finding Fits → settle → delivery. Route `/reads`. |
 | **Reader** | Party who settles for DataPack rights. |
 | **Rights** | Post-settlement BTD-backed entitlement to delivery/use under policy. |
 | **Settle / settlement** | BTC-testnet payment + rights issuance for a chosen fit. |
@@ -1118,7 +1118,7 @@ Guide: `packages/agent-generics/TOOLS-IN-PTRR.md`.
 | **InlineHost** | Legacy name; prefer **LocalHost** (`generic-hosts-local`; `inline` env alias). |
 | **LocalHost** | In-process default pipeline host. |
 | **SynthesisDataPack** | Only DataPack **base**: measured + source-safe patch over the DataPack primitive. |
-| **Needinesses** | Read-side measurement framing (relative to Need). |
+| **Relatives** | Read-side measurement framing (relative to Evaluation). |
 | **Pipeline** | Product run language (UI tables, logs, history) and/or `pipelines-generics` primitive. |
 | **PipelineHost / BitcodePipelineHost** | Host contract (`host-generics`). |
 | **ExecutionPipelineSimple** | Linear stage pipeline base (contrast SDIVF). |

@@ -21,7 +21,7 @@ import {
 } from './asset-packs-synthesis-pipeline';
 import { isAssetPackRealInferenceEnabled } from './runtime-inference-policy';
 import { isPathImpermissible } from './asset-packs-synthesis-inventory';
-import { clampVolume } from './asset-packs-synthesis-neediness';
+import { clampVolume } from './asset-packs-synthesis-relative';
 import { assertSourceSafeCandidates } from './asset-packs-synthesis-validate';
 import type {
   AssetPackCandidate,
@@ -38,7 +38,7 @@ export type {
   AssetPackCandidate,
   AssetPackCandidateMeasurement,
   AssetPackMeasurementSpec,
-  AssetPackNeediness,
+  AssetPackRelative,
   AssetPackPatchDescriptor,
   AssetPacksSynthesisInferenceAccounting,
   AssetPacksSynthesisRequest,
@@ -59,7 +59,7 @@ export {
   DEPOSIT_SYNTHESIS_POLICY_CATALOG,
   READ_SYNTHESIS_POLICY_CATALOG,
   synthesisPolicyCatalogForMode,
-  DEPOSIT_NEEDINESS_MEASUREMENT,
+  DEPOSIT_RELATIVE_MEASUREMENT,
   /** @deprecated Use DEPOSIT_SYNTHESIS_POLICY_CATALOG */
   DEPOSIT_MEASUREMENT_CATALOG,
   /** @deprecated Use READ_SYNTHESIS_POLICY_CATALOG */
@@ -68,12 +68,12 @@ export {
   measurementCatalogForLens,
 } from './asset-packs-synthesis-catalogs';
 
-// ---- Neediness -------------------------------------------------------------
+// ---- Relative -------------------------------------------------------------
 export {
-  buildNeedinessFromSignal,
+  buildRelativeFromSignal,
   clampVolume,
-  computeNeediness,
-} from './asset-packs-synthesis-neediness';
+  computeRelative,
+} from './asset-packs-synthesis-relative';
 
 // ---- Inventory / path scope ------------------------------------------------
 export {

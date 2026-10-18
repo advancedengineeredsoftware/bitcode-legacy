@@ -53,7 +53,7 @@ export function useReadSettlementCheckout(input: {
   synthesisRunId: string | null;
   selectedIndexes: number[];
   selectedOptions: ReadSynthesizedOption[];
-  need: string;
+  evaluation: string;
   relevantPaths: string[];
   irrelevantPaths: string[];
   repositoryContext: RepositoryContextState | null;
@@ -66,7 +66,7 @@ export function useReadSettlementCheckout(input: {
     synthesisRunId,
     selectedIndexes,
     selectedOptions,
-    need,
+    evaluation,
     relevantPaths,
     irrelevantPaths,
     repositoryContext,
@@ -93,7 +93,7 @@ export function useReadSettlementCheckout(input: {
     if (!gate.allowed) {
       setQuote(null);
       setQuoteError(
-        gate.blockers[0] || "Measurement-only buy gate blocked quote (need-fit / safety).",
+        gate.blockers[0] || "Measurement-only buy gate blocked quote (evaluation-fit / safety).",
       );
       return;
     }
@@ -111,7 +111,7 @@ export function useReadSettlementCheckout(input: {
       }
       setQuote({
         provider: String(payload.provider || "mock"),
-        needFitVolume: Number(payload.needFitVolume) || 0,
+        evaluationFitVolume: Number(payload.evaluationFitVolume) || 0,
         rawVolumeBaseUnits: String(payload.btdVolume || "0"),
         btdVolume: String(payload.btdVolume || "0"),
         btdVolumeDisplay: String(payload.btdVolumeDisplay || "0"),
@@ -204,7 +204,7 @@ export function useReadSettlementCheckout(input: {
         body: JSON.stringify({
           synthesisRunId,
           selectedIndexes,
-          need: need.trim() || null,
+          evaluation: evaluation.trim() || null,
           relevantPaths,
           irrelevantPaths,
           repositoryFullName: repositoryContext?.selectedRepository?.fullName || null,
@@ -244,7 +244,7 @@ export function useReadSettlementCheckout(input: {
     buyerEthereumAddress,
     irrelevantPaths,
     livePayment,
-    need,
+    evaluation,
     payAsset,
     payFromWallet,
     paymentTxId,

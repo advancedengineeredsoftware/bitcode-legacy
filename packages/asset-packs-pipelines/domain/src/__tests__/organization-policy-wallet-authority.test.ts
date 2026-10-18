@@ -14,7 +14,7 @@ describe('OrganizationPolicyWalletAuthority', () => {
       organizationRole: 'admin',
       organizationPermissionGrants: [
         'reading:request',
-        'reading:review_need',
+        'reading:review_evaluation',
         'reading:request_finding_fits',
         'asset_pack:review_preview',
         'settlement:pay_btc_fee',

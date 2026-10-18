@@ -12,7 +12,7 @@
 import { PromptPart } from '../../parts/PromptPart';
 
 export const PROMPTPART_SPECIFIC_AGENT_WEBRESEARCHER_EXECUTIONPATTERN_DETAILCONTENT: PromptPart =
-  `BITCODE_NEED_SYNTHESIS_WEB_RESEARCH_PTRR:
+  `BITCODE_EVALUATION_SYNTHESIS_WEB_RESEARCH_PTRR:
 1. Plan: translate the active read-synthesis question into bounded source classes, query terms, and source-quality expectations
 2. Try: collect source-attributed external findings through admitted search and content tools for discovery-phase read synthesis
 3. Refine: deduplicate findings, classify source quality, separate evidence from canonical read interpretation, and record volatility

@@ -52,7 +52,7 @@ Inference is the most powerful form of evaluation as it has all its internal kno
 
 To make a commodity, Bitcode implements materialization-by-measurement on a trustless architecture.
 
-Materialization means making AssetPacks: synthesized knowledge as .patch files, bound to measurements of the material they encode. AssetPacks are the commodity. Depositors supply them into the Depository. Readers buy those that fit a stated Need.
+Materialization means making AssetPacks: synthesized knowledge as .patch files, bound to measurements of the material they encode. AssetPacks are the commodity. Depositors supply them into the Depository. Readers buy those that fit a stated Evaluation.
 
 Trustlessness is achieved by being open-source, fully auditable, immutable, provable, and on-chain.
 
@@ -66,7 +66,7 @@ $BTD is Bitcode's knowledge-currency: a fungible, freely tradable token whose su
 
 Sellers do not set prices. Bitcode measures the data—its quality and its quantity—and reduces those measurements into a single scalar: $BTD. One may think of $BTD as knowledge-backed currency.
 
-The most meaningful measurements for commercial value are made when buyers request the kind of knowledge they intend to buy. Those Need-relative measurements alone are summed. How much the deposited material satisfies the Need is the $BTD of the AssetPack: the knowledge volume of that data slice under that demand.
+The most meaningful measurements for commercial value are made when buyers request the kind of knowledge they intend to buy. Those Evaluation-relative measurements alone are summed. How much the deposited material satisfies the Evaluation is the $BTD of the AssetPack: the knowledge volume of that data slice under that demand.
 
 Buyers do not pay in $BTD. They settle with other capital—such as ETH, or other admitted payment rails. After purchase settles, that measured amount of $BTD is minted. Minting after payment is what binds the supply of $BTD to the industrial value of data in the Depository: it has been paid for with real capital.
 

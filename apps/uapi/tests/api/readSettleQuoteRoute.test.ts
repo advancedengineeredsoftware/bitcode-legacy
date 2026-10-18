@@ -2,7 +2,7 @@
  * @jest-environment node
  *
  * MVP-E2E L1-R2: POST /api/read/settle/quote contract.
- * Asserts session gate + needinesses → BTD multi-rail mock quote (no mainnet).
+ * Asserts session gate + relatives → BTD multi-rail mock quote (no mainnet).
  */
 
 jest.mock('@bitcode/supabase/ssr/server', () => ({
@@ -34,7 +34,7 @@ describe('POST /api/read/settle/quote (MVP-E2E L1-R2)', () => {
     const response = await POST(
       requestFor({
         measurements: {
-          needinesses: [{ measurementKind: 'domain-fit', volume: 0.8, weight: 1 }],
+          relatives: [{ measurementKind: 'domain-fit', volume: 0.8, weight: 1 }],
         },
       }),
     );
@@ -44,13 +44,13 @@ describe('POST /api/read/settle/quote (MVP-E2E L1-R2)', () => {
     );
   });
 
-  it('rejects empty / invalid needinesses for BTD volume', async () => {
+  it('rejects empty / invalid relatives for BTD volume', async () => {
     mockCreateClient.mockResolvedValue({
       auth: { getUser: async () => ({ data: { user: { id: 'u1' } }, error: null }) },
     });
     const response = await POST(
       requestFor({
-        measurements: { needinesses: [] },
+        measurements: { relatives: [] },
       }),
     );
     expect(response.status).toBe(400);
@@ -59,14 +59,14 @@ describe('POST /api/read/settle/quote (MVP-E2E L1-R2)', () => {
     );
   });
 
-  it('returns mock multi-rail quote from *-fit needinesses', async () => {
+  it('returns mock multi-rail quote from *-fit relatives', async () => {
     mockCreateClient.mockResolvedValue({
       auth: { getUser: async () => ({ data: { user: { id: 'u1' } }, error: null }) },
     });
     const response = await POST(
       requestFor({
         measurements: {
-          needinesses: [
+          relatives: [
             { measurementKind: 'domain-fit', volume: 0.7, weight: 1 },
             { measurementKind: 'language-fit', volume: 0.6, weight: 1 },
           ],
@@ -77,8 +77,8 @@ describe('POST /api/read/settle/quote (MVP-E2E L1-R2)', () => {
     expect(response.status).toBe(200);
     const payload = await response.json();
     expect(payload.ok).toBe(true);
-    expect(typeof payload.needFitVolume).toBe('number');
-    expect(payload.needFitVolume).toBeGreaterThan(0);
+    expect(typeof payload.evaluationFitVolume).toBe('number');
+    expect(payload.evaluationFitVolume).toBeGreaterThan(0);
     expect(typeof payload.btdVolume).toBe('string');
     expect(typeof payload.expiresAt).toBe('string');
     expect(Array.isArray(payload.options)).toBe(true);

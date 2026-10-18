@@ -7,7 +7,7 @@
  *
  * Pins (STAB + product law):
  *   - Setup → Discovery → Implementation → Validation → Finish
- *   - Need-first options with needinesses (*-fit) when Need present
+ *   - Evaluation-first options with relatives (*-fit) when Evaluation present
  *   - productLens=read on Implementation
  *   - Validation ready-to-finish stores coherent recommendation
  *
@@ -48,7 +48,7 @@ import {
   getBoundaryLLMPromptText,
 } from './support/generic-llms-mock';
 import { runExecutionPipelineSDIVFSynthesizeReadAssetPacks } from '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs';
-import { resolvePackNeedinesses } from '@bitcode/asset-packs-pipelines-syntheses-domain/asset-pack-measurements';
+import { resolvePackRelatives } from '@bitcode/asset-packs-pipelines-syntheses-domain/asset-pack-measurements';
 
 const INVENTORY = {
   paths: ['src/auth/session.ts', 'src/auth/token.ts', 'src/billing/invoice.ts'],
@@ -62,24 +62,24 @@ const INVENTORY = {
   excludedPathCount: 0,
 };
 
-const READ_NEED =
+const READ_EVALUATION =
   'I need session refresh and token rotation patterns for OAuth clients.';
 
 /** Boundary response satisfying read Setup/Discovery/Implementation/Validation. */
 const READ_SDIVF_BOUNDARY_OUTPUT = {
   comprehension: {
-    summary: READ_NEED.slice(0, 200),
-    needTopics: ['session refresh', 'token rotation', 'OAuth'],
+    summary: READ_EVALUATION.slice(0, 200),
+    evaluationTopics: ['session refresh', 'token rotation', 'OAuth'],
     acceptanceCriteria: [
       'Covers session refresh flows',
       'Documents token rotation constraints',
     ],
-    dynamicNeedinessKinds: ['needs-session-refresh-fit', 'oauth-token-rotation-fit'],
-    dynamicNeedinesses: [
+    dynamicRelativeKinds: ['session-refresh-fit', 'oauth-token-rotation-fit'],
+    dynamicRelatives: [
       {
-        measurementKind: 'needs-session-refresh-fit',
+        measurementKind: 'session-refresh-fit',
         label: 'Session refresh fit',
-        guidance: 'How well the pack covers session refresh for the Need.',
+        guidance: 'How well the pack covers session refresh for the Evaluation.',
         weight: 1,
       },
       {
@@ -95,8 +95,8 @@ const READ_SDIVF_BOUNDARY_OUTPUT = {
     notableModules: ['src/auth/session.ts', 'src/auth/token.ts'],
   },
   guidance: {
-    summary: 'Need-fit packs for session and token surfaces.',
-    needFitTopics: ['session refresh', 'token rotation'],
+    summary: 'Evaluation-fit packs for session and token surfaces.',
+    evaluationFitTopics: ['session refresh', 'token rotation'],
     gapTopics: ['device binding'],
     likelyReadTopics: ['authentication'],
   },
@@ -109,9 +109,9 @@ const READ_SDIVF_BOUNDARY_OUTPUT = {
   options: [
     {
       kind: 'capability-slice',
-      title: 'Session refresh capability for OAuth Need',
+      title: 'Session refresh capability for OAuth Evaluation',
       summary:
-        'A Need-serving slice covering session creation and refresh token rotation so the reader can satisfy OAuth session acceptance criteria.',
+        'An Evaluation-serving slice covering session creation and refresh token rotation so the reader can satisfy OAuth session acceptance criteria.',
       coveredSourcePaths: ['src/auth/session.ts', 'src/auth/token.ts'],
       measurements: {},
       measurementRationale: '',
@@ -121,7 +121,7 @@ const READ_SDIVF_BOUNDARY_OUTPUT = {
           { path: 'src/auth/session.ts', op: 'modify' },
           { path: 'src/auth/token.ts', op: 'create' },
         ],
-        patchSummary: 'Encodes session refresh and token rotation for the reader Need.',
+        patchSummary: 'Encodes session refresh and token rotation for the reader Evaluation.',
       },
     },
   ],
@@ -176,7 +176,7 @@ describe('read SDIVF pipeline integration (MVP-E2E L2, boundary-mocked)', () => 
   });
 
   it(
-    'runs read SDIVF with Need, needinesses (*-fit), and productLens=read',
+    'runs read SDIVF with Evaluation, relatives (*-fit), and productLens=read',
     async () => {
       const execution = new Execution('read-sdivf-integration');
       // Seed ranked hits so Implementation can project depositoryHits (STAB-A2).
@@ -209,7 +209,7 @@ describe('read SDIVF pipeline integration (MVP-E2E L2, boundary-mocked)', () => 
             fullName: 'octocat/Spoon-Knife',
             url: 'https://github.com/octocat/Spoon-Knife',
           },
-          need: READ_NEED,
+          evaluation: READ_EVALUATION,
           relevantPaths: ['src/auth/'],
           irrelevantPaths: [],
           inventory: INVENTORY,
@@ -248,10 +248,10 @@ describe('read SDIVF pipeline integration (MVP-E2E L2, boundary-mocked)', () => 
       expect(productLens).toBe('read');
 
       const pack = options[0];
-      const needinesses = resolvePackNeedinesses(pack);
-      // STAB-B2: Need present → neediness plan/rows non-empty (*-fit).
-      expect(needinesses.length).toBeGreaterThan(0);
-      expect(needinesses.every((n) => String(n.measurementKind || '').endsWith('-fit'))).toBe(
+      const relatives = resolvePackRelatives(pack);
+      // STAB-B2: Evaluation present → relative plan/rows non-empty (*-fit).
+      expect(relatives.length).toBeGreaterThan(0);
+      expect(relatives.every((n) => String(n.measurementKind || '').endsWith('-fit'))).toBe(
         true,
       );
 
@@ -280,11 +280,11 @@ describe('read SDIVF pipeline integration (MVP-E2E L2, boundary-mocked)', () => 
         execution.findUp('validation', 'readQuality');
       expect(ready).toBeTruthy();
 
-      // Need-first identity should appear somewhere in validation/plan prompts
+      // Evaluation-first identity should appear somewhere in validation/plan prompts
       // when qualitative PTRR runs; if structure-only gate skipped LLM, skip soft.
       const prompts = getBoundaryLLMPromptText();
       if (prompts.length > 200 && /validation|ready-to-finish|need/i.test(prompts)) {
-        expect(prompts.toLowerCase()).toMatch(/need|read/);
+        expect(prompts.toLowerCase()).toMatch(/evaluation|read/);
       }
     },
     180000,

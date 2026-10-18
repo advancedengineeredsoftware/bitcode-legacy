@@ -7,7 +7,7 @@
  *   A) Prior phase / agent / tool sanity (also enforced deterministically)
  *   B) Synthesized AssetPack quality — each pack is patch + measurements + metadata
  *   C) Product steering vs covered paths and patch fileChanges
- *      (deposit: obfuscations/impermissible; read specializes Need compliance)
+ *      (deposit: obfuscations/impermissible; read specializes Evaluation compliance)
  *
  * Absolute measurements are required on every AssetPack before Finish; they are
  * attached by Implementation (host), not invented here.

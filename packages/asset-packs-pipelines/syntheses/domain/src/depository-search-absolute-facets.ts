@@ -1,7 +1,7 @@
 /**
  * Absolute measurement facets for depository hybrid search.
  *
- * Deposit indexes absolute_kinds + absolute_volumes; read Need-fit and deposit
+ * Deposit indexes absolute_kinds + absolute_volumes; read Evaluation-fit and deposit
  * relevants search must filter and rank by those facets — not binary "has
  * measurement evidence" alone.
  *
@@ -255,7 +255,7 @@ export function assetPassesAbsoluteFilters(
 /**
  * Measurement-channel score driven by absolute facets (0..1).
  * Blends commercial composite, coverage of the 46 catalogue kinds, and optional
- * need-term overlap against absolute kind labels.
+ * evaluation-term overlap against absolute kind labels.
  */
 export function absoluteFacetScore(
   asset: DepositoryAsset,

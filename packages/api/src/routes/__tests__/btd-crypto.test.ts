@@ -107,7 +107,7 @@ function mintDraftInput() {
   return {
     assetPackId: 'asset-pack-api-1',
     readId: 'read-api-1',
-    acceptedNeed: true as const,
+    acceptedEvaluation: true as const,
     acceptedFit: true as const,
     sourceManifestRoot: 'source-root',
     fitReceiptRoot: 'fit-root',
@@ -172,7 +172,7 @@ function sourceToSharesProofBody(overrides: Record<string, unknown> = {}) {
   return {
     readId: 'read-api-source-to-shares-1',
     assetPackId: 'asset-pack-api-source-to-shares-1',
-    acceptedNeedRoot: 'accepted-need-api-root',
+    acceptedEvaluationRoot: 'accepted-evaluation-api-root',
     findingFitsResultRoot: 'finding-fits-api-root',
     fitDeposits: [
       {
@@ -530,7 +530,7 @@ describe('BTD crypto API builders', () => {
     const response = await route(
       new Request('https://bitcode.test/api/btd/mint-draft', {
         method: 'POST',
-        body: JSON.stringify(mintDraftRequestBody({ acceptedNeed: false })),
+        body: JSON.stringify(mintDraftRequestBody({ acceptedEvaluation: false })),
       }),
     );
     const body = await response.json();

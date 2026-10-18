@@ -66,8 +66,8 @@ export const DEPOSIT_AUTHORITY_ROW_EXPLAINERS: Record<string, string> = {
 export const DEPOSIT_EARNING_ROW_EXPLAINERS: Record<string, string> = {
   "Likely demand":
     "The measured demand posture for this repository's supply, with the average confidence across demand signals.",
-  "Unfit Need opportunities":
-    "Read Needs the network could not satisfy that this repository's supply could serve — count and demand strength.",
+  "Unfit Evaluation opportunities":
+    "Read Evaluations the network could not satisfy that this repository's supply could serve — count and demand strength.",
   "Expected compensation":
     "The measured compensation range (sats) across the synthesized options if deposited and read against.",
   "Supply recommendations":
@@ -75,7 +75,7 @@ export const DEPOSIT_EARNING_ROW_EXPLAINERS: Record<string, string> = {
 };
 
 export const DEPOSIT_OPPORTUNITY_ROOT_EXPLAINER =
-  "An unfit-Need opportunity: read demand the network could not satisfy that this repository's supply could serve. The root is the source-safe hash anchoring the opportunity into proof readback.";
+  "An unfit-Evaluation opportunity: read demand the network could not satisfy that this repository's supply could serve. The root is the source-safe hash anchoring the opportunity into proof readback.";
 
 export const DEPOSIT_PROOF_ROOT_EXPLAINERS: Record<string, string> = {
   "route-session-root":
@@ -108,7 +108,7 @@ export const DEPOSIT_STAT_TOOLTIP_GENERICS = {
   governance:
     "Governance rows come from the organization policy + wallet authority evaluation that gates every deposit action; denied actions list their blockers.",
   earningIntelligence:
-    "Earning intelligence rows come from the DepositorEarningSupplyIntelligence measurement: network demand, unfit-Need opportunities, and expected compensation for this supply.",
+    "Earning intelligence rows come from the DepositorEarningSupplyIntelligence measurement: network demand, unfit-Evaluation opportunities, and expected compensation for this supply.",
   opportunityRoot:
     "Proof roots are source-safe hashes anchoring measurements into proof readback — auditable without revealing withheld content.",
 } as const;

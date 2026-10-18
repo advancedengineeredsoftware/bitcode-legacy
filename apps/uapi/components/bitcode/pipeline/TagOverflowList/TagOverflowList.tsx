@@ -72,8 +72,8 @@ export function TagOverflowList({
     let count = 0;
     for (let i = 0; i < pillWidths.length; i++) {
       const width = pillWidths[i];
-      const remainingNeeded = i < pillWidths.length - 1 ? PLUS_PILL_ESTIMATE : 0;
-      if (used + width + remainingNeeded > available) {
+      const remainingEvaluationed = i < pillWidths.length - 1 ? PLUS_PILL_ESTIMATE : 0;
+      if (used + width + remainingEvaluationed > available) {
         break;
       }
       used += width;

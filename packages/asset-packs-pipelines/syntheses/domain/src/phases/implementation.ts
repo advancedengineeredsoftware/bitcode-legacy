@@ -4,7 +4,7 @@
  * Deposit and read Implementation are four sequential agents building the same AssetPack(s):
  *   1. patch-plan — six-field descriptor + metadata
  *   2. patchfile — write one AssetPackPatchArtifact per pack (hybrid create|modify bodies)
- *   3. measurements — measure that patch; deposit: absolutes; read: absolutes + needinesses
+ *   3. measurements — measure that patch; deposit: absolutes; read: absolutes + relatives
  *   4. commercial-nl — rich source-safe buyer title + description
  *
  * Product packages are separate (deposit/ vs read/) but the sequential shape is twin.
@@ -76,7 +76,7 @@ export function registerImplementationAgents(
     return;
   }
 
-  // Read: four-agent twin of deposit (Need + needinesses product deltas live in agents).
+  // Read: four-agent twin of deposit (Evaluation + relatives product deltas live in agents).
   if (mode === 'read') {
     agentRegistry.registerAgent(
       'implementation:read-implementation-agent-asset-packs-patch-plan',

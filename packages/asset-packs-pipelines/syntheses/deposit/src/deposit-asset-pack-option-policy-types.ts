@@ -88,7 +88,7 @@ export interface DepositAssetPackOptionPolicyEvaluation {
     estimatedKnowledgeVolume: number;
     estimatedBtdCells: number;
     estimateOnly: true;
-    btdMintBoundary: 'not-minted-until-future-need-fit-settlement';
+    btdMintBoundary: 'not-minted-until-future-evaluation-fit-settlement';
     rightsBoundary: 'depositor-retains-rights-until-paid-reader-settlement-transfer';
     btdPotentialRoot: string;
   };
@@ -100,7 +100,7 @@ export interface DepositAssetPackOptionPolicyEvaluation {
     allocationMethod: 'source-to-shares-largest-remainder';
     depositorShareBasisPoints: number;
     protocolTreasuryBasisPoints: number;
-    sourceToSharesProofState: 'not-created-until-accepted-need-fit-and-settlement';
+    sourceToSharesProofState: 'not-created-until-accepted-evaluation-fit-and-settlement';
     eligibleIfApprovedAndSelected: boolean;
     blockers: string[];
     warnings: string[];

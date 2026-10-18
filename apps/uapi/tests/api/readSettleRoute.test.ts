@@ -76,16 +76,16 @@ function requestFor(body: unknown) {
 function settleableOption(overrides: Record<string, unknown> = {}) {
   return {
     title: 'Session refresh pack',
-    summary: 'Need-serving OAuth session refresh knowledge.',
+    summary: 'Evaluation-serving OAuth session refresh knowledge.',
     kind: 'capability-slice',
     confidence: 0.8,
-    needFit: 0.75,
+    evaluationFit: 0.75,
     patch: {
       patchSummary: 'Session refresh',
       fileChanges: [{ path: 'src/auth/session.ts', op: 'modify', body: 'export const x = 1' }],
     },
     measurements: {
-      needinesses: [
+      relatives: [
         { measurementKind: 'domain-fit', volume: 0.8, weight: 1, magnitude: 0.8 },
         { measurementKind: 'language-fit', volume: 0.7, weight: 1, magnitude: 0.7 },
       ],
@@ -202,7 +202,7 @@ describe('POST /api/read/settle (MVP-E2E L1-R3)', () => {
     );
   });
 
-  it('400 when rehydrated option fails commercial parse (no needinesses)', async () => {
+  it('400 when rehydrated option fails commercial parse (no relatives)', async () => {
     mockCreateClient.mockResolvedValue({
       auth: { getUser: async () => ({ data: { user: { id: 'u1' } }, error: null }) },
     });
@@ -214,7 +214,7 @@ describe('POST /api/read/settle (MVP-E2E L1-R3)', () => {
               id: 'run-1',
               user_id: 'u1',
               output: {
-                fullOptions: [{ title: 'Broken', measurements: { needinesses: [] } }],
+                fullOptions: [{ title: 'Broken', measurements: { relatives: [] } }],
               },
               context: {},
             },
@@ -291,7 +291,7 @@ describe('POST /api/read/settle (MVP-E2E L1-R3)', () => {
         selectedIndexes: [0],
         repositoryFullName: 'acme/payments',
         payAsset: 'ETH',
-        need: 'OAuth session refresh',
+        evaluation: 'OAuth session refresh',
       }),
     );
     expect(response.status).toBe(200);

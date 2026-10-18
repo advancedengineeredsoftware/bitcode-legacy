@@ -36,7 +36,7 @@ module.exports = {
     '^@bitcode/measurement-generics$': '<rootDir>/../../measurement-generics/src/index.ts',
     '^@bitcode/generic-agents-agent-measure$': '<rootDir>/../../generic-agents/agent-measure/src/index.ts',
     '^@bitcode/generic-agents-agent-measure-absolutes$': '<rootDir>/../../generic-agents/agent-measure-absolutes/src/index.ts',
-    '^@bitcode/generic-measurements-needinesses$': '<rootDir>/../../generic-measurements/needinesses/src/index.ts',
+    '^@bitcode/generic-measurements-relatives$': '<rootDir>/../../generic-measurements/relatives/src/index.ts',
     '^@bitcode/asset-packs-generics$': '<rootDir>/../../asset-packs-generics/src/index.ts',
     '^@bitcode/asset-packs-generics/(.*)$': '<rootDir>/../../asset-packs-generics/src/$1',
     '^@bitcode/generic-asset-packs-synthesis$': '<rootDir>/../../generic-asset-packs/synthesis/src/index.ts',

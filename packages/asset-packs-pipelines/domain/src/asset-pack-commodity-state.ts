@@ -4,8 +4,8 @@ export const ASSET_PACK_LIFECYCLE_STATES = [
   'depository-assetpack-admitted',
   'fit-candidates-recalled',
   'fit-set-selected',
-  'need-fit-assetpack-synthesized',
-  'need-fit-assetpack-quoted',
+  'evaluation-fit-assetpack-synthesized',
+  'evaluation-fit-assetpack-quoted',
   'settlement-observed',
   'btd-settled-rights-transferred',
   'source-unlocked-delivery',
@@ -16,7 +16,7 @@ export const ASSET_PACK_LIFECYCLE_STATES = [
 export const BTD_SCALAR_VOLUME_STATES = [
   'btd-not-applicable',
   'btd-potential-measured',
-  'need-fit-measurements-admitted',
+  'evaluation-fit-measurements-admitted',
   'measurement-weight-policy-locked',
   'weighted-scalar-volume-computed',
   'btd-quantized',
@@ -127,7 +127,7 @@ export interface AssetPackCommodityStateInput {
   depositoryAssetPackAdmitted?: boolean;
   fitCandidatesRecalled?: boolean;
   selectedFitAssetIds?: string[];
-  needFitAssetPackSynthesized?: boolean;
+  evaluationFitAssetPackSynthesized?: boolean;
   quoteIssued?: boolean;
   settlementObserved?: boolean;
   rightsTransferred?: boolean;
@@ -146,7 +146,7 @@ export interface AssetPackCommodityStateEvidence {
   depositoryAssetPackAdmitted: boolean;
   fitCandidatesRecalled: boolean;
   fitSetSelected: boolean;
-  needFitAssetPackSynthesized: boolean;
+  evaluationFitAssetPackSynthesized: boolean;
   quoteIssued: boolean;
   paymentObserved: boolean;
   paymentMatchesQuote: boolean | null;
@@ -484,11 +484,11 @@ function resolveEvidence(input: AssetPackCommodityStateInput): AssetPackCommodit
         findFirstString(payload, ['queryRoot', 'rankingRoot']),
     ),
     fitSetSelected: selectedIds.length > 0 || assetPackStateHint === 'fit-set-selected',
-    needFitAssetPackSynthesized: Boolean(
-      input.needFitAssetPackSynthesized ||
+    evaluationFitAssetPackSynthesized: Boolean(
+      input.evaluationFitAssetPackSynthesized ||
         previewBoundary ||
-        assetPackStateHint === 'need-fit-assetpack-synthesized' ||
-        assetPackStateHint === 'need-fit-assetpack-quoted',
+        assetPackStateHint === 'evaluation-fit-assetpack-synthesized' ||
+        assetPackStateHint === 'evaluation-fit-assetpack-quoted',
     ),
     quoteIssued,
     paymentObserved,
@@ -517,8 +517,8 @@ function assetPackStateFrom(input: AssetPackCommodityStateInput, evidence: Asset
   if (evidence.sourceUnlocked) return 'source-unlocked-delivery';
   if (evidence.rightsTransferred) return 'btd-settled-rights-transferred';
   if (evidence.paymentObserved) return 'settlement-observed';
-  if (evidence.quoteIssued) return 'need-fit-assetpack-quoted';
-  if (evidence.needFitAssetPackSynthesized) return 'need-fit-assetpack-synthesized';
+  if (evidence.quoteIssued) return 'evaluation-fit-assetpack-quoted';
+  if (evidence.evaluationFitAssetPackSynthesized) return 'evaluation-fit-assetpack-synthesized';
   if (evidence.fitSetSelected) return 'fit-set-selected';
   if (evidence.fitCandidatesRecalled) return 'fit-candidates-recalled';
   if (evidence.depositoryAssetPackAdmitted) return 'depository-assetpack-admitted';
@@ -543,7 +543,7 @@ function btdStateFrom(input: AssetPackCommodityStateInput, evidence: AssetPackCo
   }
   if (btd.weightPolicyLocked) return 'measurement-weight-policy-locked';
   if (btd.measurementsAdmitted || Boolean(findFirstString(input.payload ?? input, ['measurementRoot', 'assetPackMeasurementRoot']))) {
-    return 'need-fit-measurements-admitted';
+    return 'evaluation-fit-measurements-admitted';
   }
   if (btd.potentialMeasured || Boolean(findFirstString(input.payload ?? input, ['btdPotentialRoot']))) return 'btd-potential-measured';
   if (isBtdScalarVolumeState(hint)) return hint;
@@ -578,7 +578,7 @@ function disclosureBoundaryFrom(evidence: AssetPackCommodityStateEvidence, btc: 
   if (evidence.finalityConfirmed || btc === 'btc-finality-confirmed' || btc === 'btc-settlement-finalized') return 'after-finality';
   if (evidence.paymentObserved) return 'after-payment-observation';
   if (evidence.quoteIssued) return 'after-quote';
-  if (evidence.needFitAssetPackSynthesized || evidence.fitSetSelected) return 'after-preview';
+  if (evidence.evaluationFitAssetPackSynthesized || evidence.fitSetSelected) return 'after-preview';
   return 'before-settlement';
 }
 
@@ -598,7 +598,7 @@ function blockersFor(projection: Pick<AssetPackCommodityStateProjection, 'states
   if (states.btc === 'btc-quote-issued' && evidence.paymentObserved) {
     blockers.push('btc_quote_collapsed_with_payment_observation');
   }
-  if (states.assetPack === 'need-fit-assetpack-quoted' && evidence.paymentObserved) {
+  if (states.assetPack === 'evaluation-fit-assetpack-quoted' && evidence.paymentObserved) {
     blockers.push('assetpack_quote_collapsed_with_settlement_observation');
   }
   if (states.assetPack === 'settlement-observed' && evidence.finalityConfirmed && evidence.rightsTransferred) {

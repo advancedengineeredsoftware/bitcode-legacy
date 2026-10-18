@@ -1,7 +1,7 @@
 /**
  * Depository settled-AssetPack demand estimate types (V48 Gate 3).
  *
- * Source-safe pack summaries and estimate/neediness contracts — no builders.
+ * Source-safe pack summaries and estimate/relative contracts — no builders.
  */
 
 export type SettledDemandEstimateState =
@@ -53,7 +53,7 @@ export interface DepositorySettledDemandEstimate {
    * Read-demand preview volume: demand × (0.5 + 0.5·(1−saturation)).
    * Null when unestimatable.
    */
-  needinessVolume: number | null;
+  relativeVolume: number | null;
   settledPackCount: number;
   matchedPackCount: number;
   rationale: string;

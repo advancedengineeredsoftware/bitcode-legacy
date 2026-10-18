@@ -10,7 +10,7 @@ import { BtdSupplyState, advanceBtdSupply, assertBtdSupplyState } from './supply
 export interface BtdMintAdmissionInput {
   assetPackId: string;
   readId: string;
-  acceptedNeed: true;
+  acceptedEvaluation: true;
   acceptedFit: true;
   sourceManifestRoot: string;
   measurementReceiptRoot: string;
@@ -56,7 +56,7 @@ export interface BtdRangeAllocationOptions {
 }
 
 export function assertMintAdmission(input: BtdMintAdmissionInput): BtdMintAdmissionInput {
-  if (input.acceptedNeed !== true) {
+  if (input.acceptedEvaluation !== true) {
     throw new Error('BTD mint admission requires accepted Read.');
   }
 

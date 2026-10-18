@@ -91,7 +91,7 @@ const SYNTHESIS_OPTION = {
     fileChanges: [{ path: 'src/telemetry/index.ts', op: 'modify' }],
     patchSummary: 'Encodes the telemetry pipeline knowledge slice as a reviewable patch.',
   },
-  needinessSignal: { demand: 0.7, saturation: 0.2, rationale: 'Telemetry topic is underserved.' },
+  relativeSignal: { demand: 0.7, saturation: 0.2, rationale: 'Telemetry topic is underserved.' },
 };
 
 const SPECS: DepositAgentPromptSpec[] = [
@@ -377,8 +377,8 @@ describe('Deposit SDIVF agent prompt contracts (boundary-mocked PTRR)', () => {
     expect(synthesisSystem).toMatch(/patchfile \+ absolute measurements \+ metadata/i);
     expect(synthesisSystem).toMatch(/do NOT invent absolute/i);
     expect(synthesisSystem).toMatch(/sourceCheckoutCatalog/i);
-    // Deposit patchfile agent: six product fields only; no neediness product language.
-    expect(synthesisSystem).not.toMatch(/neediness/i);
+    // Deposit patchfile agent: six product fields only; no relative product language.
+    expect(synthesisSystem).not.toMatch(/relative measurement|relatives/i);
     expect(synthesisSystem).not.toMatch(/Validation measures those/i);
 
     expect(validationSystem).toMatch(/ready-to-finish gate \(A\/B\/C\)/i);

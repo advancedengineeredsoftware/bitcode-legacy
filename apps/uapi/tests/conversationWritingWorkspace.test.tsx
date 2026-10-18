@@ -46,17 +46,17 @@ describe('ConversationWritingWorkspace', () => {
   });
 
   it('saves, restores, and switches writing modes with accessible controls', () => {
-    render(<ConversationWritingWorkspace conversationId="conv-restore" initialMode="need_feedback" />);
+    render(<ConversationWritingWorkspace conversationId="conv-restore" initialMode="evaluation_feedback" />);
 
-    expect(screen.getByRole('tab', { name: 'Need' })).toHaveAttribute('aria-selected', 'true');
-    const draft = screen.getByLabelText('Need Feedback draft');
-    fireEvent.change(draft, { target: { value: 'Need should mention rollback evidence.' } });
+    expect(screen.getByRole('tab', { name: 'Evaluation' })).toHaveAttribute('aria-selected', 'true');
+    const draft = screen.getByLabelText('Evaluation Feedback draft');
+    fireEvent.change(draft, { target: { value: 'Evaluation should mention rollback evidence.' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save workspace draft' }));
     expect(screen.getByRole('status')).toHaveTextContent('draft saved locally');
 
     fireEvent.change(draft, { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: 'Restore workspace draft' }));
-    expect(screen.getByLabelText('Need Feedback draft')).toHaveValue('Need should mention rollback evidence.');
+    expect(screen.getByLabelText('Evaluation Feedback draft')).toHaveValue('Evaluation should mention rollback evidence.');
 
     fireEvent.click(screen.getByRole('tab', { name: 'Handoff' }));
     expect(screen.getByLabelText('product Handoff Summary draft')).toBeInTheDocument();

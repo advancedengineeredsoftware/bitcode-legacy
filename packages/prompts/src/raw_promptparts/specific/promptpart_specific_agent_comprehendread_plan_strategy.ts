@@ -12,4 +12,4 @@ import { PromptPart } from '../../parts/PromptPart';
  * ]
  */
 export const PROMPTPART_SPECIFIC_AGENT_COMPREHENDREAD_PLAN_STRATEGY: PromptPart =
-  'Plan ReadNeedComprehensionSynthesis by isolating the expressed Read Request, listing only the evidence-backed requirements it implies, mapping source constraints to repository, branch, and commit, carrying feedback and previous Need lineage, identifying typed output fields, and naming any ambiguity without adding unrequested fits, searches, settlement claims, or delivery promises.' as PromptPart;
+  'Plan ReadEvaluationComprehensionSynthesis by isolating the expressed Read Request, listing only the evidence-backed requirements it implies, mapping source constraints to repository, branch, and commit, carrying feedback and previous Evaluation lineage, identifying typed output fields, and naming any ambiguity without adding unrequested fits, searches, settlement claims, or delivery promises.' as PromptPart;

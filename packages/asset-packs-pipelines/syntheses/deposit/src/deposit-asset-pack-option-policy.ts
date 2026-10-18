@@ -221,10 +221,10 @@ export function assertDepositAssetPackOptionPolicyReportSourceSafe(
         evaluation.admissionBoundary.admissionAndIndexingOwnedBy === 'future-gate7-deposit-option-review' &&
         evaluation.admissionBoundary.sourceBearingDisclosureBeforeSettlementVisible === false &&
         evaluation.btdPotential.estimateOnly === true &&
-        evaluation.btdPotential.btdMintBoundary === 'not-minted-until-future-need-fit-settlement' &&
+        evaluation.btdPotential.btdMintBoundary === 'not-minted-until-future-evaluation-fit-settlement' &&
         evaluation.compensation.priceAsset === 'BTC' &&
         evaluation.compensation.sourceToSharesProofState ===
-          'not-created-until-accepted-need-fit-and-settlement' &&
+          'not-created-until-accepted-evaluation-fit-and-settlement' &&
         evaluation.visibility.sourceSafeMetadataOnly === true &&
         evaluation.visibility.protectedSourceVisible === false &&
         evaluation.visibility.rawSourceTextVisible === false &&

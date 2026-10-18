@@ -112,7 +112,7 @@ describe('demonstration synthesis runners', () => {
       userId: 'buyer-1',
       execution,
       sourceBranch: 'main',
-      need: 'Stripe webhook retries double-charge customers; verify the HMAC signature and dedupe deliveries.',
+      evaluation: 'Stripe webhook retries double-charge customers; verify the HMAC signature and dedupe deliveries.',
       relevantPaths: [],
       irrelevantPaths: [],
     });

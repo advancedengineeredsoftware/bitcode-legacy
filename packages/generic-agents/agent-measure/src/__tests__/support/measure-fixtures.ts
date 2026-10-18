@@ -19,11 +19,11 @@ export const QUANTITY_AND_QUALITY_SPECS: MeasurementSpec[] = [
   },
 ];
 
-export const NEEDINESS_LIKE_SPECS: MeasurementSpec[] = [
+export const RELATIVE_LIKE_SPECS: MeasurementSpec[] = [
   {
     measurementKind: 'language-fit',
     label: 'Language fit',
     unit: 'estimate',
-    guidance: 'How well stack matches a Need (category test only).',
+    guidance: 'How well stack matches an Evaluation (category test only).',
   },
 ];

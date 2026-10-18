@@ -76,8 +76,8 @@ declare const ConversationPlanSchema: z.ZodObject<{
     requiresCodeExploration: z.ZodBoolean;
     requiresPipelineExecution: z.ZodBoolean;
     responseStrategy: z.ZodString;
-    toolsNeeded: z.ZodArray<z.ZodString, "many">;
-    contextNeeded: z.ZodObject<{
+    toolsEvaluationed: z.ZodArray<z.ZodString, "many">;
+    contextEvaluationed: z.ZodObject<{
         needsDigest: z.ZodBoolean;
         needsCodeSearch: z.ZodBoolean;
         needsFileReading: z.ZodBoolean;
@@ -112,8 +112,8 @@ declare const ConversationPlanSchema: z.ZodObject<{
     requiresCodeExploration?: boolean;
     requiresPipelineExecution?: boolean;
     responseStrategy?: string;
-    toolsNeeded?: string[];
-    contextNeeded?: {
+    toolsEvaluationed?: string[];
+    contextEvaluationed?: {
         needsDigest?: boolean;
         needsCodeSearch?: boolean;
         needsFileReading?: boolean;
@@ -130,8 +130,8 @@ declare const ConversationPlanSchema: z.ZodObject<{
     requiresCodeExploration?: boolean;
     requiresPipelineExecution?: boolean;
     responseStrategy?: string;
-    toolsNeeded?: string[];
-    contextNeeded?: {
+    toolsEvaluationed?: string[];
+    contextEvaluationed?: {
         needsDigest?: boolean;
         needsCodeSearch?: boolean;
         needsFileReading?: boolean;

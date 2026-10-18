@@ -345,13 +345,13 @@ describe('discovery conditional runtime registry roster', () => {
     ]);
   });
 
-  it('read mode registers wave-1 + search-depository-for-read-need-fits', () => {
+  it('read mode registers wave-1 + search-depository-for-read-evaluation-fits', () => {
     const registry = recordingRegistry();
     registerDiscoveryAgents(registry, 'read');
     expect([...registry.registrations.keys()].sort()).toEqual([
       'discovery:comprehend-codebase',
       'discovery:inherent-regurgitation',
-      'discovery:search-depository-for-read-need-fits',
+      'discovery:search-depository-for-read-evaluation-fits',
     ]);
   });
 });

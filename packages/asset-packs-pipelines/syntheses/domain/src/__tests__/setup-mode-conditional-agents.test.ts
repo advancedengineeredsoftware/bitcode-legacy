@@ -6,7 +6,7 @@
  * passthroughs registered on the phase execution's own registry (shadowing the
  * pipeline-level registrations):
  *   - setup:ReadFitsFindingSynthesisSetupPlanAgent  (F22 — plans Finding Fits
- *     from an accepted Read-Need; deposit-irrelevant)
+ *     from an accepted Read-Evaluation; deposit-irrelevant)
  *   - setup:asset-pack-danger-wall-agent            (F28 — the read risk
  *     admission; a deposit has no Read to admit)
  * and swaps the comprehension key to the deposit input-comprehension agent

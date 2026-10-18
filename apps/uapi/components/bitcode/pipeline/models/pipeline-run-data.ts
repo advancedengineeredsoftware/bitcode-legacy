@@ -50,12 +50,12 @@ export type WorkspaceRun = Pick<PipelineExecution, 'id' | 'created_at' | 'type' 
   obfuscationsAnchorName?: string | null;
   obfuscationsAnchorPermissibleSources?: string[] | null;
   obfuscationsAnchorImpermissibleSources?: string[] | null;
-  // Need anchors (read twin of Obfuscations anchors) — contextSource
-  // 'read-need-anchor'. Saves Need body + Relevant / Irrelevant paths.
-  needAnchorText?: string | null;
-  needAnchorName?: string | null;
-  needAnchorRelevantPaths?: string[] | null;
-  needAnchorIrrelevantPaths?: string[] | null;
+  // Evaluation anchors (read twin of Obfuscations anchors) — contextSource
+  // 'read-evaluation-anchor'. Saves Evaluation body + Relevant / Irrelevant paths.
+  evaluationAnchorText?: string | null;
+  evaluationAnchorName?: string | null;
+  evaluationAnchorRelevantPaths?: string[] | null;
+  evaluationAnchorIrrelevantPaths?: string[] | null;
   /** Optional label on repository·branch·commit anchors. */
   repositoryAnchorName?: string | null;
   /**

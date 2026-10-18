@@ -11,7 +11,7 @@ Agents are only as good as the material they can actually use. Public repos are 
 
 ## The offer
 
-**Bitcode finds deposited AssetPacks and synthesizes new candidates that satisfy your Need.**  
+**Bitcode finds deposited AssetPacks and synthesizes new candidates that satisfy your Evaluation.**
 You describe what you need. You review fits. You settle for what earns the right to be used. Measurements are visible; protected source stays protected until settlement.
 
 > **Buy Packs** on `/reads` · **View the exchange** on `/packs` · **Sell supply** on `/deposits` if you later contribute.
@@ -22,17 +22,17 @@ You describe what you need. You review fits. You settle for what earns the right
 
 | | | |
 | --- | --- | --- |
-| **1. Read** | Describe your Need | Perfect packs, not vague search |
+| **1. Read** | Describe your Evaluation | Perfect packs, not vague search |
 | **2. Review** | Quantity · Quality · Fit | Candidates you can actually compare |
 | **3. Settle** | BTC ↔ BTD | Buy BTD, earn rails for supply, acquire data |
 
-**Source to delivery, for buyers:** Need → candidates → Fit → settle → use.
+**Source to delivery, for buyers:** Evaluation → candidates → Fit → settle → use.
 
 ---
 
 ## Why this improves agent performance
 
-1. **Need-gated synthesis** — You don’t scrape the internet; you request packs matched to a stated Need.
+1. **Evaluation-gated synthesis** — You don’t scrape the internet; you request packs matched to a stated Evaluation.
 2. **Measurements, not vibes** — Public measures score options so agents (and humans) can rank before commitment.
 3. **Source-safe by design** — See measurements and roots first. Private source stays private until rights transfer.
 4. **Auditable trade** — Settlements ride an open-source, on-chain ledger posture—no black-box “trust us.”

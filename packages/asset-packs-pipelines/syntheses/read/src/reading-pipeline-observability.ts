@@ -1,6 +1,6 @@
 import {
   READ_FITS_FINDING_SYNTHESIS,
-  READ_NEED_COMPREHENSION_SYNTHESIS,
+  READ_EVALUATION_COMPREHENSION_SYNTHESIS,
   READING_PIPELINE_CONTRACTS,
   type ReadingPipelineName,
   type ReadingPipelinePtrrStepContract,
@@ -130,7 +130,7 @@ const TRACE_INDEX: IndexedTrace[] = READING_PIPELINE_CONTRACTS.flatMap((contract
 );
 
 const READING_PIPELINE_NAMES = [
-  READ_NEED_COMPREHENSION_SYNTHESIS,
+  READ_EVALUATION_COMPREHENSION_SYNTHESIS,
   READ_FITS_FINDING_SYNTHESIS,
 ] as const;
 
@@ -479,7 +479,7 @@ function failsafeFromId(value: unknown): ReadingPipelineThinkingsFailsafe | null
 }
 
 function isReadingPipelineName(value: unknown): value is ReadingPipelineName {
-  return value === READ_NEED_COMPREHENSION_SYNTHESIS || value === READ_FITS_FINDING_SYNTHESIS;
+  return value === READ_EVALUATION_COMPREHENSION_SYNTHESIS || value === READ_FITS_FINDING_SYNTHESIS;
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {

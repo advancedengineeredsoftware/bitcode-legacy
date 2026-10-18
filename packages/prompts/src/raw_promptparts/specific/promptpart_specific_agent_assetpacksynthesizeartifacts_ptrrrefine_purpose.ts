@@ -11,4 +11,4 @@
 import { PromptPart } from '../../parts/PromptPart';
 
 export const PROMPTPART_SPECIFIC_AGENT_ASSETPACKSYNTHESIZEARTIFACTS_PTRRREFINE_PURPOSE: PromptPart =
-  'PTRR Refine Step: improve fit quality, candidate provenance, preview safety, proof traceability, and validation readiness while preserving the accepted Need and every source-to-fit boundary.' as PromptPart;
+  'PTRR Refine Step: improve fit quality, candidate provenance, preview safety, proof traceability, and validation readiness while preserving the accepted Evaluation and every source-to-fit boundary.' as PromptPart;

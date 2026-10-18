@@ -4,7 +4,7 @@ import type { BtdProtocolTelemetrySourceSafety } from './telemetry';
 
 export const BTD_CHATGPT_APP_ACTION_CONTRACT_IDS = [
   'bitcode_request_read',
-  'bitcode_review_read_need',
+  'bitcode_review_read_evaluation',
   'bitcode_request_finding_fits',
   'bitcode_review_asset_pack_preview',
   'bitcode_quote_asset_pack_fee',
@@ -16,7 +16,7 @@ export type BtdChatGptAppActionId = (typeof BTD_CHATGPT_APP_ACTION_CONTRACT_IDS)
 
 export type BtdChatGptAppActionFlowObject =
   | 'read_request'
-  | 'read_need'
+  | 'read_evaluation'
   | 'finding_fits_result'
   | 'asset_pack_preview'
   | 'btc_fee_quote'
@@ -31,7 +31,7 @@ export type BtdChatGptAppActionSourceSafetyClass =
 export type BtdChatGptAppActionDeniedStateCode =
   | 'SCHEMA_VALIDATION_FAILED'
   | 'MISSING_READER_SESSION'
-  | 'READ_NEED_REQUIRED'
+  | 'READ_EVALUATION_REQUIRED'
   | 'FINDING_FITS_REQUIRED'
   | 'ASSET_PACK_PREVIEW_REQUIRED'
   | 'FEE_QUOTE_REQUIRED'
@@ -177,7 +177,7 @@ const REQUIRED_PROOF_ROOT_FIELDS = [
 
 const REQUIRED_FLOW_OBJECTS: readonly BtdChatGptAppActionFlowObject[] = [
   'read_request',
-  'read_need',
+  'read_evaluation',
   'finding_fits_result',
   'asset_pack_preview',
   'btc_fee_quote',
@@ -207,7 +207,7 @@ export function buildBtdChatGptAppActionContractInputs(): BtdChatGptAppActionCon
       flowObject: 'read_request',
       summary: 'Request a Bitcode Read from ChatGPT with source-safe repository intent.',
       description:
-        'Captures the user Read request, repository anchor, and requested work shape for ReadNeedComprehensionSynthesis without exposing AssetPack contents.',
+        'Captures the user Read request, repository anchor, and requested work shape for ReadEvaluationComprehensionSynthesis without exposing AssetPack contents.',
       uiResponseFamily: 'read-request-admission',
       requiredFields: ['readerId', 'repository', 'readRequest'],
       optionalFields: ['requestId', 'interfaceSessionId', 'attachmentsRoot'],
@@ -215,40 +215,40 @@ export function buildBtdChatGptAppActionContractInputs(): BtdChatGptAppActionCon
       deniedStates: baseDeniedStates(),
     }),
     buildActionInput({
-      actionId: 'bitcode_review_read_need',
-      flowObject: 'read_need',
-      summary: 'Review, accept, or request regeneration of a synthesized ReadNeed.',
+      actionId: 'bitcode_review_read_evaluation',
+      flowObject: 'read_evaluation',
+      summary: 'Review, accept, or request regeneration of a synthesized ReadEvaluation.',
       description:
-        'Binds a reviewed ReadNeed root to the ChatGPT App conversation so Finding Fits can only run from user-approved need comprehension.',
-      uiResponseFamily: 'read-need-review',
-      requiredFields: ['readRequestRoot', 'readNeedRoot', 'decision'],
+        'Binds a reviewed ReadEvaluation root to the ChatGPT App conversation so Finding Fits can only run from user-approved need comprehension.',
+      uiResponseFamily: 'read-evaluation-review',
+      requiredFields: ['readRequestRoot', 'readEvaluationRoot', 'decision'],
       optionalFields: ['feedback'],
-      responseFields: ['acceptedNeedRoot', 'reviewState', 'nextAction'],
+      responseFields: ['acceptedEvaluationRoot', 'reviewState', 'nextAction'],
       deniedStates: [
         ...baseDeniedStates(),
         {
-          code: 'READ_NEED_REQUIRED',
-          readableMessage: 'A synthesized ReadNeed must be present before review can continue.',
-          repairAction: 'run-read-need-comprehension-or-provide-read-need-root',
+          code: 'READ_EVALUATION_REQUIRED',
+          readableMessage: 'A synthesized ReadEvaluation must be present before review can continue.',
+          repairAction: 'run-read-evaluation-comprehension-or-provide-read-evaluation-root',
         },
       ],
     }),
     buildActionInput({
       actionId: 'bitcode_request_finding_fits',
       flowObject: 'finding_fits_result',
-      summary: 'Request plural Finding Fits over the Depository from an accepted ReadNeed.',
+      summary: 'Request plural Finding Fits over the Depository from an accepted ReadEvaluation.',
       description:
-        'Admits ReadFitsFindingSynthesis from an accepted ReadNeed root and returns source-safe candidate and fit-quality metadata only.',
+        'Admits ReadFitsFindingSynthesis from an accepted ReadEvaluation root and returns source-safe candidate and fit-quality metadata only.',
       uiResponseFamily: 'finding-fits-admission',
-      requiredFields: ['acceptedNeedRoot', 'depositoryScope'],
+      requiredFields: ['acceptedEvaluationRoot', 'depositoryScope'],
       optionalFields: ['minimumFitConfidence', 'candidateLimit'],
       responseFields: ['findingFitsResultRoot', 'candidateCount', 'nextAction'],
       deniedStates: [
         ...baseDeniedStates(),
         {
-          code: 'READ_NEED_REQUIRED',
-          readableMessage: 'Finding Fits requires an accepted ReadNeed root.',
-          repairAction: 'accept-read-need-before-requesting-finding-fits',
+          code: 'READ_EVALUATION_REQUIRED',
+          readableMessage: 'Finding Fits requires an accepted ReadEvaluation root.',
+          repairAction: 'accept-read-evaluation-before-requesting-finding-fits',
         },
       ],
     }),
@@ -697,7 +697,7 @@ function assertDeniedStateCode(code: string): BtdChatGptAppActionDeniedStateCode
   const allowed: readonly BtdChatGptAppActionDeniedStateCode[] = [
     'SCHEMA_VALIDATION_FAILED',
     'MISSING_READER_SESSION',
-    'READ_NEED_REQUIRED',
+    'READ_EVALUATION_REQUIRED',
     'FINDING_FITS_REQUIRED',
     'ASSET_PACK_PREVIEW_REQUIRED',
     'FEE_QUOTE_REQUIRED',

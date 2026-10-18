@@ -5,7 +5,7 @@
  * Sequence: patch-plan → patchfile → THIS → commercial-nl
  *
  * Domain base runs absolute measurements (productLens=read). Read then attaches
- * needinesses (*-fit) + needFit. Never imports the deposit product package.
+ * relatives (*-fit) + evaluationFit. Never imports the deposit product package.
  */
 
 import { storeCrossPhaseArtifact } from '@bitcode/asset-packs-pipelines-syntheses-domain/synthesize-asset-packs';
@@ -38,34 +38,34 @@ export default async function runReadImplementationAgentAssetPacksMeasurementsSy
       ? findValue(execution, 'implementation', 'options')
       : [];
 
-  const needText =
-    findValue(execution, 'read', 'need') ??
-    findValue(execution, 'implementation', 'need') ??
-    input?.need ??
+  const evaluationText =
+    findValue(execution, 'read', 'evaluation') ??
+    findValue(execution, 'implementation', 'evaluation') ??
+    input?.evaluation ??
     '';
-  const needComprehension =
-    findValue(execution, 'setup', 'needComprehension') ??
+  const evaluationComprehension =
+    findValue(execution, 'setup', 'evaluationComprehension') ??
     findValue(execution, 'setup', 'inputComprehension');
-  const dynamicKinds = Array.isArray(needComprehension?.dynamicNeedinessKinds)
-    ? needComprehension.dynamicNeedinessKinds
+  const dynamicKinds = Array.isArray(evaluationComprehension?.dynamicRelativeKinds)
+    ? evaluationComprehension.dynamicRelativeKinds
     : [];
-  const dynamicNeedinesses = Array.isArray(needComprehension?.dynamicNeedinesses)
-    ? needComprehension.dynamicNeedinesses
+  const dynamicRelatives = Array.isArray(evaluationComprehension?.dynamicRelatives)
+    ? evaluationComprehension.dynamicRelatives
     : null;
-  const needSummary = needComprehension?.summary || String(needText || '');
-  const needTopics = Array.isArray(needComprehension?.needTopics)
-    ? needComprehension.needTopics
+  const evaluationSummary = evaluationComprehension?.summary || String(evaluationText || '');
+  const evaluationTopics = Array.isArray(evaluationComprehension?.evaluationTopics)
+    ? evaluationComprehension.evaluationTopics
     : [];
-  const acceptanceCriteria = Array.isArray(needComprehension?.acceptanceCriteria)
-    ? needComprehension.acceptanceCriteria
+  const acceptanceCriteria = Array.isArray(evaluationComprehension?.acceptanceCriteria)
+    ? evaluationComprehension.acceptanceCriteria
     : [];
 
-  const { measureReadNeedinesses, computeNeedFitVolume, planDynamicNeedinessesFromContext } =
-    await import('../../read-neediness-measurements');
+  const { measureReadRelatives, computeEvaluationFitVolume, planDynamicRelativesFromContext } =
+    await import('../../read-relative-measurements');
 
   for (const option of options) {
     if (!option || typeof option !== 'object') continue;
-    delete (option as any).needinessSignal;
+    delete (option as any).relativeSignal;
 
     const existingAbsolutes = Array.isArray((option as any).measurements?.absolutes)
       ? (option as any).measurements.absolutes
@@ -93,46 +93,46 @@ export default async function runReadImplementationAgentAssetPacksMeasurementsSy
         ? (option as any).commercialDescription
         : null;
 
-    // STAB-B2: when Need exists but Setup plan empty, ground dynamic plan here.
-    let planForOption = dynamicNeedinesses;
+    // STAB-B2: when Evaluation exists but Setup plan empty, ground dynamic plan here.
+    let planForOption = dynamicRelatives;
     if (
-      needSummary &&
+      evaluationSummary &&
       (!Array.isArray(planForOption) || planForOption.length === 0) &&
       (!Array.isArray(dynamicKinds) || dynamicKinds.length === 0)
     ) {
-      planForOption = planDynamicNeedinessesFromContext({
-        needText: needSummary,
-        needTopics,
+      planForOption = planDynamicRelativesFromContext({
+        evaluationText: evaluationSummary,
+        evaluationTopics,
         acceptanceCriteria,
         pathHints: coveredSourcePaths,
       });
     }
 
-    const needinesses = await measureReadNeedinesses({
+    const relatives = await measureReadRelatives({
       title: String((option as any)?.title ?? ''),
       summary: String((option as any)?.summary ?? ''),
       confidence: (option as any)?.confidence,
-      needSummary,
+      evaluationSummary,
       dynamicKinds,
-      dynamicNeedinesses: planForOption,
-      needTopics,
+      dynamicRelatives: planForOption,
+      evaluationTopics,
       acceptanceCriteria,
       patchSummary,
       coveredSourcePaths,
       commercialDescription,
       execution,
     });
-    const needFit = computeNeedFitVolume(needinesses);
+    const evaluationFit = computeEvaluationFitVolume(relatives);
 
     attachNestedAbsolutes(option as any, existingAbsolutes, {
-      withNeedinesses: needinesses,
+      withRelatives: relatives,
       materialIdentity,
       measureReport,
     });
-    (option as any).needFit = needFit;
+    (option as any).evaluationFit = evaluationFit;
   }
 
-  const summary = `Measured ${options.length} read DataPack(s) (absolutes + *-fit needinesses + needFit).`;
+  const summary = `Measured ${options.length} read DataPack(s) (absolutes + *-fit relatives + evaluationFit).`;
   storeCrossPhaseArtifact(execution, 'implementation', 'options', options);
   storeCrossPhaseArtifact(execution, 'implementation', 'assetPacks', options);
   storeCrossPhaseArtifact(execution, 'implementation', 'summary', summary);

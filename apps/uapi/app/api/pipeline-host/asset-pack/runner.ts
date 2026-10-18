@@ -32,9 +32,9 @@ export type AssetPackHostRequest = PipelineHostPreflightBody & {
   sourceGitUrl?: string;
   sourceRevision?: string;
   sourceDepth?: number;
-  readNeed?: unknown;
-  acceptedReadNeed?: unknown;
-  requireAcceptedReadNeed?: boolean;
+  readEvaluation?: unknown;
+  acceptedReadEvaluation?: unknown;
+  requireAcceptedReadEvaluation?: boolean;
   connectionId?: string | number | null;
   assumeRepositoryPresent?: boolean;
   installDependencies?: boolean;
@@ -90,8 +90,8 @@ export async function runAssetPackHostRoute(
       sourceCommit: body.sourceCommit,
       readId: body.readId,
       depositId: body.depositId,
-      readNeedId: readNeedId(body.acceptedReadNeed || body.readNeed),
-      requireAcceptedReadNeed: body.requireAcceptedReadNeed !== false,
+      readEvaluationId: readEvaluationId(body.acceptedReadEvaluation || body.readEvaluation),
+      requireAcceptedReadEvaluation: body.requireAcceptedReadEvaluation !== false,
     });
     emit('host-preflight', {
       runId: routeRunId,
@@ -126,7 +126,7 @@ export async function runAssetPackHostRoute(
         branch: body.sourceBranch!,
         commit: body.sourceCommit!,
       },
-      readNeed: body.acceptedReadNeed || body.readNeed,
+      readEvaluation: body.acceptedReadEvaluation || body.readEvaluation,
       source: body.assumeRepositoryPresent
         ? undefined
         : {
@@ -180,9 +180,9 @@ export async function runAssetPackHostRoute(
   }
 }
 
-function readNeedId(value: unknown): string | null {
+function readEvaluationId(value: unknown): string | null {
   const record = recordValue(value);
-  return typeof record?.needId === 'string' ? record.needId : null;
+  return typeof record?.evaluationId === 'string' ? record.evaluationId : null;
 }
 
 function recordValue(value: unknown): Record<string, unknown> | null {
@@ -492,7 +492,7 @@ function summarizeEvidence(evidence: unknown): Record<string, unknown> | null {
           schema: sourceSafePreview.schema,
           previewId: sourceSafePreview.previewId,
           assetPackId: sourceSafePreview.assetPackId,
-          need: sourceSafePreview.need,
+          evaluation: sourceSafePreview.evaluation,
           fit: sourceSafePreview.fit,
           roots: sourceSafePreview.roots,
           feeQuote: sourceSafePreview.feeQuote,
@@ -511,8 +511,8 @@ function summarizeEvidence(evidence: unknown): Record<string, unknown> | null {
           quoteId: assetPackQuoteReceipt.quoteId,
           deterministic: assetPackQuoteReceipt.deterministic,
           formula: assetPackQuoteReceipt.formula,
-          needId: assetPackQuoteReceipt.needId,
-          needMeasurementRoot: assetPackQuoteReceipt.needMeasurementRoot,
+          evaluationId: assetPackQuoteReceipt.evaluationId,
+          evaluationMeasurementRoot: assetPackQuoteReceipt.evaluationMeasurementRoot,
           admittedFitQuality: assetPackQuoteReceipt.admittedFitQuality,
           weightedRequestedVolume: assetPackQuoteReceipt.weightedRequestedVolume,
           weightedAdmittedVolume: assetPackQuoteReceipt.weightedAdmittedVolume,
@@ -703,7 +703,7 @@ function summarizeAssetPackPreviewBoundary(
           quoteId: quoteReceipt.quoteId,
           deterministic: quoteReceipt.deterministic,
           formula: quoteReceipt.formula,
-          needId: quoteReceipt.needId,
+          evaluationId: quoteReceipt.evaluationId,
           admittedFitQuality: quoteReceipt.admittedFitQuality,
           weightedRequestedVolume: quoteReceipt.weightedRequestedVolume,
           weightedAdmittedVolume: quoteReceipt.weightedAdmittedVolume,

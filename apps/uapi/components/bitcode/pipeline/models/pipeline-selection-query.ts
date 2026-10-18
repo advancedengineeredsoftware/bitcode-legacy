@@ -79,7 +79,7 @@ const PRODUCT_CONVERSATION_HANDOFF_POLICY_VALUES: ProductConversationHandoffPoli
 ];
 const PRODUCT_ENTERPRISE_READING_STAGE_VALUES: EnterpriseReadingStepId[] = [
   'request-read',
-  'review-synthesized-need',
+  'review-synthesized-evaluation',
   'request-fit',
   'review-synthesized-asset-pack',
   'buy-asset-pack-settle',

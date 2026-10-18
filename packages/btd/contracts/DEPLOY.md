@@ -157,7 +157,7 @@ Full `settleReadWithEth` needs an EIP-712 quote from the dual-maintain quote pat
 
 | Step | Live chain | Projected |
 | --- | --- | --- |
-| Needinesses → V + decay | off-chain | TS `@bitcode/btd/erc1155` |
+| Relatives → V + decay | off-chain | TS `@bitcode/btd/erc1155` |
 | Spot ETH/BTC/SOL | off-chain mock | `BITCODE_SPOT_PROVIDER=mock` |
 | Escrow mint + co-own | `settleReadWithEth` | settle pipeline |
 | Seller BTD/ETH slider | future on-chain | `POST /api/packs/payout/finalize` |

@@ -15,7 +15,7 @@ export type PacksPendingPayout = {
   btdVolume?: string;
   payAmount?: string;
   payAsset?: 'ETH' | 'BTC' | 'SOL';
-  needFitVolume?: number;
+  evaluationFitVolume?: number;
   sellerAccount?: string;
   buyerAccount?: string;
   patchSummary?: string | null;
@@ -147,7 +147,7 @@ export function ExchangeActivityDetailPayout({
     <ExchangeDetailSection title="Payout (seller review)">
       <div className="grid gap-4 text-sm">
         <p className="text-neutral-300 leading-6">
-          Need-fit BTD volume is escrowed. Choose how much of your compensation is{' '}
+          Evaluation-fit BTD volume is escrowed. Choose how much of your compensation is{' '}
           <strong className="text-neutral-100">BTD</strong> vs{' '}
           <strong className="text-neutral-100">{payAsset}</strong>. Treasury receives the
           inverse remainder of each asset.
@@ -167,10 +167,10 @@ export function ExchangeActivityDetailPayout({
             </dd>
           </div>
           <div>
-            <dt className="text-neutral-500">Need-fit</dt>
+            <dt className="text-neutral-500">Evaluation-fit</dt>
             <dd className="mt-1 font-mono text-neutral-100">
-              {typeof pendingPayout.needFitVolume === 'number'
-                ? pendingPayout.needFitVolume.toFixed(4)
+              {typeof pendingPayout.evaluationFitVolume === 'number'
+                ? pendingPayout.evaluationFitVolume.toFixed(4)
                 : '—'}
             </dd>
           </div>

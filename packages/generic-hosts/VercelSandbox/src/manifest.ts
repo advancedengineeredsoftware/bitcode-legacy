@@ -49,9 +49,9 @@ export const VERCEL_SANDBOX_HOST_CAPABILITIES: PipelineHostCapabilities = {
 };
 
 export const ASSET_PACK_HOST_STAGES: readonly PipelineHostStage[] = [
-  'need-synthesis',
-  'need-review',
-  'need-fit-search',
+  'evaluation-synthesis',
+  'evaluation-review',
+  'evaluation-fit-search',
   'deposit-search',
   'candidate-ranking',
   'read-comprehension',
@@ -107,8 +107,8 @@ export function buildAssetPackPipelineHostManifest(input: {
   sourceRevision: PipelineSourceRevision;
   sourceOverlay?: PipelineHostSourceOverlay;
   commandEnvironment?: Record<string, string | undefined>;
-  readNeed?: unknown;
-  requireAcceptedReadNeed?: boolean;
+  readEvaluation?: unknown;
+  requireAcceptedReadEvaluation?: boolean;
   synthesizeMode?: 'deposit' | 'read';
   depositSteering?: PipelineHostManifest['depositSteering'];
   createdAt?: string;
@@ -124,8 +124,8 @@ export function buildAssetPackPipelineHostManifest(input: {
     pipelineName: 'asset-pack-read-fit',
     hostMode: input.mode,
     read: input.read,
-    requireAcceptedReadNeed: input.requireAcceptedReadNeed ?? true,
-    readNeed: input.readNeed,
+    requireAcceptedReadEvaluation: input.requireAcceptedReadEvaluation ?? true,
+    readEvaluation: input.readEvaluation,
     deposit: input.deposit,
     sourceRevision: input.sourceRevision,
     sourceOverlay: input.sourceOverlay,

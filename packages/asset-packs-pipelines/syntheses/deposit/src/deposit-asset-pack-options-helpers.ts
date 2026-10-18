@@ -29,7 +29,7 @@ export const OPTION_BLUEPRINTS: Array<{
     kind: 'implementation-pattern',
     title: 'Implementation pattern AssetPack option',
     summary:
-      'A source-safe option describing reusable implementation patterns, integration constraints, and reviewable measurements for future Need-Fit use.',
+      'A source-safe option describing reusable implementation patterns, integration constraints, and reviewable measurements for future Evaluation-Fit use.',
     measurementBias: 0.66,
   },
   {

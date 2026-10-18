@@ -64,7 +64,7 @@ describe('MCP API tool registry contracts', () => {
         name: 'bitcode',
         provider: 'github',
       },
-      need: { prompt: 'too short' },
+      evaluation: { prompt: 'too short' },
     });
 
     expect(parsed.success).toBe(false);

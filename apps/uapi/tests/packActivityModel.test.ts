@@ -16,7 +16,7 @@ describe('pack-activity-model', () => {
     channel: 'system-surface',
     label: 'Executions',
     title: 'ReadFitsFindingSynthesis preview',
-    summary: 'Synthesized a source-safe AssetPack preview for accepted Need.',
+    summary: 'Synthesized a source-safe AssetPack preview for accepted Evaluation.',
     timestamp: '2026-05-28T10:00:00.000Z',
     state: 'completed',
     read: null,
@@ -101,7 +101,7 @@ describe('pack-activity-model', () => {
 
     expect(record).toMatchObject({
       id: 'pack-activity-1',
-      type: 'read-need-fit-preview',
+      type: 'read-evaluation-fit-preview',
       repository: 'octocat/Spoon-Knife',
       assetPackTitle: 'Auth rollback proof pack',
       settlementState: 'quote_ready',
@@ -109,7 +109,7 @@ describe('pack-activity-model', () => {
       deliveryState: 'locked_until_settlement',
     });
     expect(record.commodityState).toMatchObject({
-      assetPackState: 'need-fit-assetpack-quoted',
+      assetPackState: 'evaluation-fit-assetpack-quoted',
       btdState: 'btd-quote-bound',
       btcState: 'btc-quote-issued',
       disclosureBoundary: 'after-quote',
@@ -161,7 +161,7 @@ describe('pack-activity-model', () => {
 
     const result = queryPackActivityRecords(records, {
       search: 'rollback',
-      filters: { type: 'read-need-fit-preview' },
+      filters: { type: 'read-evaluation-fit-preview' },
       sort: { key: 'value', direction: 'desc' },
     });
 
@@ -171,7 +171,7 @@ describe('pack-activity-model', () => {
     const detail = buildPackActivityDetailProjection(result.records[0]);
     expect(detail.states.settlement).toBe('quote_ready');
     expect(detail.states.rights).toBeNull();
-    expect(detail.commodityState.assetPackState).toBe('need-fit-assetpack-quoted');
+    expect(detail.commodityState.assetPackState).toBe('evaluation-fit-assetpack-quoted');
     expect(detail.commodityState.sourceSafety.protectedSourceVisible).toBe(false);
     expect(detail.accounting?.statementRoot).toBe('btd-btc-accounting-root-abc');
     expect(detail.governance?.authorityRoot).toBe('organization-authority-root-abc');
@@ -357,15 +357,15 @@ describe('pack-activity-model', () => {
             },
             {
               kind: 'language-fit',
-              category: 'neediness',
+              category: 'relative',
               volume: 0.88,
               magnitude: null,
               unit: null,
               weight: 0.25,
             },
             {
-              kind: 'need-fit',
-              category: 'neediness',
+              kind: 'evaluation-fit',
+              category: 'relative',
               volume: 0.81,
               magnitude: null,
               unit: null,
@@ -399,8 +399,8 @@ describe('pack-activity-model', () => {
     expect(
       settleRecord.measurements.filter((m) => m.id.startsWith('absolute:')).length,
     ).toBeGreaterThanOrEqual(65);
-    expect(settleRecord.measurements.some((m) => m.id === 'neediness:language-fit')).toBe(true);
-    expect(settleRecord.measurements.some((m) => m.id === 'neediness:need-fit')).toBe(true);
+    expect(settleRecord.measurements.some((m) => m.id === 'relative:language-fit')).toBe(true);
+    expect(settleRecord.measurements.some((m) => m.id === 'relative:evaluation-fit')).toBe(true);
     expect(settleRecord.values.some((v) => v.id === 'settlement-price' && v.amount === 4500)).toBe(
       true,
     );
@@ -579,7 +579,7 @@ describe('pack-activity-model', () => {
     ).toEqual(['mine-deposit-sold']);
   });
 
-  it('supports Needs payout review filter from pendingPayout / payoutState', () => {
+  it('supports Evaluations payout review filter from pendingPayout / payoutState', () => {
     const pending = normalizePackActivityRecord({
       id: 'payout-pending',
       kind: 'execution',
@@ -678,7 +678,7 @@ describe('pack-activity-model', () => {
         ...baseRecord,
         id: 'pack-activity-unfit',
         title: 'No worthy fit found',
-        summary: 'Unfit Need signal preserved for future supply opportunity.',
+        summary: 'Unfit Evaluation signal preserved for future supply opportunity.',
         state: 'completed',
         payload: {
           type: 'pipeline:read-fits',
@@ -686,7 +686,7 @@ describe('pack-activity-model', () => {
           repositoryFullName: 'octocat/Spoon-Knife',
           fitResult: 'no_worthy_fit',
           repairState: 'open_reconciliation',
-          unfitNeedRoot: 'unfit-need-root',
+          unfitEvaluationRoot: 'unfit-evaluation-root',
           rawPrompt: 'raw prompt text',
         },
       }),
@@ -700,7 +700,7 @@ describe('pack-activity-model', () => {
       expect.arrayContaining(['market-demand', 'market-supply', 'economic-settlement']),
     );
     expect(market.signals.map((signal) => signal.kind)).toEqual(
-      expect.arrayContaining(['demand', 'supply', 'unfit-need', 'settlement', 'compensation']),
+      expect.arrayContaining(['demand', 'supply', 'unfit-evaluation', 'settlement', 'compensation']),
     );
     expect(market.facets.settlement.quote_ready).toBeGreaterThanOrEqual(1);
     expect(market.facets.compensation.allocation_ready).toBe(1);

@@ -106,7 +106,7 @@ const DEPOSIT_SDIVF_BOUNDARY_OUTPUT = {
         ],
         patchSummary: 'Encodes session and token refresh capability as deposit supply.',
       },
-      needinessSignal: {
+      relativeSignal: {
         demand: 0.7,
         saturation: 0.3,
         rationale: 'Auth knowledge is frequently read across the network.',

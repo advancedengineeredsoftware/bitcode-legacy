@@ -46,8 +46,8 @@ describe('ChatGPT App Reading action contracts', () => {
     expect(result).toMatchObject({
       result: {
         readRequestRoot: expect.stringMatching(/^chatgpt-readRequestRoot:[a-f0-9]{24}$/),
-        readinessState: 'admitted-for-read-need-comprehension',
-        nextAction: 'synthesize-read-need',
+        readinessState: 'admitted-for-read-evaluation-comprehension',
+        nextAction: 'synthesize-read-evaluation',
       },
       metadata: {
         actionContract: {
@@ -85,7 +85,7 @@ describe('ChatGPT App Reading action contracts', () => {
     expect(tool.validator.safeParse({ depositoryScope: 'all-deposits' }).success).toBe(false);
     expect(
       tool.validator.safeParse({
-        acceptedNeedRoot: 'accepted-need-root',
+        acceptedEvaluationRoot: 'accepted-evaluation-root',
         depositoryScope: 'all-deposits',
         minimumFitConfidence: 0.76,
         candidateLimit: 8,

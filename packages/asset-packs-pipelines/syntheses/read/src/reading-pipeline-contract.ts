@@ -1,8 +1,8 @@
-export const READ_NEED_COMPREHENSION_SYNTHESIS = 'ReadNeedComprehensionSynthesis' as const;
+export const READ_EVALUATION_COMPREHENSION_SYNTHESIS = 'ReadEvaluationComprehensionSynthesis' as const;
 export const READ_FITS_FINDING_SYNTHESIS = 'ReadFitsFindingSynthesis' as const;
 
 export type ReadingPipelineName =
-  | typeof READ_NEED_COMPREHENSION_SYNTHESIS
+  | typeof READ_EVALUATION_COMPREHENSION_SYNTHESIS
   | typeof READ_FITS_FINDING_SYNTHESIS;
 
 export type ReadingPipelinePtrrStepName = 'plan' | 'try' | 'retry' | 'refine';
@@ -123,22 +123,22 @@ export type ReadingPipelineTelemetryTraceEntry = {
   telemetry: string[];
 };
 
-const READ_NEED_PROMPT_TEMPLATE = [
-  'You are the ReadNeedComprehensionSynthesis Need-framing agent.',
+const READ_EVALUATION_PROMPT_TEMPLATE = [
+  'You are the ReadEvaluationComprehensionSynthesis Evaluation-framing agent.',
   'Synthesize exactly what the reader asked Bitcode to read, no more and no less.',
   'Return requirements, closure criteria, failure modes, target artifact kinds, source constraints, proof expectations, and pricing measurement inputs.',
-  'Do not search deposits, reveal protected source, quote final settlement, or claim a fit before user Need acceptance.',
+  'Do not search deposits, reveal protected source, quote final settlement, or claim a fit before user Evaluation acceptance.',
 ].join('\n');
 
 const READ_FITS_FINDING_PROMPT_TEMPLATE = [
   'You are the ReadFitsFindingSynthesis AssetPack synthesis agent.',
-  'Use only the accepted Read-Need, many-candidate Depository search evidence, selected fit deposit asset ids, source revision, and source-safe proof/readback roots.',
+  'Use only the accepted Read-Evaluation, many-candidate Depository search evidence, selected fit deposit asset ids, source revision, and source-safe proof/readback roots.',
   'Return worthy_fit, no_worthy_fit, or blocked_readiness with query synthesis, search breadth, ranking, selected-fit provenance, synthesis, validation, preview, quote, and settlement-readiness evidence.',
   'Before settlement expose only AssetPack measurements, fit provenance, quote, and source-safe preview metadata; do not expose unpaid AssetPack source.',
   'Do not claim BTC finality, BTD rights transfer, ledger settlement, or source-bearing delivery without readback and delivery unlock.',
 ].join('\n');
 
-const readNeedTelemetry = (suffix: string) => `${READ_NEED_COMPREHENSION_SYNTHESIS}.telemetry.${suffix}`;
+const readEvaluationTelemetry = (suffix: string) => `${READ_EVALUATION_COMPREHENSION_SYNTHESIS}.telemetry.${suffix}`;
 const readFitsFindingTelemetry = (suffix: string) => `${READ_FITS_FINDING_SYNTHESIS}.telemetry.${suffix}`;
 
 // Canonical PTRR runtime order: Plan → Try → Retry → Refine.
@@ -264,46 +264,46 @@ function ptrrAgent(config: PTRRAgentConfig): ReadingPipelineAgentContract {
   };
 }
 
-export const READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT: ReadingPipelineContract = {
-  pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
+export const READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT: ReadingPipelineContract = {
+  pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
   purpose:
-    'Turn an enterprise Read Request into a reviewed, measured, source-constrained Need before ReadFitsFindingSynthesis can run.',
-  uxStepIds: ['request-read', 'review-synthesized-need'],
+    'Turn an enterprise Read Request into a reviewed, measured, source-constrained Evaluation before ReadFitsFindingSynthesis can run.',
+  uxStepIds: ['request-read', 'review-synthesized-evaluation'],
   phases: [
     {
-      phaseId: 'ReadNeedComprehensionSynthesis.request',
+      phaseId: 'ReadEvaluationComprehensionSynthesis.request',
       stores: ['read/request.raw', 'read/source-revision.input'],
       agents: [
         ptrrAgent({
-          pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
+          pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
           phaseKey: 'request',
           agentKey: 'normalize',
-          objectiveId: 'ReadNeedComprehensionSynthesis.request.normalize.objective',
+          objectiveId: 'ReadEvaluationComprehensionSynthesis.request.normalize.objective',
           kind: 'deterministic',
-          returnType: 'ReadNeedSourceInput',
+          returnType: 'ReadEvaluationSourceInput',
           inputType: 'ProductReadRequest',
           stores: ['read/request.normalized', 'read/source-revision.normalized'],
           telemetry: [
-            readNeedTelemetry('prompt-input'),
-            readNeedTelemetry('source-revision'),
-            readNeedTelemetry('target-artifact-kinds'),
+            readEvaluationTelemetry('prompt-input'),
+            readEvaluationTelemetry('source-revision'),
+            readEvaluationTelemetry('target-artifact-kinds'),
           ],
         }),
       ],
     },
     {
-      phaseId: 'ReadNeedComprehensionSynthesis.comprehend',
-      stores: ['read/need.prompt-template', 'read/need.interpolated-context'],
+      phaseId: 'ReadEvaluationComprehensionSynthesis.comprehend',
+      stores: ['read/evaluation.prompt-template', 'read/evaluation.interpolated-context'],
       agents: [
         ptrrAgent({
-          pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
+          pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
           phaseKey: 'comprehend',
-          agentKey: 'need-synthesizer',
-          objectiveId: 'ReadNeedComprehensionSynthesis.comprehend.need-synthesizer.objective',
+          agentKey: 'evaluation-synthesizer',
+          objectiveId: 'ReadEvaluationComprehensionSynthesis.comprehend.evaluation-synthesizer.objective',
           kind: 'model-structured',
           prompt: {
-            templateId: 'ReadNeedComprehensionSynthesis.prompt.need-synthesis',
-            template: READ_NEED_PROMPT_TEMPLATE,
+            templateId: 'ReadEvaluationComprehensionSynthesis.prompt.evaluation-synthesis',
+            template: READ_EVALUATION_PROMPT_TEMPLATE,
             interpolatedContextKeys: [
               'read.prompt',
               'sourceConstraints',
@@ -312,61 +312,61 @@ export const READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT: ReadingPipelineContract
               'feedbackHistory',
             ],
           },
-          returnType: 'ReadNeed',
-          inputType: 'ReadNeedSourceInput',
-          stores: ['read/need.current', 'read/need.measurementRoot', 'read/need.reviewState'],
+          returnType: 'ReadEvaluation',
+          inputType: 'ReadEvaluationSourceInput',
+          stores: ['read/evaluation.current', 'read/evaluation.measurementRoot', 'read/evaluation.reviewState'],
           telemetry: [
-            readNeedTelemetry('prompt-template'),
-            readNeedTelemetry('interpolated-prompt'),
-            readNeedTelemetry('raw-model-response'),
-            readNeedTelemetry('parsed-typed-output'),
-            readNeedTelemetry('schema-name'),
+            readEvaluationTelemetry('prompt-template'),
+            readEvaluationTelemetry('interpolated-prompt'),
+            readEvaluationTelemetry('raw-model-response'),
+            readEvaluationTelemetry('parsed-typed-output'),
+            readEvaluationTelemetry('schema-name'),
           ],
         }),
       ],
     },
     {
-      phaseId: 'ReadNeedComprehensionSynthesis.measure',
-      stores: ['read/need.measurement-vector', 'read/need.pricing-inputs'],
+      phaseId: 'ReadEvaluationComprehensionSynthesis.measure',
+      stores: ['read/evaluation.measurement-vector', 'read/evaluation.pricing-inputs'],
       agents: [
         ptrrAgent({
-          pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
+          pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
           phaseKey: 'measure',
-          agentKey: 'need-measurement',
-          objectiveId: 'ReadNeedComprehensionSynthesis.measure.need-measurement.objective',
+          agentKey: 'evaluation-measurement',
+          objectiveId: 'ReadEvaluationComprehensionSynthesis.measure.evaluation-measurement.objective',
           kind: 'deterministic',
-          returnType: 'ReadNeedPricingMeasurementInputs',
-          inputType: 'ReadNeed',
-          stores: ['read/need.measurementVector', 'read/need.weightedRequestedVolume'],
+          returnType: 'ReadEvaluationPricingMeasurementInputs',
+          inputType: 'ReadEvaluation',
+          stores: ['read/evaluation.measurementVector', 'read/evaluation.weightedRequestedVolume'],
           telemetry: [
-            readNeedTelemetry('measurement-vector'),
-            readNeedTelemetry('weighted-requested-volume'),
-            readNeedTelemetry('measurement-root'),
+            readEvaluationTelemetry('measurement-vector'),
+            readEvaluationTelemetry('weighted-requested-volume'),
+            readEvaluationTelemetry('measurement-root'),
           ],
         }),
       ],
     },
     {
-      phaseId: 'ReadNeedComprehensionSynthesis.review',
-      stores: ['read/need.feedback-history', 'read/need.acceptance-root', 'read/need.rejection-root'],
+      phaseId: 'ReadEvaluationComprehensionSynthesis.review',
+      stores: ['read/evaluation.feedback-history', 'read/evaluation.acceptance-root', 'read/evaluation.rejection-root'],
       agents: [
         ptrrAgent({
-          pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
+          pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
           phaseKey: 'review',
           agentKey: 'operator-review',
-          objectiveId: 'ReadNeedComprehensionSynthesis.review.operator-review.objective',
+          objectiveId: 'ReadEvaluationComprehensionSynthesis.review.operator-review.objective',
           kind: 'review',
-          returnType: 'ReadNeedReviewState',
-          inputType: 'ReadNeed',
-          outputType: 'AcceptedReadNeed | RejectedReadNeed | ResynthesisRequestedReadNeed',
-          stores: ['read/need.accepted', 'read/need.rejected', 'read/need.feedbackHistory', 'read/need.acceptanceRoot', 'read/need.rejectionRoot'],
+          returnType: 'ReadEvaluationReviewState',
+          inputType: 'ReadEvaluation',
+          outputType: 'AcceptedReadEvaluation | RejectedReadEvaluation | ResynthesisRequestedReadEvaluation',
+          stores: ['read/evaluation.accepted', 'read/evaluation.rejected', 'read/evaluation.feedbackHistory', 'read/evaluation.acceptanceRoot', 'read/evaluation.rejectionRoot'],
           telemetry: [
-            readNeedTelemetry('review-state'),
-            readNeedTelemetry('accepted-at'),
-            readNeedTelemetry('acceptance-root'),
-            readNeedTelemetry('rejected-at'),
-            readNeedTelemetry('rejection-root'),
-            readNeedTelemetry('feedback-history'),
+            readEvaluationTelemetry('review-state'),
+            readEvaluationTelemetry('accepted-at'),
+            readEvaluationTelemetry('acceptance-root'),
+            readEvaluationTelemetry('rejected-at'),
+            readEvaluationTelemetry('rejection-root'),
+            readEvaluationTelemetry('feedback-history'),
           ],
         }),
       ],
@@ -377,24 +377,24 @@ export const READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT: ReadingPipelineContract
 export const READ_FITS_FINDING_SYNTHESIS_CONTRACT: ReadingPipelineContract = {
   pipelineName: READ_FITS_FINDING_SYNTHESIS,
   purpose:
-    'Search the Bitcode Depository with an accepted Need, synthesize a source-safe AssetPack preview, and prepare settlement-bound delivery evidence.',
+    'Search the Bitcode Depository with an accepted Evaluation, synthesize a source-safe AssetPack preview, and prepare settlement-bound delivery evidence.',
   uxStepIds: ['request-fit', 'review-synthesized-asset-pack', 'buy-asset-pack-settle'],
   phases: [
     {
       phaseId: 'ReadFitsFindingSynthesis.admit',
-      stores: ['read/need.accepted', 'fit/admission'],
+      stores: ['read/evaluation.accepted', 'fit/admission'],
       agents: [
         ptrrAgent({
           pipelineName: READ_FITS_FINDING_SYNTHESIS,
           phaseKey: 'admit',
-          agentKey: 'accepted-need-gate',
-          objectiveId: 'ReadFitsFindingSynthesis.admit.accepted-need-gate.objective',
+          agentKey: 'accepted-evaluation-gate',
+          objectiveId: 'ReadFitsFindingSynthesis.admit.accepted-evaluation-gate.objective',
           kind: 'deterministic',
           returnType: 'ReadFitsFindingAdmission',
-          inputType: 'AcceptedReadNeed',
+          inputType: 'AcceptedReadEvaluation',
           stores: ['fit/admission.result'],
           telemetry: [
-            readFitsFindingTelemetry('need-id'),
+            readFitsFindingTelemetry('evaluation-id'),
             readFitsFindingTelemetry('measurement-root'),
             readFitsFindingTelemetry('blockers'),
             readFitsFindingTelemetry('admitted'),
@@ -415,11 +415,11 @@ export const READ_FITS_FINDING_SYNTHESIS_CONTRACT: ReadingPipelineContract = {
           prompt: {
             templateId: 'ReadFitsFindingSynthesis.prompt.setup-plan',
             template:
-              'Produce one concise source-bound plan for the accepted Need to Finding Fits run: many-candidate Depository search, ranking, selected-fit provenance, source-safe AssetPack preview, quote, and settlement readiness. Do not claim settlement, delivery, or finality.',
-            interpolatedContextKeys: ['acceptedReadNeed', 'read', 'repository', 'sourceRevision', 'fitResult', 'searchObjectives'],
+              'Produce one concise source-bound plan for the accepted Evaluation to Finding Fits run: many-candidate Depository search, ranking, selected-fit provenance, source-safe AssetPack preview, quote, and settlement readiness. Do not claim settlement, delivery, or finality.',
+            interpolatedContextKeys: ['acceptedReadEvaluation', 'read', 'repository', 'sourceRevision', 'fitResult', 'searchObjectives'],
           },
           returnType: 'PlanSchema',
-          inputType: 'AcceptedReadNeed + SourceRevision',
+          inputType: 'AcceptedReadEvaluation + SourceRevision',
           stores: ['setup.plan', 'setup/plan.result'],
           telemetry: [
             readFitsFindingTelemetry('prompt-template'),
@@ -437,11 +437,11 @@ export const READ_FITS_FINDING_SYNTHESIS_CONTRACT: ReadingPipelineContract = {
           prompt: {
             templateId: 'ReadFitsFindingSynthesis.prompt.read-comprehension',
             template:
-              'Translate the accepted Need and expressed Read into one auditable model for Finding Fits search, ranking, and AssetPack synthesis context. Return source-bound evidence only.',
-            interpolatedContextKeys: ['acceptedReadNeed', 'read', 'definitionOfRead', 'repository', 'sourceRevision', 'sourceConstraints', 'deposit', 'fitResult'],
+              'Translate the accepted Evaluation and expressed Read into one auditable model for Finding Fits search, ranking, and AssetPack synthesis context. Return source-bound evidence only.',
+            interpolatedContextKeys: ['acceptedReadEvaluation', 'read', 'definitionOfRead', 'repository', 'sourceRevision', 'sourceConstraints', 'deposit', 'fitResult'],
           },
           returnType: 'BoundedReadComprehensionSchema',
-          inputType: 'AcceptedReadNeed + DepositorySearchBaseline',
+          inputType: 'AcceptedReadEvaluation + DepositorySearchBaseline',
           stores: ['setup/read-comprehension.model', 'setup/read-comprehension.riskAdmissionInput'],
           telemetry: [
             readFitsFindingTelemetry('prompt-template'),
@@ -475,7 +475,7 @@ export const READ_FITS_FINDING_SYNTHESIS_CONTRACT: ReadingPipelineContract = {
             },
           ],
           returnType: 'DepositoryFitsResult',
-          inputType: 'AcceptedReadNeed',
+          inputType: 'AcceptedReadEvaluation',
           stores: [
             'depository/search.result',
             'depository/search.queryRoot',
@@ -507,7 +507,7 @@ export const READ_FITS_FINDING_SYNTHESIS_CONTRACT: ReadingPipelineContract = {
             templateId: 'ReadFitsFindingSynthesis.prompt.asset-pack-synthesis',
             template: READ_FITS_FINDING_PROMPT_TEMPLATE,
             interpolatedContextKeys: [
-              'acceptedReadNeed',
+              'acceptedReadEvaluation',
               'depositorySearchResult',
               'fitDepositAssetIds',
               'fitDeposits',
@@ -518,7 +518,7 @@ export const READ_FITS_FINDING_SYNTHESIS_CONTRACT: ReadingPipelineContract = {
             ],
           },
           returnType: 'AssetPackSynthesisOutput',
-          inputType: 'AcceptedReadNeed + DepositoryFitsResult',
+          inputType: 'AcceptedReadEvaluation + DepositoryFitsResult',
           stores: ['implementation.assetPack', 'implementation.writtenAssets'],
           telemetry: [
             readFitsFindingTelemetry('prompt-template'),
@@ -543,9 +543,9 @@ export const READ_FITS_FINDING_SYNTHESIS_CONTRACT: ReadingPipelineContract = {
           prompt: {
             templateId: 'ReadFitsFindingSynthesis.prompt.fit-quality-validation',
             template:
-              'Validate the source-bound AssetPack synthesized from qualifying fit deposits against the accepted Need, many-candidate search proof, selected-fit provenance, disclosure policy, quote posture, and finish-readiness gates.',
+              'Validate the source-bound AssetPack synthesized from qualifying fit deposits against the accepted Evaluation, many-candidate search proof, selected-fit provenance, disclosure policy, quote posture, and finish-readiness gates.',
             interpolatedContextKeys: [
-              'acceptedReadNeed',
+              'acceptedReadEvaluation',
               'depositorySearchResult',
               'assetPackSynthesisOutput',
               'sourceSafePreview',
@@ -584,7 +584,7 @@ export const READ_FITS_FINDING_SYNTHESIS_CONTRACT: ReadingPipelineContract = {
           objectiveId: 'ReadFitsFindingSynthesis.preview.source-safe-preview.objective',
           kind: 'deterministic',
           returnType: 'AssetPackSourceSafePreview',
-          inputType: 'ReadNeed + DepositoryFitResultEvidence',
+          inputType: 'ReadEvaluation + DepositoryFitResultEvidence',
           stores: ['asset-pack/preview.sourceSafe', 'asset-pack/preview.feeQuote'],
           telemetry: [
             readFitsFindingTelemetry('fee-quote'),
@@ -644,7 +644,7 @@ export const READ_FITS_FINDING_SYNTHESIS_CONTRACT: ReadingPipelineContract = {
 };
 
 export const READING_PIPELINE_CONTRACTS = [
-  READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT,
+  READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT,
   READ_FITS_FINDING_SYNTHESIS_CONTRACT,
 ] as const;
 

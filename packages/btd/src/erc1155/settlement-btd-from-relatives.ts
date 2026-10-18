@@ -1,15 +1,15 @@
 /**
- * Raw BTD volume from **needinesses only** (product law).
+ * Raw BTD volume from **relatives only** (product law).
  *
- * Absolutes never drive BTD volume. Needinesses fits score → rawV base units.
+ * Absolutes never drive BTD volume. Relatives fits score → rawV base units.
  * Apply `applyBtdSupplyDecay` for scarcity, then mint on settle to depositor
  * BTD payout slices only. Buyers pay ETH|BTC|SOL at spot — never BTD.
  *
  * Formula:
- *   weightedNeedinessesSum = Σ (w_i * clamp01(v_i))
+ *   weightedRelativesSum = Σ (w_i * clamp01(v_i))
  *   weightSum              = Σ w_i
- *   needFitVolume          = weightSum > 0 ? weightedNeedinessesSum / weightSum : 0
- *   amountBaseUnits (rawV) = floor(needFitVolume * 10^BTD_DECIMALS)
+ *   evaluationFitVolume          = weightSum > 0 ? weightedRelativesSum / weightSum : 0
+ *   amountBaseUnits (rawV) = floor(evaluationFitVolume * 10^BTD_DECIMALS)
  *
  * All inputs are strongly typed. Boundary adapters that accept wire JSON live
  * in the settle API layer — this module never takes `unknown`.
@@ -19,21 +19,21 @@ import { createHash } from 'crypto';
 import { BTD_DECIMALS_SCALE } from './types';
 
 /**
- * Static needinesses catalogue weights (mirror of
- * ASSET_PACK_NEEDINESSES_CATALOG). Kept local so settlement math does not
+ * Static relatives catalogue weights (mirror of
+ * ASSET_PACK_RELATIVES_CATALOG). Kept local so settlement math does not
  * pull agent-factory graphs into `@bitcode/btd` consumers/tests.
  */
-const NEEDINESSES_CATALOGUE_WEIGHTS: Readonly<Record<string, number>> = {
+const RELATIVES_CATALOGUE_WEIGHTS: Readonly<Record<string, number>> = {
   'language-fit': 0.35,
   'domain-fit': 0.35,
   'interface-fit': 0.3,
 };
 
 /**
- * Canonical needinesses reading for settlement BTD mint.
+ * Canonical relatives reading for settlement BTD mint.
  * `measurementKind` must end with `-fit` (product law); validated at compute time.
  */
-export interface NeedinessReadingForSettlement {
+export interface RelativeReadingForSettlement {
   measurementKind: string;
   /** Normalized volume in [0, 1]. */
   volume: number;
@@ -41,23 +41,23 @@ export interface NeedinessReadingForSettlement {
   weight?: number;
   magnitude?: number;
   unit?: string | null;
-  category?: 'neediness';
+  category?: 'relative';
 }
 
 /**
  * Wire-compat alias used by some option cards that emit `kind` instead of
  * `measurementKind`. Both forms are fully typed — not `unknown`.
  */
-export interface NeedinessReadingKindAlias {
+export interface RelativeReadingKindAlias {
   kind: string;
   volume: number;
   weight?: number;
   magnitude?: number;
   unit?: string | null;
-  category?: 'neediness';
+  category?: 'relative';
 }
 
-export type NeedinessRowInput = NeedinessReadingForSettlement | NeedinessReadingKindAlias;
+export type RelativeRowInput = RelativeReadingForSettlement | RelativeReadingKindAlias;
 
 export interface AbsoluteReadingForSettlement {
   measurementKind?: string;
@@ -72,7 +72,7 @@ export interface AbsoluteReadingForSettlement {
 /** Nested measurements bag on a settle-bound AssetPack option. */
 export interface AssetPackMeasurementsForSettlement {
   absolutes?: readonly AbsoluteReadingForSettlement[];
-  needinesses: readonly NeedinessRowInput[];
+  relatives: readonly RelativeRowInput[];
 }
 
 /** Option-shaped carrier that only exposes measurements. */
@@ -80,18 +80,18 @@ export interface MeasurementsCarrierForSettlement {
   measurements: AssetPackMeasurementsForSettlement;
 }
 
-/** Needinesses-only bag (no absolutes). */
-export interface NeedinessesBagForSettlement {
-  needinesses: readonly NeedinessRowInput[];
+/** Relatives-only bag (no absolutes). */
+export interface RelativesBagForSettlement {
+  relatives: readonly RelativeRowInput[];
 }
 
 /**
- * Every accepted shape for needinesses-derived BTD mint input.
+ * Every accepted shape for relatives-derived BTD mint input.
  * Exhaustive union — no `unknown`.
  */
-export type SettlementBtdNeedinessesSource =
-  | readonly NeedinessRowInput[]
-  | NeedinessesBagForSettlement
+export type SettlementBtdRelativesSource =
+  | readonly RelativeRowInput[]
+  | RelativesBagForSettlement
   | AssetPackMeasurementsForSettlement
   | MeasurementsCarrierForSettlement;
 
@@ -102,16 +102,16 @@ export interface SettlementBtdContributionRow {
   contribution: number;
 }
 
-export interface SettlementBtdFromNeedinessesResult {
-  schema: 'bitcode.settle.btd-from-needinesses';
-  needinessesCount: number;
-  weightedNeedinessesSum: number;
+export interface SettlementBtdFromRelativesResult {
+  schema: 'bitcode.settle.btd-from-relatives';
+  relativesCount: number;
+  weightedRelativesSum: number;
   weightSum: number;
-  /** Normalized need-fit scalar in [0, 1]. */
-  needFitVolume: number;
+  /** Normalized evaluation-fit scalar in [0, 1]. */
+  evaluationFitVolume: number;
   /** Fungible BTD base units to mint (18 decimals). */
   amountBaseUnits: bigint;
-  /** Human-readable whole-token equivalent (needFitVolume for unit-scale mint). */
+  /** Human-readable whole-token equivalent (evaluationFitVolume for unit-scale mint). */
   amountBtd: number;
   proofRoot: string;
   rows: SettlementBtdContributionRow[];
@@ -126,36 +126,36 @@ function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
 
-function isNeedinessReadingKindAlias(row: NeedinessRowInput): row is NeedinessReadingKindAlias {
-  return 'kind' in row && typeof (row as NeedinessReadingKindAlias).kind === 'string';
+function isRelativeReadingKindAlias(row: RelativeRowInput): row is RelativeReadingKindAlias {
+  return 'kind' in row && typeof (row as RelativeReadingKindAlias).kind === 'string';
 }
 
-function isNeedinessReadingForSettlement(
-  row: NeedinessRowInput,
-): row is NeedinessReadingForSettlement {
+function isRelativeReadingForSettlement(
+  row: RelativeRowInput,
+): row is RelativeReadingForSettlement {
   return (
     'measurementKind' in row &&
-    typeof (row as NeedinessReadingForSettlement).measurementKind === 'string'
+    typeof (row as RelativeReadingForSettlement).measurementKind === 'string'
   );
 }
 
-function rowKind(row: NeedinessRowInput): string | null {
-  if (isNeedinessReadingForSettlement(row) && row.measurementKind.trim()) {
+function rowKind(row: RelativeRowInput): string | null {
+  if (isRelativeReadingForSettlement(row) && row.measurementKind.trim()) {
     return row.measurementKind.trim();
   }
-  if (isNeedinessReadingKindAlias(row) && row.kind.trim()) {
+  if (isRelativeReadingKindAlias(row) && row.kind.trim()) {
     return row.kind.trim();
   }
   return null;
 }
 
 function catalogueWeight(kind: string): number | null {
-  const weight = NEEDINESSES_CATALOGUE_WEIGHTS[kind];
+  const weight = RELATIVES_CATALOGUE_WEIGHTS[kind];
   return typeof weight === 'number' ? weight : null;
 }
 
 function isMeasurementsCarrier(
-  source: SettlementBtdNeedinessesSource,
+  source: SettlementBtdRelativesSource,
 ): source is MeasurementsCarrierForSettlement {
   return (
     !Array.isArray(source) &&
@@ -165,68 +165,68 @@ function isMeasurementsCarrier(
   );
 }
 
-function isNeedinessesCarrier(
-  source: SettlementBtdNeedinessesSource,
-): source is NeedinessesBagForSettlement | AssetPackMeasurementsForSettlement {
+function isRelativesCarrier(
+  source: SettlementBtdRelativesSource,
+): source is RelativesBagForSettlement | AssetPackMeasurementsForSettlement {
   return (
     !Array.isArray(source) &&
-    'needinesses' in source &&
+    'relatives' in source &&
     Array.isArray(
-      (source as NeedinessesBagForSettlement | AssetPackMeasurementsForSettlement).needinesses,
+      (source as RelativesBagForSettlement | AssetPackMeasurementsForSettlement).relatives,
     )
   );
 }
 
 /**
- * Extract needinesses rows from a strongly typed settlement source.
+ * Extract relatives rows from a strongly typed settlement source.
  */
-export function extractNeedinessesForSettlement(
-  source: SettlementBtdNeedinessesSource,
-): NeedinessRowInput[] {
+export function extractRelativesForSettlement(
+  source: SettlementBtdRelativesSource,
+): RelativeRowInput[] {
   // Array.isArray does not always eliminate `readonly T[]` from the union for
   // exhaustiveness (`never`) checks — handle each admitted shape and fail closed.
   if (Array.isArray(source)) {
     return [...source];
   }
   if (isMeasurementsCarrier(source)) {
-    return [...(source.measurements.needinesses ?? [])];
+    return [...(source.measurements.relatives ?? [])];
   }
-  if (isNeedinessesCarrier(source)) {
-    return [...source.needinesses];
+  if (isRelativesCarrier(source)) {
+    return [...source.relatives];
   }
   return [];
 }
 
 /**
- * Convert needFit ∈ [0,1] to 18-decimal base units without float precision loss
+ * Convert evaluationFit ∈ [0,1] to 18-decimal base units without float precision loss
  * beyond 1e9 micro-resolution of the unit interval.
  */
-export function needFitVolumeToBaseUnits(needFitVolume: number): bigint {
-  const v = clamp01(needFitVolume);
+export function evaluationFitVolumeToBaseUnits(evaluationFitVolume: number): bigint {
+  const v = clamp01(evaluationFitVolume);
   if (v <= 0) return 0n;
   const micro = BigInt(Math.round(v * 1e9));
   return (micro * BTD_DECIMALS_SCALE) / 1_000_000_000n;
 }
 
 /**
- * Compute fungible BTD mint amount from needinesses measurements only.
- * Fail-closed: empty / all-invalid needinesses → amount 0 (caller must block mint).
+ * Compute fungible BTD mint amount from relatives measurements only.
+ * Fail-closed: empty / all-invalid relatives → amount 0 (caller must block mint).
  */
-export function computeSettlementBtdFromNeedinesses(
-  needinessesInput: SettlementBtdNeedinessesSource,
+export function computeSettlementBtdFromRelatives(
+  relativesInput: SettlementBtdRelativesSource,
   options?: SettlementBtdComputeOptions,
-): SettlementBtdFromNeedinessesResult {
-  const needinesses = extractNeedinessesForSettlement(needinessesInput);
+): SettlementBtdFromRelativesResult {
+  const relatives = extractRelativesForSettlement(relativesInput);
   const rows: SettlementBtdContributionRow[] = [];
-  let weightedNeedinessesSum = 0;
+  let weightedRelativesSum = 0;
   let weightSum = 0;
 
-  for (const row of needinesses) {
+  for (const row of relatives) {
     const kind = rowKind(row);
     if (!kind) continue;
-    // Exclude composite need-fit if present as a stored row (derived only).
-    if (kind === 'need-fit') continue;
-    // All needinesses kinds must end with -fit (product law).
+    // Exclude composite evaluation-fit if present as a stored row (derived only).
+    if (kind === 'evaluation-fit') continue;
+    // All relatives kinds must end with -fit (product law).
     if (!kind.endsWith('-fit')) continue;
     const volume = clamp01(row.volume);
     if (!Number.isFinite(volume)) continue;
@@ -235,21 +235,21 @@ export function computeSettlementBtdFromNeedinesses(
         ? row.weight
         : catalogueWeight(kind) ?? 1;
     const contribution = weight * volume;
-    weightedNeedinessesSum += contribution;
+    weightedRelativesSum += contribution;
     weightSum += weight;
     rows.push({ measurementKind: kind, volume, weight, contribution });
   }
 
-  const needFitVolume = weightSum > 0 ? clamp01(weightedNeedinessesSum / weightSum) : 0;
-  const amountBaseUnits = needFitVolumeToBaseUnits(needFitVolume);
+  const evaluationFitVolume = weightSum > 0 ? clamp01(weightedRelativesSum / weightSum) : 0;
+  const amountBaseUnits = evaluationFitVolumeToBaseUnits(evaluationFitVolume);
 
   const proofRoot = createHash('sha256')
     .update(
       JSON.stringify({
-        schema: 'bitcode.settle.btd-from-needinesses',
+        schema: 'bitcode.settle.btd-from-relatives',
         assetPackKey: options?.assetPackKey ?? null,
-        needFitVolume,
-        weightedNeedinessesSum,
+        evaluationFitVolume,
+        weightedRelativesSum,
         weightSum,
         amountBaseUnits: amountBaseUnits.toString(),
         rows: rows.map((r) => r.measurementKind),
@@ -258,28 +258,28 @@ export function computeSettlementBtdFromNeedinesses(
     .digest('hex');
 
   return {
-    schema: 'bitcode.settle.btd-from-needinesses',
-    needinessesCount: rows.length,
-    weightedNeedinessesSum,
+    schema: 'bitcode.settle.btd-from-relatives',
+    relativesCount: rows.length,
+    weightedRelativesSum,
     weightSum,
-    needFitVolume,
+    evaluationFitVolume,
     amountBaseUnits,
-    amountBtd: needFitVolume,
-    proofRoot: `btd-needinesses:${proofRoot}`,
+    amountBtd: evaluationFitVolume,
+    proofRoot: `btd-relatives:${proofRoot}`,
     rows,
   };
 }
 
 export function assertPositiveSettlementBtd(
-  result: SettlementBtdFromNeedinessesResult,
-): SettlementBtdFromNeedinessesResult {
-  if (result.needinessesCount === 0) {
+  result: SettlementBtdFromRelativesResult,
+): SettlementBtdFromRelativesResult {
+  if (result.relativesCount === 0) {
     throw new Error(
-      'Settlement BTD mint requires at least one valid needinesses *-fit measurement (absolutes never mint BTD).',
+      'Settlement BTD mint requires at least one valid relatives *-fit measurement (absolutes never mint BTD).',
     );
   }
   if (result.amountBaseUnits <= 0n) {
-    throw new Error('Settlement BTD mint amount must be positive after needinesses weighting.');
+    throw new Error('Settlement BTD mint amount must be positive after relatives weighting.');
   }
   return result;
 }

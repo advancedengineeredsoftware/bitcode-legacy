@@ -5,7 +5,7 @@
  * Sequence: patch-plan → patchfile → measurements → THIS
  *
  * Domain base host only — never imports the deposit product package.
- * Product delta: Need as demandContext for buyer framing.
+ * Product delta: Evaluation as demandContext for buyer framing.
  */
 
 function findValue(execution: any, namespace: string, key: string): any {
@@ -18,17 +18,17 @@ export default async function runReadImplementationAgentAssetPacksCommercialNl(
   input: any,
   execution: any,
 ) {
-  const needText =
-    findValue(execution, 'read', 'need') ??
-    findValue(execution, 'implementation', 'need') ??
-    input?.need ??
+  const evaluationText =
+    findValue(execution, 'read', 'evaluation') ??
+    findValue(execution, 'implementation', 'evaluation') ??
+    input?.evaluation ??
     '';
   try {
     execution?.store?.('implementation', 'productLens', 'read');
-    if (needText) {
-      execution?.store?.('implementation', 'need', needText);
+    if (evaluationText) {
+      execution?.store?.('implementation', 'evaluation', evaluationText);
       execution?.store?.('deposit', 'demandContext', [
-        { topic: 'reader-need', summary: String(needText) },
+        { topic: 'reader-evaluation', summary: String(evaluationText) },
       ]);
     }
   } catch {
@@ -41,8 +41,8 @@ export default async function runReadImplementationAgentAssetPacksCommercialNl(
   return runBaseCommercialNl(
     {
       ...input,
-      need: needText,
-      demandContext: [{ topic: 'reader-need', summary: String(needText) }],
+      evaluation: evaluationText,
+      demandContext: [{ topic: 'reader-evaluation', summary: String(evaluationText) }],
     },
     execution,
   );

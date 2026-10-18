@@ -178,11 +178,11 @@ export function getAssetPackPipelineToolsForAgent(agentName: string): Tool[] {
       depositDepositoryAssetPackSearchTool,
       lexicalDepositorySearchTool,
     ],
-    'ReadDepositorySearchForNeedFitsAgent': [
+    'ReadDepositorySearchForEvaluationFitsAgent': [
       depositDepositoryAssetPackSearchTool,
       lexicalDepositorySearchTool,
     ],
-    'discovery:search-depository-for-read-need-fits': [
+    'discovery:search-depository-for-read-evaluation-fits': [
       depositDepositoryAssetPackSearchTool,
       lexicalDepositorySearchTool,
     ],

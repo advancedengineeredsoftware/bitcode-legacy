@@ -47,11 +47,11 @@ const usePersistedStateBase = createPersistedState<PersistedExecutionState>({
 
 export function usePersistedState() {
   const [state, setState, clearStateBase] = usePersistedStateBase();
-  const updateDefinitionOfNeed = useCallback((definitionOfRead: string) => { setState(prev => ({ ...prev, definitionOfRead })); }, [setState]);
+  const updateDefinitionOfEvaluation = useCallback((definitionOfRead: string) => { setState(prev => ({ ...prev, definitionOfRead })); }, [setState]);
   const updateModelSelection = useCallback((modelSelection: string) => { setState(prev => ({ ...prev, modelSelection })); }, [setState]);
   const updateVCS = useCallback((vcs: Partial<PersistedExecutionState['vcs']>) => { setState(prev => ({ ...prev, vcs: { ...prev.vcs, ...vcs } })); }, [setState]);
   const updateAttachments = useCallback((updater: (prev: PersistedExecutionState['attachments']) => PersistedExecutionState['attachments']) => { setState(prev => ({ ...prev, attachments: updater(prev.attachments) })); }, [setState]);
   const updateToggles = useCallback((toggles: Partial<PersistedExecutionState['toggles']>) => { setState(prev => ({ ...prev, toggles: { ...prev.toggles, ...toggles } })); }, [setState]);
   const clearState = useCallback(() => { clearStateBase(); }, [clearStateBase]);
-  return { state, updateDefinitionOfNeed, updateModelSelection, updateVCS, updateAttachments, updateToggles, clearState, setState };
+  return { state, updateDefinitionOfEvaluation, updateModelSelection, updateVCS, updateAttachments, updateToggles, clearState, setState };
 }

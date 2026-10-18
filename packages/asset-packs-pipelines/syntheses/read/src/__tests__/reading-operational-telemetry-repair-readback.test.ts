@@ -14,13 +14,13 @@ import {
   buildReadFitsFindingRuntime,
 } from '../read-fits-finding-runtime';
 import {
-  buildReadNeedReviewResynthesisRuntime,
-} from '../read-need-review-resynthesis';
+  buildReadEvaluationReviewResynthesisRuntime,
+} from '../read-evaluation-review-resynthesis';
 import {
-  acceptReadNeed,
+  acceptReadEvaluation,
   admitReadFitsFinding,
-  synthesizeReadNeedForPipelineInput,
-} from '../read-need';
+  synthesizeReadEvaluationForPipelineInput,
+} from '../read-evaluation';
 import {
   buildReadingOperationalTelemetryRepairReadback,
   persistReadingOperationalTelemetryRepairReadback,
@@ -42,7 +42,7 @@ const readInput = {
   sourceRevision,
   targetArtifactKinds: ['asset-pack', 'proof-root', 'settlement-proof', 'pull-request'],
   closureCriteria: [
-    'ReadNeedComprehensionSynthesis telemetry is source-safe.',
+    'ReadEvaluationComprehensionSynthesis telemetry is source-safe.',
     'ReadFitsFindingSynthesis telemetry includes phase, agent, PTRR step, Failsafe, ThinkingsGeneration, and tool evidence.',
     'Ledger, wallet, storage, delivery, UI, and repair events are replayable from proof roots.',
   ],
@@ -78,23 +78,23 @@ function depositoryAsset(assetId: string): DepositoryAsset {
   };
 }
 
-function acceptedNeed() {
-  return acceptReadNeed(
-    synthesizeReadNeedForPipelineInput(readInput),
+function acceptedEvaluation() {
+  return acceptReadEvaluation(
+    synthesizeReadEvaluationForPipelineInput(readInput),
     '2026-05-23T00:00:00.000Z',
   );
 }
 
 async function settledInputs() {
-  const need = acceptedNeed();
-  const readNeedRuntime = buildReadNeedReviewResynthesisRuntime({
-    action: 'accept_read_need',
-    readNeed: need,
+  const evaluation = acceptedEvaluation();
+  const readEvaluationRuntime = buildReadEvaluationReviewResynthesisRuntime({
+    action: 'accept_read_evaluation',
+    readEvaluation: evaluation,
   });
   const search = await runDepositorySearchForPipelineInput({
     ...readInput,
-    acceptedReadNeed: need,
-    requireAcceptedReadNeed: true,
+    acceptedReadEvaluation: evaluation,
+    requireAcceptedReadEvaluation: true,
     depositoryAssets: [
       depositoryAsset('fit-deposit-operational-1'),
       depositoryAsset('fit-deposit-operational-2'),
@@ -102,12 +102,12 @@ async function settledInputs() {
   });
   const fitResult = buildDepositoryFitResultEvidence(search);
   const readFitsRuntime = buildReadFitsFindingRuntime({
-    admission: admitReadFitsFinding({ acceptedReadNeed: need, requireAcceptedReadNeed: true }),
+    admission: admitReadFitsFinding({ acceptedReadEvaluation: evaluation, requireAcceptedReadEvaluation: true }),
     result: search,
     fitResult,
   });
   const previewBoundary = buildAssetPackPreviewBoundary({
-    need,
+    evaluation,
     fitResult,
     pullRequestTarget: 'https://github.com/octocat/Spoon-Knife/pull/408',
     createdAt: '2026-05-23T00:00:00.000Z',
@@ -120,7 +120,7 @@ async function settledInputs() {
     createdAt: '2026-05-23T00:00:00.000Z',
   });
 
-  return { readNeedRuntime, readFitsRuntime, previewBoundary, settlementBoundary };
+  return { readEvaluationRuntime, readFitsRuntime, previewBoundary, settlementBoundary };
 }
 
 describe('Reading operational telemetry repair readback', () => {
@@ -145,7 +145,7 @@ describe('Reading operational telemetry repair readback', () => {
       operatorReadback: {
         stageStates: {
           requestRead: 'completed',
-          reviewSynthesizedNeed: 'completed',
+          reviewSynthesizedEvaluation: 'completed',
           requestFindingFits: 'completed',
           reviewAssetPackPreview: 'completed',
           buyAssetPackSettle: 'completed',

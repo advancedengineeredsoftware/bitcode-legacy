@@ -154,7 +154,7 @@ export interface BtdRegistrySnapshotReader {
 export interface BtdMintDraftInput {
   assetPackId: string;
   readId: string;
-  acceptedNeed: true;
+  acceptedEvaluation: true;
   acceptedFit: true;
   sourceManifestRoot: string;
   fitReceiptRoot: string;
@@ -199,7 +199,7 @@ export interface BtdReadReceiptBoundaryInput {
   assetPackId: string;
   readId: string;
   readRequestId: string;
-  acceptedNeedRoot: string;
+  acceptedEvaluationRoot: string;
   findingFitsResultRoot: string;
   readerWalletId: string;
   depositorWalletId: string;
@@ -712,7 +712,7 @@ export function buildBtdMintDraft(input: BtdMintDraftInput): BtdMintDraft {
           {
             assetPackId: input.assetPackId,
             readId: input.readId,
-            acceptedNeed: input.acceptedNeed,
+            acceptedEvaluation: input.acceptedEvaluation,
             acceptedFit: input.acceptedFit,
             sourceManifestRoot: input.sourceManifestRoot,
             measurementReceiptRoot: measurement.measurementId,
@@ -848,7 +848,7 @@ export function buildBtdReadReceiptBoundarySettlement(
     assetPackId: input.assetPackId,
     readId: input.readId,
     readRequestId: input.readRequestId,
-    acceptedNeedRoot: input.acceptedNeedRoot,
+    acceptedEvaluationRoot: input.acceptedEvaluationRoot,
     findingFitsResultRoot: input.findingFitsResultRoot,
     readerWalletId: input.readerWalletId,
     depositorWalletId: input.depositorWalletId,
@@ -1330,7 +1330,7 @@ export function buildBtdSourceToSharesProofSettlement(
     actorId,
     preStateRoot: buildBtdStableId('source-to-shares-pre-state', [
       proof.readId,
-      proof.acceptedNeedRoot,
+      proof.acceptedEvaluationRoot,
     ]),
     postStateRoot: buildBtdStableId('source-to-shares-post-state', [
       proof.proofRoot,
@@ -1637,7 +1637,7 @@ export function toBtdJsonSafe(value: unknown): unknown {
 }
 
 function assertMintDraftAdmission(input: BtdMintDraftInput): void {
-  if (input.acceptedNeed !== true) {
+  if (input.acceptedEvaluation !== true) {
     throw new Error('BTD mint draft requires accepted Read.');
   }
 

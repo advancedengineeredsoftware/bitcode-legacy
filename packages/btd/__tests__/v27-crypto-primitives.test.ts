@@ -68,7 +68,7 @@ function rangeInput(overrides: Record<string, unknown> = {}) {
   return {
     assetPackId: 'asset-pack-range',
     readId: 'read-1',
-    acceptedNeed: true as const,
+    acceptedEvaluation: true as const,
     acceptedFit: true as const,
     sourceManifestRoot: 'source-root',
     measurementReceiptRoot: 'measurement-root',
@@ -279,7 +279,7 @@ describe('V27 supply, range, and mint receipt primitives', () => {
       allocateAssetPackRange(
         createBtdSupplyState(),
         rangeInput({
-          acceptedNeed: false,
+          acceptedEvaluation: false,
         }) as any,
       ),
     ).toThrow(/accepted Read/);
@@ -1512,7 +1512,7 @@ describe('V27 BTD journal and ledger/database reconciliation primitives', () => 
         metaphysicalFacts: [
           {
             factId: 'public-private-fact',
-            factKind: 'need_fit_context',
+            factKind: 'evaluation_fit_context',
             canonicalRoot: 'root',
             private: false,
           },

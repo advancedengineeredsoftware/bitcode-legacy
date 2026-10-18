@@ -26,7 +26,7 @@ Current owners:
   Route-facing `ConversationWritingWorkspace` helpers for source-safe summary
   and handoff payloads from fullscreen drafting.
 - `components/ConversationWritingWorkspace.tsx`
-  Fullscreen composer workspace for Read Request, Need feedback, AssetPack
+  Fullscreen composer workspace for Read Request, Evaluation feedback, AssetPack
   review note, and product workspace handoff summary drafts.
 - `conversation-source-selector.ts`
   Route-facing `ConversationSourceSelector` helpers for source-safe preview
@@ -132,7 +132,7 @@ signing authority, or product workspace authority bypass.
 
 V39 Gate 3 extends ConversationProductHandoff with source-safe
 `readingStage` intent for the five product workspace Reading stages. Conversations may
-suggest request Read, review synthesized Need, request Finding Fits, review
+suggest request Read, review synthesized Evaluation, request Finding Fits, review
 source-safe AssetPack preview, or buy AssetPack/settle posture. The generated
 product workspace route and envelope metadata carry `readingStage` and
 `productEnterpriseReadingStage`; product workspace reads the values back as source-safe
@@ -212,7 +212,7 @@ Gate 9 exact rehearsal statement: local and staging-testnet rehearsals exercise 
 ## V37 Gate 4 writing workspace boundary
 
 The fullscreen `ConversationWritingWorkspace` lets readers draft Read
-Requests, Need feedback, AssetPack review notes, and product workspace handoff
+Requests, Evaluation feedback, AssetPack review notes, and product workspace handoff
 summaries while staying inside route-local Conversations. Drafts can be saved
 and restored locally for recovery. Summaries and handoff messages crossing into
 the stream are redacted source-safe metadata only.

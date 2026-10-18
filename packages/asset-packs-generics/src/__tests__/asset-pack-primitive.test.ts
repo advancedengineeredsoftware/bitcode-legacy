@@ -33,7 +33,7 @@ describe('asset-pack-generics primitives', () => {
     expect(pack.patch.fileChanges).toHaveLength(1);
     expect(pack.identity.assetPackId).toBe('asset-pack-test-1');
     expect(pack.measurements.absolutes).toEqual([]);
-    expect(pack.measurements.needinesses).toEqual([]);
+    expect(pack.measurements.relatives).toEqual([]);
   });
 
   it('rejects empty asset pack ids', () => {

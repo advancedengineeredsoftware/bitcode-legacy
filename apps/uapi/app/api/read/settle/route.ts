@@ -118,7 +118,7 @@ interface RunOneSettleInput {
   repository: SettleRepositoryRef;
   repositoryFullName: string | null;
   synthesisRunId: string | null;
-  need: string | null;
+  evaluation: string | null;
   paymentObservation: SettleBtcPaymentObservationInput;
   githubAccessToken: string | null;
   readerWalletId: string | null;
@@ -160,7 +160,7 @@ async function runOneSettle(input: RunOneSettleInput) {
       optionCount: 1,
       optionTitle,
       repositoryFullName: input.repositoryFullName,
-      needLength: input.need?.length ?? 0,
+      evaluationLength: input.evaluation?.length ?? 0,
     },
     context: withDemonstrationDataset({
       source: 'read-settle-asset-pack',
@@ -199,7 +199,7 @@ async function runOneSettle(input: RunOneSettleInput) {
     buyerEthereumAddress: input.buyerEthereumAddress,
     depositorEthereumAddress: input.depositorEthereumAddress,
     masterEthereumAddress: input.masterEthereumAddress,
-    need: input.need,
+    evaluation: input.evaluation,
     synthesisRunId: input.synthesisRunId,
     spotBoard: input.spotBoard,
   };
@@ -381,7 +381,7 @@ export async function POST(request: Request) {
 
   const synthesisRunId =
     typeof body.synthesisRunId === 'string' ? body.synthesisRunId : null;
-  const need = typeof body.need === 'string' ? body.need : null;
+  const evaluation = typeof body.evaluation === 'string' ? body.evaluation : null;
   const admin = supabaseAdmin;
 
   // R3: fail-closed — require server rehydrate (no client selectedOptions).
@@ -412,24 +412,24 @@ export async function POST(request: Request) {
   repository.branch = repository.branch || contextString('sourceBranch');
   repository.commit = repository.commit || contextString('sourceCommit');
 
-  // Measurement-only buy gate (needinesses + absolute safety) — fail closed server-side.
+  // Measurement-only buy gate (relatives + absolute safety) — fail closed server-side.
   const measurementGate = assessSelectedOptionsForSettle(
     selectedOptions.map((opt, i) => {
       const rec = opt as SettleAssetPackOption & {
         title?: string;
-        needFit?: number;
+        evaluationFit?: number;
         measurements?: {
-          needinesses?: unknown[];
+          relatives?: unknown[];
           absolutes?: unknown[];
         };
       };
       return {
         index: i,
         title: typeof rec.title === 'string' ? rec.title : `Option ${i + 1}`,
-        needFit: typeof rec.needFit === 'number' ? rec.needFit : null,
+        evaluationFit: typeof rec.evaluationFit === 'number' ? rec.evaluationFit : null,
         measurements: {
-          needinesses: Array.isArray(rec.measurements?.needinesses)
-            ? (rec.measurements?.needinesses as never[])
+          relatives: Array.isArray(rec.measurements?.relatives)
+            ? (rec.measurements?.relatives as never[])
             : [],
           absolutes: Array.isArray(rec.measurements?.absolutes)
             ? (rec.measurements?.absolutes as never[])
@@ -443,7 +443,7 @@ export async function POST(request: Request) {
       {
         error:
           measurementGate.blockers[0] ||
-          'Measurement-only buy gate blocked settle (need-fit / safety).',
+          'Measurement-only buy gate blocked settle (evaluation-fit / safety).',
         code: 'measurement_buy_gate_blocked',
         blockers: measurementGate.blockers,
         worstRecommendation: measurementGate.worstRecommendation,
@@ -561,7 +561,7 @@ export async function POST(request: Request) {
       repository,
       repositoryFullName: repository.fullName || null,
       synthesisRunId,
-      need,
+      evaluation,
       paymentObservation: {
         ...paymentObservation,
         allocatedPayAmount: allocated,

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Need panel header controls — load/clear/anchor name popover.
+ * Evaluation panel header controls — load/clear/anchor name popover.
  * Presentational; parent owns anchor state and persistence handlers.
  * Deposit twin: DepositObfuscationsAnchorControls (orange tone for Reads).
  */
@@ -15,12 +15,12 @@ import {
   PopoverTrigger,
 } from "@/components/shadcn/Popover/Popover";
 import {
-  formatNeedAnchorDescription,
-  normalizeNeedAnchorPaths,
+  formatEvaluationAnchorDescription,
+  normalizeEvaluationAnchorPaths,
 } from "@/components/bitcode/pipeline/models/pipeline-activity-history";
-import type { ReadNeedAnchor } from "@/components/reads/models/read-activity-ledger";
+import type { ReadEvaluationAnchor } from "@/components/reads/models/read-activity-ledger";
 
-function clipNeedAnchorText(text: string, textClipLength = 40): string {
+function clipEvaluationAnchorText(text: string, textClipLength = 40): string {
   const clipAt = Math.max(8, textClipLength);
   const raw =
     typeof text === "string" ? text.trim().replace(/\s+/g, " ") : "";
@@ -28,7 +28,7 @@ function clipNeedAnchorText(text: string, textClipLength = 40): string {
   return raw.length > clipAt ? `${raw.slice(0, clipAt).trimEnd()}…` : raw;
 }
 
-function NeedAnchorDescription({
+function EvaluationAnchorDescription({
   text,
   relevantPaths,
   irrelevantPaths,
@@ -39,9 +39,9 @@ function NeedAnchorDescription({
   irrelevantPaths?: string[] | null;
   textClipLength?: number;
 }) {
-  const clipped = clipNeedAnchorText(text, textClipLength);
-  const relevantCount = normalizeNeedAnchorPaths(relevantPaths).length;
-  const irrelevantCount = normalizeNeedAnchorPaths(irrelevantPaths).length;
+  const clipped = clipEvaluationAnchorText(text, textClipLength);
+  const relevantCount = normalizeEvaluationAnchorPaths(relevantPaths).length;
+  const irrelevantCount = normalizeEvaluationAnchorPaths(irrelevantPaths).length;
   const relevantAria = `${relevantCount} relevant path${
     relevantCount === 1 ? "" : "s"
   }`;
@@ -83,35 +83,35 @@ function NeedAnchorDescription({
   );
 }
 
-export type ReadsNeedAnchorControlsProps = {
+export type ReadsEvaluationAnchorControlsProps = {
   isConfigLocked: boolean;
-  need: string;
-  needAnchors: readonly ReadNeedAnchor[];
-  needAnchorName: string;
-  onNeedAnchorNameChange: (value: string) => void;
-  isNeedAnchorPopoverOpen: boolean;
-  onNeedAnchorPopoverOpenChange: (open: boolean) => void;
-  isAnchoringNeed: boolean;
-  onAnchorNeed: () => void | Promise<void>;
-  onDeleteNeedAnchor: (id: string) => void | Promise<void>;
-  onLoadAnchor: (anchor: ReadNeedAnchor) => void;
+  evaluation: string;
+  evaluationAnchors: readonly ReadEvaluationAnchor[];
+  evaluationAnchorName: string;
+  onEvaluationAnchorNameChange: (value: string) => void;
+  isEvaluationAnchorPopoverOpen: boolean;
+  onEvaluationAnchorPopoverOpenChange: (open: boolean) => void;
+  isAnchoringEvaluation: boolean;
+  onAnchorEvaluation: () => void | Promise<void>;
+  onDeleteEvaluationAnchor: (id: string) => void | Promise<void>;
+  onLoadAnchor: (anchor: ReadEvaluationAnchor) => void;
   onClear: () => void;
   relevantPathsLength: number;
   irrelevantPathsLength: number;
 };
 
-export function ReadsNeedAnchorControls(props: ReadsNeedAnchorControlsProps) {
+export function ReadsEvaluationAnchorControls(props: ReadsEvaluationAnchorControlsProps) {
   const {
     isConfigLocked,
-    need,
-    needAnchors,
-    needAnchorName,
-    onNeedAnchorNameChange,
-    isNeedAnchorPopoverOpen,
-    onNeedAnchorPopoverOpenChange,
-    isAnchoringNeed,
-    onAnchorNeed,
-    onDeleteNeedAnchor,
+    evaluation,
+    evaluationAnchors,
+    evaluationAnchorName,
+    onEvaluationAnchorNameChange,
+    isEvaluationAnchorPopoverOpen,
+    onEvaluationAnchorPopoverOpenChange,
+    isAnchoringEvaluation,
+    onAnchorEvaluation,
+    onDeleteEvaluationAnchor,
     onLoadAnchor,
     onClear,
     relevantPathsLength,
@@ -120,16 +120,16 @@ export function ReadsNeedAnchorControls(props: ReadsNeedAnchorControlsProps) {
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
-      {needAnchors.length > 0 ? (
+      {evaluationAnchors.length > 0 ? (
         <div className="w-56">
           <SearchableSelect
-            aria-label="Load a previously anchored Need configuration"
-            items={needAnchors.map((anchor) => ({
+            aria-label="Load a previously anchored Evaluation configuration"
+            items={evaluationAnchors.map((anchor) => ({
               key: anchor.id,
               label:
-                anchor.name || anchor.repositoryFullName || "Need anchor",
+                anchor.name || anchor.repositoryFullName || "Evaluation anchor",
               description: (
-                <NeedAnchorDescription
+                <EvaluationAnchorDescription
                   text={anchor.text}
                   relevantPaths={anchor.relevantPaths}
                   irrelevantPaths={anchor.irrelevantPaths}
@@ -138,7 +138,7 @@ export function ReadsNeedAnchorControls(props: ReadsNeedAnchorControlsProps) {
               searchText: [
                 anchor.name,
                 anchor.repositoryFullName,
-                formatNeedAnchorDescription({
+                formatEvaluationAnchorDescription({
                   text: anchor.text,
                   relevantPaths: anchor.relevantPaths,
                   irrelevantPaths: anchor.irrelevantPaths,
@@ -152,7 +152,7 @@ export function ReadsNeedAnchorControls(props: ReadsNeedAnchorControlsProps) {
             disabled={isConfigLocked}
             onSelect={(key) => {
               if (isConfigLocked) return;
-              const anchor = needAnchors.find((entry) => entry.id === key);
+              const anchor = evaluationAnchors.find((entry) => entry.id === key);
               if (!anchor) return;
               onLoadAnchor(anchor);
             }}
@@ -160,7 +160,7 @@ export function ReadsNeedAnchorControls(props: ReadsNeedAnchorControlsProps) {
               isConfigLocked
                 ? undefined
                 : (key) => {
-                    void onDeleteNeedAnchor(key);
+                    void onDeleteEvaluationAnchor(key);
                   }
             }
             showSelectionIndicator={false}
@@ -177,8 +177,8 @@ export function ReadsNeedAnchorControls(props: ReadsNeedAnchorControlsProps) {
         title="Clear need"
         disabled={
           isConfigLocked ||
-          (!need &&
-            !needAnchorName &&
+          (!evaluation &&
+            !evaluationAnchorName &&
             relevantPathsLength === 0 &&
             irrelevantPathsLength === 0)
         }
@@ -188,12 +188,12 @@ export function ReadsNeedAnchorControls(props: ReadsNeedAnchorControlsProps) {
         Clear
       </button>
       <Popover
-        open={isNeedAnchorPopoverOpen}
+        open={isEvaluationAnchorPopoverOpen}
         onOpenChange={(open) => {
           if (isConfigLocked) return;
-          if (open && !need.trim()) return;
-          if (isAnchoringNeed) return;
-          onNeedAnchorPopoverOpenChange(open);
+          if (open && !evaluation.trim()) return;
+          if (isAnchoringEvaluation) return;
+          onEvaluationAnchorPopoverOpenChange(open);
         }}
       >
         <PopoverTrigger asChild>
@@ -201,11 +201,11 @@ export function ReadsNeedAnchorControls(props: ReadsNeedAnchorControlsProps) {
             type="button"
             aria-label="Anchor need to the activity ledger"
             title="Anchor need to the activity ledger"
-            data-testid="reads-need-anchor-button"
-            disabled={isConfigLocked || !need.trim() || isAnchoringNeed}
+            data-testid="reads-evaluation-anchor-button"
+            disabled={isConfigLocked || !evaluation.trim() || isAnchoringEvaluation}
             className="flex h-9 w-9 items-center justify-center border border-white/10 bg-white/5 text-neutral-200 transition hover:border-orange-300/35 hover:bg-orange-300/10 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {isAnchoringNeed ? (
+            {isAnchoringEvaluation ? (
               <RefreshCw className="h-4 w-4 animate-spin" />
             ) : (
               <Anchor className="h-4 w-4" />
@@ -221,26 +221,26 @@ export function ReadsNeedAnchorControls(props: ReadsNeedAnchorControlsProps) {
             Name this anchor
           </p>
           <input
-            id="reads-need-anchor-name"
+            id="reads-evaluation-anchor-name"
             type="text"
-            value={needAnchorName}
+            value={evaluationAnchorName}
             onChange={(event) =>
-              onNeedAnchorNameChange(event.target.value.slice(0, 80))
+              onEvaluationAnchorNameChange(event.target.value.slice(0, 80))
             }
             onKeyDown={(event) => {
               if (event.key === "Enter") {
                 event.preventDefault();
-                void onAnchorNeed();
+                void onAnchorEvaluation();
               }
               if (event.key === "Escape") {
                 event.preventDefault();
-                onNeedAnchorPopoverOpenChange(false);
+                onEvaluationAnchorPopoverOpenChange(false);
               }
             }}
             placeholder="Optional name"
             maxLength={80}
             autoFocus
-            aria-label="Need anchor name"
+            aria-label="Evaluation anchor name"
             className="mt-2 h-9 w-full border border-white/10 bg-black/40 px-2.5 text-xs text-neutral-100 outline-none transition placeholder:text-neutral-500 focus:border-orange-300/35"
           />
           <p className="mt-1.5 text-[0.68rem] leading-4 text-neutral-500">
@@ -250,22 +250,22 @@ export function ReadsNeedAnchorControls(props: ReadsNeedAnchorControlsProps) {
           <div className="mt-3 flex items-center justify-end gap-2">
             <button
               type="button"
-              onClick={() => onNeedAnchorPopoverOpenChange(false)}
-              disabled={isAnchoringNeed}
+              onClick={() => onEvaluationAnchorPopoverOpenChange(false)}
+              disabled={isAnchoringEvaluation}
               className="border border-white/10 px-2.5 py-1.5 text-[0.62rem] uppercase tracking-[0.14em] text-neutral-300 transition hover:border-white/25 disabled:opacity-40"
             >
               Cancel
             </button>
             <button
               type="button"
-              data-testid="reads-need-anchor-save"
+              data-testid="reads-evaluation-anchor-save"
               onClick={() => {
-                void onAnchorNeed();
+                void onAnchorEvaluation();
               }}
-              disabled={!need.trim() || isAnchoringNeed}
+              disabled={!evaluation.trim() || isAnchoringEvaluation}
               className="inline-flex items-center gap-1.5 border border-orange-300/30 bg-orange-300/12 px-2.5 py-1.5 text-[0.62rem] uppercase tracking-[0.14em] text-orange-100 transition hover:border-orange-200/45 hover:bg-orange-300/18 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {isAnchoringNeed ? (
+              {isAnchoringEvaluation ? (
                 <RefreshCw className="h-3 w-3 animate-spin" aria-hidden="true" />
               ) : (
                 <Anchor className="h-3 w-3" aria-hidden="true" />

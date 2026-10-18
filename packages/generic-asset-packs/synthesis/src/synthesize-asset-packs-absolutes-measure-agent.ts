@@ -23,7 +23,7 @@ import type { SynthesizeAssetPacksMode } from './types';
 const MODE_SUBJECT: Record<SynthesizeAssetPacksMode, string> = {
   deposit:
     'a synthesized source-safe deposit DataPack patch the depositor will review and admit',
-  read: 'a synthesized source-safe Need-fitting DataPack the reader will review and buy',
+  read: 'a synthesized source-safe Evaluation-fitting DataPack the reader will review and buy',
 };
 
 /**

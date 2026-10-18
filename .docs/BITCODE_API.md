@@ -19,7 +19,7 @@ API surfaces must:
 
 Current product Next API families (not exhaustive):
 - `/api/deposit/*` — deposit synthesis and demand estimate (product Deposits)
-- `/api/read-review` — Read-Need synthesis / accept / reject (product Reads)
+- `/api/read-review` — Read-Evaluation synthesis / accept / reject (product Reads)
 - `/api/read/*` — read settlement and option synthesis
 - `/api/packs/*` — pack activity
 - `/api/btd/*` — BTD journal, registry, settlement-adjacent handlers (`@bitcode/api/btd`)
@@ -61,6 +61,6 @@ Route behavior must preserve:
 
 ## Read Review Boundary
 
-`/api/read-review` is the commercial pre-fit Read-Need admission boundary:
-- `POST` with `action=synthesize_read_need` | `resynthesize_read_need` | `accept_read_need` | `reject_read_need`.
+`/api/read-review` is the commercial pre-fit Read-Evaluation admission boundary:
+- `POST` with `action=synthesize_read_evaluation` | `resynthesize_read_evaluation` | `accept_read_evaluation` | `reject_read_evaluation`.
 - Legacy protocol-demo GET/scenario review and specifying `reviewRead` fallbacks are removed.

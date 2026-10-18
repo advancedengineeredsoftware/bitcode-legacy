@@ -121,7 +121,7 @@ describe('full Implementation: plan → write → measure', () => {
       expect(Object.keys(o.measurements)).toContain('absolutes');
       expect(Array.isArray(o.measurements.absolutes)).toBe(true);
       for (const k of Object.keys(o.measurements)) {
-        expect(['absolutes', 'materialIdentity', 'measureReport', 'needinesses']).toContain(k);
+        expect(['absolutes', 'materialIdentity', 'measureReport', 'relatives']).toContain(k);
       }
       expect(isDepositPresentablePack(o)).toBe(true);
     }

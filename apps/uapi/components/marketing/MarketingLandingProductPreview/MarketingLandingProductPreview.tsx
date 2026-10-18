@@ -16,7 +16,7 @@ import {
   entranceEase,
   measurementAbsoluteItems,
   measurementFinalFit,
-  measurementNeedinessItems,
+  measurementRelativeItems,
   paintedMotionStyle,
   previewRows,
   previewValueNeonClass,
@@ -277,9 +277,9 @@ function MeasuresPanel() {
         </div>
 
         <div>
-          <p className="text-[13px] font-medium text-white">Needinesses</p>
+          <p className="text-[13px] font-medium text-white">Relatives</p>
           <ul className="mt-2 space-y-1.5">
-            {measurementNeedinessItems.map((item, index) => {
+            {measurementRelativeItems.map((item, index) => {
               const isDynamic = item.detail === 'dynamic';
 
               return (
@@ -291,7 +291,7 @@ function MeasuresPanel() {
                       }`}
                       title={
                         isDynamic
-                          ? 'Need-inferred fit measurement synthesized for the reader’s Need, then scored'
+                          ? 'Evaluation-inferred fit measurement synthesized for the reader’s Evaluation, then scored'
                           : undefined
                       }
                     >

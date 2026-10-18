@@ -152,7 +152,7 @@ export function buildCompensationPreview(input: {
     payee: 'depositing-wallet' as const,
     priceAsset: 'BTC' as const,
     allocationMethod: 'source-to-shares-largest-remainder' as const,
-    sourceToSharesProofState: 'not-created-until-accepted-need-fit-and-settlement' as const,
+    sourceToSharesProofState: 'not-created-until-accepted-evaluation-fit-and-settlement' as const,
     btdMintBoundary: 'not-minted-by-deposit-admission' as const,
     btdRightsTransferBoundary: 'reader-receives-rights-only-after-btc-settlement' as const,
   };

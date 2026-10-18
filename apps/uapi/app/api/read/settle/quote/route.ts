@@ -1,13 +1,13 @@
 /**
  * POST /api/read/settle/quote
- * Build multi-rail spot options (ETH/BTC/SOL) for a needinesses BTD volume.
+ * Build multi-rail spot options (ETH/BTC/SOL) for a relatives BTD volume.
  * Testnet default: mock spots.
  *
  * Preferred body: { synthesisRunId, selectedIndexes } — the server rehydrates
  * the buyer's selection, prices each option alone (1:1 settle law), and
  * returns rail totals plus the settlement pay-to recipients. These totals are
  * exactly what POST /api/read/settle verifies on-chain.
- * Legacy body: { measurements } — one advisory quote for a needinesses bag.
+ * Legacy body: { measurements } — one advisory quote for a relatives bag.
  */
 
 import { NextResponse } from 'next/server';
@@ -23,8 +23,8 @@ import {
   applyBtdSupplyDecay,
   assertPositiveSettlementBtd,
   buildMultiRailSpotQuote,
-  computeSettlementBtdFromNeedinesses,
-  needFitVolumeToBaseUnits,
+  computeSettlementBtdFromRelatives,
+  evaluationFitVolumeToBaseUnits,
 } from '@bitcode/btd/erc1155';
 
 export const runtime = 'nodejs';
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
       return NextResponse.json({
         ok: true,
         provider: quote.provider,
-        needFitVolume: quote.needFitVolume,
+        evaluationFitVolume: quote.evaluationFitVolume,
         btdVolume: quote.btdVolume,
         btdVolumeDisplay: quote.btdVolumeDisplay,
         decay: quote.decay,
@@ -101,15 +101,15 @@ export async function POST(request: Request) {
   let raw;
   try {
     raw = assertPositiveSettlementBtd(
-      computeSettlementBtdFromNeedinesses(
-        measurements as Parameters<typeof computeSettlementBtdFromNeedinesses>[0],
+      computeSettlementBtdFromRelatives(
+        measurements as Parameters<typeof computeSettlementBtdFromRelatives>[0],
       ),
     );
   } catch (err) {
     return NextResponse.json(
       {
         ok: false,
-        error: err instanceof Error ? err.message : 'Invalid needinesses for BTD volume.',
+        error: err instanceof Error ? err.message : 'Invalid relatives for BTD volume.',
       },
       { status: 400 },
     );
@@ -132,10 +132,10 @@ export async function POST(request: Request) {
   return NextResponse.json({
     ok: true,
     provider: multi.board.provider,
-    needFitVolume: raw.needFitVolume,
+    evaluationFitVolume: raw.evaluationFitVolume,
     rawVolumeBaseUnits: raw.amountBaseUnits.toString(),
     btdVolume: decayed.btdVolume.toString(),
-    btdVolumeDisplay: (Number(decayed.btdVolume) / Number(needFitVolumeToBaseUnits(1) || 1n)).toFixed(
+    btdVolumeDisplay: (Number(decayed.btdVolume) / Number(evaluationFitVolumeToBaseUnits(1) || 1n)).toFixed(
       6,
     ),
     decay: decayed.decay,

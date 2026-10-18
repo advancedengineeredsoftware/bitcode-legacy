@@ -42,8 +42,8 @@ and `.proofs/v49/*` gate artifacts as they are generated.
 | --- | --- | --- | --- | --- | --- | --- |
 | V49 family + posture | promotion | Family exists; posture `V48 active / V49 draft`; roadmap names V49 draft | Opened in Gate 1 | `check:v49-gate1`; spec-quality basic | drafted | Gate 1 |
 | Living CI wiring | test | Local CI runs V49 draft family + discovers `check-v49-gate*` under pointer V48 | Opened in Gate 1 | `pnpm run ci:local:list` | drafted | Gate 1 |
-| Evaluations vocabulary | system | No living Need/neediness product vocabulary | V48 vocabulary in ~230 source files, ~17 prompt files, UI, wire | `check:v49-gate2` vocabulary scan | spec closed; source gap | Gate 2 |
-| Stored-row migration | system | Idempotent migration of V48 keys and `neediness_kinds` | Not present | migration test; `check:v49-gate2` | spec closed; source gap | Gate 2 |
+| Evaluations vocabulary | system | No living Need/neediness product vocabulary | Gate 2 codemod rewrote 400+ living files and 20 paths (`generic-measurements/relatives`, `read-evaluation*.ts`, `ReadsEvaluation*` components); living scan = 0 residual files | `check:v49-gate2` vocabulary scan; living CI | implemented; promotion pending | Gate 2 |
+| Stored-row migration | system | Idempotent migration of V48 keys and `neediness_kinds` | `20261018120000_v49_evaluations_rename.sql`: guarded column rename + exact quoted-token rewrite over executions / execution_events | `check:v49-gate2`; staging apply (operator) | implemented; promotion pending | Gate 2 |
 | Quick deposit synthesis | system | `QUICK` pipeline, one model call | `factoryExecutionPipelineQuick` / `factoryQuickAgent` exist, unused | one-call test; `check:v49-gate3` | spec closed; source gap | Gate 3 |
 | Quick read synthesis | system | `QUICK` read pipeline + real Finish + contributions + relatives | Not present | one-call test; `check:v49-gate3` | spec closed; source gap | Gate 3 |
 | Synthesis mode resolution | system | env + request + demonstration precedence; persisted | Demonstration flag only | unit tests | spec closed; source gap | Gate 3 |

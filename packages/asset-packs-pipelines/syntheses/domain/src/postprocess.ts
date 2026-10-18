@@ -6,9 +6,9 @@ import {
 } from './semantic-resolution';
 import {
   buildAssetPackSourceSafePreview,
-  isAcceptedReadNeed,
+  isAcceptedReadEvaluation,
   type AssetPackSourceSafePreview,
-} from '../../read/src/read-need';
+} from '../../read/src/read-evaluation';
 import {
   assertAssetPackDisclosureSourceSafe,
   buildAssetPackDisclosureReview,
@@ -381,10 +381,10 @@ function ensureAssetPackSourceSafePreview(
     return storedPreview as AssetPackSourceSafePreview;
   }
 
-  const acceptedNeed =
-    findStoredExecutionValue(execution, 'read/need', 'accepted') ||
-    findStoredExecutionValue(execution, 'read', 'acceptedNeed');
-  if (!isAcceptedReadNeed(acceptedNeed)) {
+  const acceptedEvaluation =
+    findStoredExecutionValue(execution, 'read/evaluation', 'accepted') ||
+    findStoredExecutionValue(execution, 'read', 'acceptedEvaluation');
+  if (!isAcceptedReadEvaluation(acceptedEvaluation)) {
     return null;
   }
 
@@ -404,7 +404,7 @@ function ensureAssetPackSourceSafePreview(
       output.writtenAsset?.payload?.assetPackId,
     ) || undefined;
   const preview = buildAssetPackSourceSafePreview({
-    need: acceptedNeed,
+    evaluation: acceptedEvaluation,
     fitResult,
     assetPackId,
     // Synthesis never binds a settle/buyer PR target.
@@ -452,14 +452,14 @@ function ensureAssetPackPreviewBoundary(
     return storedBoundary as AssetPackPreviewBoundary;
   }
 
-  const acceptedNeed =
-    findStoredExecutionValue(execution, 'read/need', 'accepted') ||
-    findStoredExecutionValue(execution, 'read', 'acceptedNeed');
+  const acceptedEvaluation =
+    findStoredExecutionValue(execution, 'read/evaluation', 'accepted') ||
+    findStoredExecutionValue(execution, 'read', 'acceptedEvaluation');
   const fitResult =
     (output as any).fitResult ||
     findStoredExecutionValue(execution, 'fit', 'result');
   const boundary = buildAssetPackPreviewBoundary({
-    need: isAcceptedReadNeed(acceptedNeed) ? acceptedNeed : null,
+    evaluation: isAcceptedReadEvaluation(acceptedEvaluation) ? acceptedEvaluation : null,
     fitResult,
     sourceSafePreview,
     // Synthesis: no buyer-repo PR target (settle pipeline only).
@@ -481,9 +481,9 @@ function ensureReadingOperationalTelemetryRepairReadback(
   }
 
   // Synthesis-only: never load settlement/delivery stores into telemetry.
-  const readNeedRuntime =
-    (output as any).readNeedReviewRuntime ||
-    findStoredExecutionValue(execution, 'read-need-review', 'runtime');
+  const readEvaluationRuntime =
+    (output as any).readEvaluationReviewRuntime ||
+    findStoredExecutionValue(execution, 'read-evaluation-review', 'runtime');
   const readFitsRuntime =
     (output as any).readFitsFindingRuntime ||
     findStoredExecutionValue(execution, 'read/finding-fits', 'runtime');
@@ -491,7 +491,7 @@ function ensureReadingOperationalTelemetryRepairReadback(
     (output as any).assetPackPreviewBoundary ||
     findStoredExecutionValue(execution, 'asset-pack/preview', 'boundary');
 
-  if (!readNeedRuntime && !readFitsRuntime && !previewBoundary) {
+  if (!readEvaluationRuntime && !readFitsRuntime && !previewBoundary) {
     return null;
   }
 
@@ -502,7 +502,7 @@ function ensureReadingOperationalTelemetryRepairReadback(
         findStoredExecutionValue(execution, 'execution', 'id'),
         findStoredExecutionValue(execution, 'run', 'id'),
       ) || undefined,
-    readNeedRuntime,
+    readEvaluationRuntime,
     readFitsRuntime,
     previewBoundary,
     // settlementBoundary omitted — settle-pipeline exclusive
@@ -529,9 +529,9 @@ function ensureReadingInterfaceProductParity(
   }
 
   // Synthesis-only: never load settlement/delivery stores into parity.
-  const readNeedRuntime =
-    (output as any).readNeedReviewRuntime ||
-    findStoredExecutionValue(execution, 'read-need-review', 'runtime');
+  const readEvaluationRuntime =
+    (output as any).readEvaluationReviewRuntime ||
+    findStoredExecutionValue(execution, 'read-evaluation-review', 'runtime');
   const readFitsRuntime =
     (output as any).readFitsFindingRuntime ||
     findStoredExecutionValue(execution, 'read/finding-fits', 'runtime');
@@ -543,13 +543,13 @@ function ensureReadingInterfaceProductParity(
     findStoredExecutionValue(execution, 'reading/operational', 'readback');
 
   const hasReadingContext =
-    readNeedRuntime || readFitsRuntime || previewBoundary || operationalReadback;
+    readEvaluationRuntime || readFitsRuntime || previewBoundary || operationalReadback;
   if (!hasReadingContext) {
     return null;
   }
 
   const parity = buildReadingInterfaceProductParity({
-    readNeedRuntime,
+    readEvaluationRuntime,
     readFitsRuntime,
     previewBoundary,
     operationalReadback,
@@ -570,9 +570,9 @@ function ensureReadingLocalStagingRehearsal(
   }
 
   // Synthesis-only: never load settlement/delivery stores into rehearsal.
-  const readNeedRuntime =
-    (output as any).readNeedReviewRuntime ||
-    findStoredExecutionValue(execution, 'read-need-review', 'runtime');
+  const readEvaluationRuntime =
+    (output as any).readEvaluationReviewRuntime ||
+    findStoredExecutionValue(execution, 'read-evaluation-review', 'runtime');
   const readFitsRuntime =
     (output as any).readFitsFindingRuntime ||
     findStoredExecutionValue(execution, 'read/finding-fits', 'runtime');
@@ -587,7 +587,7 @@ function ensureReadingLocalStagingRehearsal(
     findStoredExecutionValue(execution, 'reading/interfaces', 'productParity');
 
   const hasReadingContext =
-    readNeedRuntime || readFitsRuntime || previewBoundary || operationalReadback || interfaceParity;
+    readEvaluationRuntime || readFitsRuntime || previewBoundary || operationalReadback || interfaceParity;
   if (!hasReadingContext) {
     return null;
   }
@@ -599,7 +599,7 @@ function ensureReadingLocalStagingRehearsal(
         findStoredExecutionValue(execution, 'execution', 'id'),
         findStoredExecutionValue(execution, 'run', 'id'),
       ) || undefined,
-    readNeedRuntime,
+    readEvaluationRuntime,
     readFitsRuntime,
     previewBoundary,
     operationalReadback,

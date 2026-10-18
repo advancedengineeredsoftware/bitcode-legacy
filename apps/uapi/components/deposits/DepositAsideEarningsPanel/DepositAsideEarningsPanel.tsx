@@ -32,7 +32,7 @@ export function DepositAsideEarningsPanel({
   settledDemandEstimate,
 }: DepositAsideEarningsPanelProps) {
   const intelligence = depositRouteSession.earningSupplyIntelligence;
-  const opportunities = intelligence.unfitNeedOpportunities.opportunities;
+  const opportunities = intelligence.unfitEvaluationOpportunities.opportunities;
   const hasOpportunityRoots = opportunities.length > 0;
 
   return (
@@ -103,8 +103,8 @@ export function DepositAsideEarningsPanel({
           className="border-b border-white/8 px-0 py-2 last:border-b-0"
           explainer={{
             kicker: "Earning intelligence",
-            title: "Unfit Need opportunities",
-            specific: DEPOSIT_EARNING_ROW_EXPLAINERS["Unfit Need opportunities"],
+            title: "Unfit Evaluation opportunities",
+            specific: DEPOSIT_EARNING_ROW_EXPLAINERS["Unfit Evaluation opportunities"],
             generic: DEPOSIT_STAT_TOOLTIP_GENERICS.earningIntelligence,
             points: [...DEPOSIT_STAT_TOOLTIP_SECTIONS.earningIntelligence.points],
             references: {
@@ -120,10 +120,10 @@ export function DepositAsideEarningsPanel({
           }}
         >
           <dt className="text-[0.58rem] uppercase tracking-[0.14em] text-neutral-500">
-            Unfit Need opportunities
+            Unfit Evaluation opportunities
           </dt>
           <dd className="mt-1 text-sm text-neutral-200">
-            {intelligence.unfitNeedOpportunities.state ===
+            {intelligence.unfitEvaluationOpportunities.state ===
             "unestimatable-demand" ? (
               <span className="text-amber-100/95">
                 Unestimatable
@@ -135,8 +135,8 @@ export function DepositAsideEarningsPanel({
               </span>
             ) : (
               <>
-                {intelligence.unfitNeedOpportunities.opportunityCount} /{" "}
-                {intelligence.unfitNeedOpportunities.state}
+                {intelligence.unfitEvaluationOpportunities.opportunityCount} /{" "}
+                {intelligence.unfitEvaluationOpportunities.state}
               </>
             )}
           </dd>

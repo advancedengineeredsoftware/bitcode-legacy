@@ -157,7 +157,7 @@ export function buildDepositorySearchQueryPlan(input: {
   return {
     schema: 'bitcode.asset-pack.depository-search.query-plan',
     pipelineName: READ_FITS_FINDING_SYNTHESIS,
-    derivedFrom: 'accepted-read-need',
+    derivedFrom: 'accepted-read-evaluation',
     channelIds: [...READ_FITS_FINDING_SYNTHESIS_SEARCH_CHANNEL_IDS],
     channels: READ_FITS_FINDING_SYNTHESIS_SEARCH_CHANNELS.map((channel) => ({ ...channel })),
     queryTermCount,

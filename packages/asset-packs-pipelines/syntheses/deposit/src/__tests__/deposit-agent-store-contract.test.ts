@@ -69,7 +69,7 @@ function depositSynthesisOption(overrides: Record<string, unknown> = {}) {
     summary:
       'A bounded, source-safe capability slice covering session authentication and token refresh flows.',
     coveredSourcePaths: ['src/auth/session.ts', 'src/auth/token.ts'],
-    // Deposit: absolutes only (neediness is Read-pipeline). Host overwrites with measure path.
+    // Deposit: absolutes only (relative is Read-pipeline). Host overwrites with measure path.
     measurements: {
       absolutes: [
         {

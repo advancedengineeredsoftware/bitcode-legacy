@@ -31,7 +31,7 @@ const runSetupPhase = factoryExecutionPipelineSDIVFExecutionPhaseRunner(setupPha
 export const assetPackSetupPhaseExecutor: Executor<any, any> = async (input, execution) => {
   // Product-conditional registry: deposit comprehends obfuscations via deposit
   // input-comprehension (registered under the shared setup comprehension key);
-  // read keeps Need-comprehension. Registry ids `ReadFitsFinding*` are historical
+  // read keeps Evaluation-comprehension. Registry ids `ReadFitsFinding*` are historical
   // aliases (STAB-4 residual) — not dual-pipeline mode.
   const mode = synthesizeAssetPacksModeFromExecution(execution) ?? 'read';
   if (mode === 'deposit') {
@@ -42,14 +42,14 @@ export const assetPackSetupPhaseExecutor: Executor<any, any> = async (input, exe
         depositComprehend,
       );
     } catch {}
-    // Setup plan agent is read-Need fits planning — irrelevant for deposit.
+    // Setup plan agent is read-Evaluation fits planning — irrelevant for deposit.
     // Passthrough (no LLM). Read product keeps the real agent under the same
     // historical registry key.
     (execution as any).agents?.registerAgent?.(
       'setup:ReadFitsFindingSynthesisSetupPlanAgent',
       async (passthroughInput: any) => passthroughInput,
     );
-    // Danger wall is read risk-admission. On deposit it has no Need to admit;
+    // Danger wall is read risk-admission. On deposit it has no Evaluation to admit;
     // passthrough so deposit is not short-circuited. Depositor source-safety is
     // enforced by streaming filter + obfuscation comprehension.
     (execution as any).agents?.registerAgent?.(

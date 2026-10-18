@@ -75,7 +75,7 @@ export const BITCODE_BROWSER_PROOF_SURFACES = [
     landmarks: ['main', 'region', 'group', 'status'],
     interactionStates: [
       'request-read',
-      'review-synthesized-need',
+      'review-synthesized-evaluation',
       'request-fit',
       'review-synthesized-asset-pack',
       'buy-asset-pack-settle',

@@ -1,5 +1,5 @@
 /**
- * Pure builder for Need-relative fit measurement review (quote basis + provenance).
+ * Pure builder for Evaluation-relative fit measurement review (quote basis + provenance).
  */
 
 import {
@@ -20,7 +20,7 @@ const READ_FIT_MEASUREMENT_CATALOG: ReadonlyArray<{
   label: string;
   weight: number;
 }> = [
-  { measurementId: 'coverage-measurement', visualizationId: 'need-coverage', label: 'Need coverage', weight: 0.2 },
+  { measurementId: 'coverage-measurement', visualizationId: 'evaluation-coverage', label: 'Evaluation coverage', weight: 0.2 },
   { measurementId: 'fit-measurement', visualizationId: 'fit-confidence', label: 'Fit confidence', weight: 0.2 },
   { measurementId: 'specificity-measurement', visualizationId: 'specificity', label: 'Specificity', weight: 0.1 },
   { measurementId: 'novelty-measurement', visualizationId: 'novelty', label: 'Novelty', weight: 0.125 },
@@ -38,7 +38,7 @@ function deterministicUnitFraction(seed: string, floor: number) {
 export function buildReadFitMeasurementReview(
   input: ReadRouteSessionInput = {},
 ): ReadFitMeasurementReview {
-  const visible = Boolean(input.hasAcceptedNeed && input.hasSourceSafePreview);
+  const visible = Boolean(input.hasAcceptedEvaluation && input.hasSourceSafePreview);
   const btdScalarVolume = visible ? Math.max(1, normalizeSafeNumber(input.measuredBtd, 0)) : 0;
   const reviewSeed = `${normalizedText(input.transactionId) || 'read-fit-review'}:${btdScalarVolume}`;
   const rawRows = READ_FIT_MEASUREMENT_CATALOG.map((entry) => {
@@ -95,7 +95,7 @@ export function buildReadFitMeasurementReview(
       ? normalizeSafeNumber(input.quoteSats, 0)
       : Math.round((measurementWeight * btdScalarVolume * pricePerWeightedUnitSats) / 1_000);
   const repairBlockers = [
-    !input.hasAcceptedNeed ? 'accepted Need required before Fit measurement review' : '',
+    !input.hasAcceptedEvaluation ? 'accepted Evaluation required before Fit measurement review' : '',
     !input.hasSourceSafePreview ? 'source-safe AssetPack preview required' : '',
   ].filter(Boolean);
   const basisSeed = JSON.stringify({

@@ -4,15 +4,15 @@
  * Hierarchy naming law (full ancestry always encoded at product layers):
  *   Measurement                              — primitive vocabulary
  *   AbsolutesMeasurement / MeasureAgent      — base implementations
- *   NeedinessesMeasurement / MeasureAgent    — reader-relative base
+ *   RelativesMeasurement / MeasureAgent    — reader-relative base
  *   MaterialIdentity (domain)                — multi-valued buyer-visible identity
  *   SynthesizeAssetPacksAbsolutesMeasureAgent — product + base + agent
  *
- * Measurement KINDS (V48+): **absolutes** | **needinesses** | **materialIdentity**.
+ * Measurement KINDS (V48+): **absolutes** | **relatives** | **materialIdentity**.
  * DataPack carrier (nested kinds object):
  *   measurements: {
  *     absolutes: Reading[],
- *     needinesses: Reading[],          // deposit always []
+ *     relatives: Reading[],          // deposit always []
  *     materialIdentity?: bag           // compositions / inventories / tags (domain-typed)
  *   }
  *
@@ -26,12 +26,12 @@
 import { z } from 'zod';
 
 /** Formal measurement kinds (V48 taxonomy). More kinds may be added later. */
-export type MeasurementKindCategory = 'absolute' | 'neediness' | 'material-identity';
+export type MeasurementKindCategory = 'absolute' | 'relative' | 'material-identity';
 
 /**
  * One measurement requested of a measurer.
- * Absolutes: fixed product catalog. Needinesses: static reading catalog +
- * dynamic dimensions inferred for a Need; need-fit is a composite, not a raw row.
+ * Absolutes: fixed product catalog. Relatives: static reading catalog +
+ * dynamic dimensions inferred for an Evaluation; evaluation-fit is a composite, not a raw row.
  */
 export interface MeasurementSpec {
   measurementKind: string;
@@ -125,7 +125,7 @@ export const DataPackMeasureReportSchema = z.object({
  */
 export const AssetPackMeasurementsSchema = z.object({
   absolutes: z.array(MeasurementReadingSchema).default([]),
-  needinesses: z.array(MeasurementReadingSchema).default([]),
+  relatives: z.array(MeasurementReadingSchema).default([]),
   /** Buyer-visible multi-valued identity (compositions, inventories, tags). */
   materialIdentity: z.record(z.unknown()).optional().nullable(),
   /** Measure-session honesty telemetry (bodies, coverage, fill count). */
@@ -133,9 +133,9 @@ export const AssetPackMeasurementsSchema = z.object({
 });
 export type AssetPackMeasurements = z.infer<typeof AssetPackMeasurementsSchema>;
 
-/** Empty nested measurements bag (deposit starts with needinesses: []). */
+/** Empty nested measurements bag (deposit starts with relatives: []). */
 export function emptyAssetPackMeasurements(): AssetPackMeasurements {
-  return { absolutes: [], needinesses: [], materialIdentity: null };
+  return { absolutes: [], relatives: [], materialIdentity: null };
 }
 
 /** Canonical measure-agent output shape (flat readings; host nests by kind). */

@@ -35,14 +35,14 @@ export function normalizedOpportunitySignals(value: DepositOptionDemandSignal[] 
       const label =
         normalizedText(signal.label) ||
         normalizedText(signal.summary) ||
-        `Unfit Need opportunity ${index + 1}`;
-      const id = normalizedText(signal.id) || `unfit-need-opportunity-${index + 1}`;
+        `Unfit Evaluation opportunity ${index + 1}`;
+      const id = normalizedText(signal.id) || `unfit-evaluation-opportunity-${index + 1}`;
       return {
         id,
         label,
         weight,
         state: opportunityStateFor(weight),
-        opportunityRoot: root('deposit-unfit-need-opportunity', { id, label, weight }),
+        opportunityRoot: root('deposit-unfit-evaluation-opportunity', { id, label, weight }),
       };
     })
     .sort((left, right) => left.id.localeCompare(right.id));

@@ -13,7 +13,7 @@ adapters, and React layers.
 | --- | --- |
 | `/` | Marketing |
 | `/deposits` | Deposit MVP (SynthesizeAssetPacks, option review, admit) |
-| `/reads` | Read path (Need → Fits → settle → delivery) |
+| `/reads` | Read path (Evaluation → Fits → settle → delivery) |
 | `/exchange` | PackActivity / pipeline history master-detail |
 | `/docs` | Public documentation |
 | `/auxillaries/*` | Wallet, Profile, Externals, Interfaces |

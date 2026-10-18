@@ -8,7 +8,7 @@ import ReadPageClient from '@/components/reads/ReadPageClient/ReadPageClient';
 export const metadata: Metadata = {
   title: 'Bitcode Reads',
   description:
-    'Request Reading, review synthesized Needs, request Finding Fits, inspect source-safe AssetPack previews, and settle for delivery.',
+    'Request Reading, review synthesized Evaluations, request Finding Fits, inspect source-safe AssetPack previews, and settle for delivery.',
   alternates: {
     canonical: '/reads',
   },

@@ -17,7 +17,7 @@ function asset(partial: Partial<DepositoryAsset> & { assetId: string }): Deposit
 }
 
 describe('MVP-E2E L3 hybrid search ranking', () => {
-  it('ranks commercial-NL pack above path-only pack for the same Need phrase', async () => {
+  it('ranks commercial-NL pack above path-only pack for the same Evaluation phrase', async () => {
     const nlRich = asset({
       assetId: 'ap-nl',
       title: 'Generic pack title',
@@ -49,8 +49,8 @@ describe('MVP-E2E L3 hybrid search ranking', () => {
     });
 
     const result = await runDepositDepositoryAssetPackSearch({
-      product: 'read-need-fits',
-      needText: 'Stripe webhook retries exponential backoff',
+      product: 'read-evaluation-fits',
+      evaluationText: 'Stripe webhook retries exponential backoff',
       queryTerms: ['Stripe webhook retries'],
       queries: ['Stripe webhook retries'],
       assets: [pathOnly, nlRich],
@@ -89,7 +89,7 @@ describe('MVP-E2E L3 hybrid search ranking', () => {
       } as Record<string, unknown>,
     });
     const result = await runDepositDepositoryAssetPackSearch({
-      product: 'read-need-fits',
+      product: 'read-evaluation-fits',
       queryTerms: ['webhook'],
       queries: ['webhook'],
       assets: [noise],

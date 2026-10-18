@@ -67,14 +67,14 @@ export const DepositImplementationAgentAssetPacksPatchPlan = factoryPTRRAgent<
   retry: { maxAttempts: 1 },
 });
 
-/** Read product twin — Need-first prompts; same schema. */
+/** Read product twin — Evaluation-first prompts; same schema. */
 export const ReadImplementationAgentAssetPacksPatchPlan = factoryPTRRAgent<
   any,
   DepositSynthesisOptions
 >({
   name: 'ReadImplementationAgentAssetPacksPatchPlan',
   description:
-    'Implementation patch-plan (read): Need-first descriptors grounded in checkout + depository hits.',
+    'Implementation patch-plan (read): Evaluation-first descriptors grounded in checkout + depository hits.',
   outputSchema: depositCandidateSetSchema,
   tools: [],
   prompt: readPrompt,
@@ -234,7 +234,7 @@ function buildDiscoveryPacket(execution: any, input: any) {
       underservedTopics: asStringArray((depositorySearch as any)?.underservedTopics),
       likelyReadTopics: asStringArray(
         (depositorySearch as any)?.likelyReadTopics ??
-          (depositorySearch as any)?.needFitTopics,
+          (depositorySearch as any)?.evaluationFitTopics,
       ),
       gapTopics: asStringArray((depositorySearch as any)?.gapTopics),
       depositoryHitTitles: depositoryHits
@@ -349,15 +349,15 @@ export default async function runDepositImplementationAgentAssetPacksPatchPlan(
   const demandContext = input?.demandContext ?? findValue(execution, 'deposit', 'demandContext') ?? [];
   const obfuscationGuidance =
     input?.obfuscationGuidance ?? findValue(execution, 'setup', 'inputComprehension');
-  const needComprehension =
-    input?.needComprehension ??
-    findValue(execution, 'setup', 'needComprehension') ??
-    findValue(execution, 'read', 'needComprehension');
-  const needText =
-    input?.need ??
-    findValue(execution, 'implementation', 'need') ??
-    findValue(execution, 'read', 'need') ??
-    (typeof needComprehension?.summary === 'string' ? needComprehension.summary : null);
+  const evaluationComprehension =
+    input?.evaluationComprehension ??
+    findValue(execution, 'setup', 'evaluationComprehension') ??
+    findValue(execution, 'read', 'evaluationComprehension');
+  const evaluationText =
+    input?.evaluation ??
+    findValue(execution, 'implementation', 'evaluation') ??
+    findValue(execution, 'read', 'evaluation') ??
+    (typeof evaluationComprehension?.summary === 'string' ? evaluationComprehension.summary : null);
 
   const { ensureDepositCheckoutSourceFiles } = await import(
     '../../ensure-checkout-source-files'
@@ -393,9 +393,9 @@ export default async function runDepositImplementationAgentAssetPacksPatchPlan(
     ...input,
     productLens,
     repository,
-    instructions: productLens === 'read' ? needText || obfuscations : obfuscations,
-    need: needText,
-    needComprehension: productLens === 'read' ? needComprehension : undefined,
+    instructions: productLens === 'read' ? evaluationText || obfuscations : obfuscations,
+    evaluation: evaluationText,
+    evaluationComprehension: productLens === 'read' ? evaluationComprehension : undefined,
     permissibleSources,
     impermissibleSources,
     demandContext,

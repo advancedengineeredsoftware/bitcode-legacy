@@ -2,7 +2,7 @@
  * MVP core E2E spine (L4) — non-UI commercial loop contracts.
  *
  * Deposit synthesis → policy → admit → depository search (NL ranking) →
- * read needinesses → BTD mock quote → activity/source-safe checks.
+ * read relatives → BTD mock quote → activity/source-safe checks.
  *
  * CI-fast: pure/package helpers only (no live LLM, no live Supabase, no browser).
  * Live SDIVF remains L2; live DB remains L3 opt-in.
@@ -15,9 +15,9 @@ import {
 import { buildDepositAssetPackOptionPolicyReport } from '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-deposits-asset-packs/deposit-asset-pack-option-policy';
 import { buildDepositAssetPackOptionSynthesis } from '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-deposits-asset-packs/deposit-asset-pack-options';
 import {
-  measureReadNeedinessesDeterministic,
-  computeNeedFitVolume,
-} from '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-neediness-measurements';
+  measureReadRelativesDeterministic,
+  computeEvaluationFitVolume,
+} from '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs/read-relative-measurements';
 import { runDepositDepositoryAssetPackSearch } from '@bitcode/asset-packs-pipelines-syntheses-domain/tools/deposit-depository-asset-pack-search';
 import type { DepositoryAsset } from '@bitcode/asset-packs-pipelines-syntheses-domain/depository-search-types';
 import { computeHonestPathOnlyAbsolutes } from '@bitcode/asset-packs-pipelines-syntheses-domain/agents/validation/agent-measure-absolutes';
@@ -32,7 +32,7 @@ import {
   applyBtdSupplyDecay,
   assertPositiveSettlementBtd,
   buildMultiRailSpotQuote,
-  computeSettlementBtdFromNeedinesses,
+  computeSettlementBtdFromRelatives,
   createMockSpotBoard,
 } from '@bitcode/btd/erc1155';
 
@@ -41,8 +41,8 @@ export type MvpCoreE2eSpineFailMode =
   | 'none'
   /** Depositor does not approve → zero admissions. */
   | 'reject-admission'
-  /** Quote from empty needinesses → fail closed (no positive BTD). */
-  | 'empty-needinesses-quote'
+  /** Quote from empty relatives → fail closed (no positive BTD). */
+  | 'empty-relatives-quote'
   /** Search corpus empty → zero hits (thin depository). */
   | 'empty-search-corpus';
 
@@ -51,7 +51,7 @@ export type MvpCoreE2eSpineInput = {
   sourceBranch?: string;
   sourceCommit?: string;
   reviewerId?: string;
-  needText?: string;
+  evaluationText?: string;
   /** Extra path-only corpus row to prove NL ranking. */
   includePathOnlyNoise?: boolean;
   /** Fail-closed matrix mode (default none = happy path). */
@@ -80,14 +80,14 @@ export type MvpCoreE2eSpineResult = {
       topScore: number | null;
       nlRankedAbovePathNoise: boolean | null;
     };
-    readNeedinesses: {
+    readRelatives: {
       rowCount: number;
       allFitSuffix: boolean;
-      needFitVolume: number;
+      evaluationFitVolume: number;
     };
     quote: {
       ok: boolean;
-      needFitVolume: number | null;
+      evaluationFitVolume: number | null;
       optionCount: number;
       provider: string | null;
     };
@@ -108,7 +108,7 @@ export type MvpCoreE2eSpineResult = {
   errors: string[];
 };
 
-const DEFAULT_NEED =
+const DEFAULT_EVALUATION =
   'I need session refresh and token rotation patterns for OAuth clients.';
 
 function depositoryAssetFromAdmission(input: {
@@ -156,7 +156,7 @@ export async function runMvpCoreE2eSpine(
   const sourceBranch = input.sourceBranch || 'main';
   const sourceCommit =
     input.sourceCommit || '31bbc0c5227b6b3aed5d107fd8507d35ec22970a';
-  const needText = (input.needText || DEFAULT_NEED).trim();
+  const evaluationText = (input.evaluationText || DEFAULT_EVALUATION).trim();
   const includePathOnlyNoise = input.includePathOnlyNoise !== false;
   const failMode: MvpCoreE2eSpineFailMode = input.failMode || 'none';
 
@@ -266,8 +266,8 @@ export async function runMvpCoreE2eSpine(
         ? [pathNoise, admittedAsset]
         : [admittedAsset];
   const search = await runDepositDepositoryAssetPackSearch({
-    product: 'read-need-fits',
-    needText,
+    product: 'read-evaluation-fits',
+    evaluationText,
     // Phrase must appear as substring in commercial NL for field-weighted lexical.
     queryTerms: ['session refresh', 'token rotation', 'OAuth'],
     queries: ['session refresh', 'token rotation'],
@@ -288,31 +288,31 @@ export async function runMvpCoreE2eSpine(
       !noiseHit || (admittedHit.finalScore ?? 0) > (noiseHit.finalScore ?? 0);
   }
 
-  // --- 4) Read needinesses (deterministic; Need present) ---
-  const needinessesForMeasure =
-    failMode === 'empty-needinesses-quote'
+  // --- 4) Read relatives (deterministic; Evaluation present) ---
+  const relativesForMeasure =
+    failMode === 'empty-relatives-quote'
       ? []
-      : measureReadNeedinessesDeterministic({
+      : measureReadRelativesDeterministic({
           title: commercialTitle,
           summary: commercialDescription,
           confidence: 0.8,
-          needSummary: needText,
+          evaluationSummary: evaluationText,
           coveredSourcePaths: ['src/auth/session.ts', 'src/auth/token.ts'],
-          patchSummary: 'Session refresh and token rotation for OAuth Need.',
-          dynamicNeedinesses: [],
+          patchSummary: 'Session refresh and token rotation for OAuth Evaluation.',
+          dynamicRelatives: [],
           dynamicKinds: [],
         });
-  const needinesses = needinessesForMeasure;
-  const needFitVolume = computeNeedFitVolume(needinesses);
+  const relatives = relativesForMeasure;
+  const evaluationFitVolume = computeEvaluationFitVolume(relatives);
 
-  // --- 5) Mock multi-rail quote from needinesses ---
+  // --- 5) Mock multi-rail quote from relatives ---
   let quoteOk = false;
-  let quoteNeedFit: number | null = null;
+  let quoteEvaluationFit: number | null = null;
   let quoteOptionCount = 0;
   let quoteProvider: string | null = null;
   try {
     const raw = assertPositiveSettlementBtd(
-      computeSettlementBtdFromNeedinesses({ needinesses }),
+      computeSettlementBtdFromRelatives({ relatives }),
     );
     const decayed = applyBtdSupplyDecay({
       rawVolumeBaseUnits: raw.amountBaseUnits,
@@ -320,13 +320,13 @@ export async function runMvpCoreE2eSpine(
     });
     const multi = buildMultiRailSpotQuote(decayed.btdVolume, createMockSpotBoard());
     quoteOk = multi.options.length > 0 && decayed.btdVolume > 0n;
-    quoteNeedFit = raw.needFitVolume;
+    quoteEvaluationFit = raw.evaluationFitVolume;
     quoteOptionCount = multi.options.length;
     quoteProvider = multi.board.provider || 'mock';
   } catch (err) {
     errors.push(
-      failMode === 'empty-needinesses-quote'
-        ? 'quote_failed_empty_needinesses'
+      failMode === 'empty-relatives-quote'
+        ? 'quote_failed_empty_relatives'
         : err instanceof Error
           ? err.message
           : String(err),
@@ -434,21 +434,21 @@ export async function runMvpCoreE2eSpine(
   if (failMode === 'empty-search-corpus' && search.hitCount === 0) {
     errors.push('empty_search_corpus');
   }
-  if (needinesses.length === 0 && failMode !== 'empty-needinesses-quote') {
-    errors.push('empty_needinesses');
+  if (relatives.length === 0 && failMode !== 'empty-relatives-quote') {
+    errors.push('empty_relatives');
   }
   if (
-    needinesses.length > 0 &&
-    !needinesses.every((n) => String(n.measurementKind || '').endsWith('-fit'))
+    relatives.length > 0 &&
+    !relatives.every((n) => String(n.measurementKind || '').endsWith('-fit'))
   ) {
-    errors.push('neediness_missing_fit_suffix');
+    errors.push('relative_missing_fit_suffix');
   }
-  if (!quoteOk && failMode !== 'empty-needinesses-quote') {
+  if (!quoteOk && failMode !== 'empty-relatives-quote') {
     errors.push('quote_failed');
   }
-  if (!quoteOk && failMode === 'empty-needinesses-quote') {
-    if (!errors.includes('quote_failed_empty_needinesses')) {
-      errors.push('quote_failed_empty_needinesses');
+  if (!quoteOk && failMode === 'empty-relatives-quote') {
+    if (!errors.includes('quote_failed_empty_relatives')) {
+      errors.push('quote_failed_empty_relatives');
     }
   }
   if (!unpaidSearchHitsHaveNoFileBodies) {
@@ -458,7 +458,7 @@ export async function runMvpCoreE2eSpine(
   // Happy path: zero errors. Fail modes: ok=false and expected error codes present.
   const expectedFailErrors: Record<Exclude<MvpCoreE2eSpineFailMode, 'none'>, string> = {
     'reject-admission': 'no_admitted_options',
-    'empty-needinesses-quote': 'quote_failed_empty_needinesses',
+    'empty-relatives-quote': 'quote_failed_empty_relatives',
     'empty-search-corpus': 'empty_search_corpus',
   };
   let ok = errors.length === 0;
@@ -497,16 +497,16 @@ export async function runMvpCoreE2eSpine(
         topScore: top?.finalScore ?? null,
         nlRankedAbovePathNoise,
       },
-      readNeedinesses: {
-        rowCount: needinesses.length,
-        allFitSuffix: needinesses.every((n) =>
+      readRelatives: {
+        rowCount: relatives.length,
+        allFitSuffix: relatives.every((n) =>
           String(n.measurementKind || '').endsWith('-fit'),
         ),
-        needFitVolume,
+        evaluationFitVolume,
       },
       quote: {
         ok: quoteOk,
-        needFitVolume: quoteNeedFit,
+        evaluationFitVolume: quoteEvaluationFit,
         optionCount: quoteOptionCount,
         provider: quoteProvider,
       },

@@ -6,10 +6,10 @@ import {
 } from '@bitcode/btd/source-to-shares';
 import type {
   AssetPackSourceSafePreview,
-  ReadNeed,
-  ReadNeedMeasurementDimension,
+  ReadEvaluation,
+  ReadEvaluationMeasurementDimension,
   ShareToFeeQuote,
-} from '../../syntheses/read/src/read-need';
+} from '../../syntheses/read/src/read-evaluation';
 
 export const BTD_SCALAR_VOLUME_QUOTE_SCHEMA = 'bitcode.btd.scalar-volume.quote-conservation' as const;
 
@@ -18,10 +18,10 @@ const BPS_SCALE_BIGINT = 10_000n;
 const VOLUME_SCALE = 1_000_000n;
 
 export type BtdScalarVolumeBlockedReason =
-  | 'reviewed_need_required'
+  | 'reviewed_evaluation_required'
   | 'selected_fit_set_required'
   | 'positive_admitted_fit_quality_required'
-  | 'need_fit_assetpack_required'
+  | 'evaluation_fit_assetpack_required'
   | 'measurement_weight_policy_required'
   | 'dedupe_proof_root_required'
   | 'source_safe_proof_root_required'
@@ -46,7 +46,7 @@ export interface BtdScalarVolumeSelectedFitInput {
 }
 
 export interface BtdScalarVolumeMeasurementWeightPolicy {
-  policyId: 'need-relative-fixed-point-weighted-volume';
+  policyId: 'evaluation-relative-fixed-point-weighted-volume';
   arithmetic: 'fixed-point-integer';
   weightScaleBps: 10_000;
   fitQualityScaleBps: 10_000;
@@ -101,13 +101,13 @@ export interface BtdScalarVolumeQuoteConservationProjection {
   state: 'final_btd_scalar_volume_admissible' | 'final_btd_scalar_volume_blocked';
   blockers: BtdScalarVolumeBlockedReason[];
   depositPotential: {
-    state: 'estimate_only_before_need_fit' | 'not_applicable';
+    state: 'estimate_only_before_evaluation_fit' | 'not_applicable';
     measurementRoot: string | null;
     weightedRequestedVolume: number | null;
     potentialRoot: string | null;
   };
-  need: {
-    needId: string | null;
+  evaluation: {
+    evaluationId: string | null;
     reviewState: string | null;
     accepted: boolean;
     measurementRoot: string | null;
@@ -120,7 +120,7 @@ export interface BtdScalarVolumeQuoteConservationProjection {
     findingFitsResultRoot: string | null;
     dedupeProofRoot: string | null;
   };
-  needFitAssetPack: {
+  evaluationFitAssetPack: {
     assetPackId: string | null;
     previewRoot: string | null;
     sourceSafeProofRoot: string | null;
@@ -160,12 +160,12 @@ export interface BtdScalarVolumeQuoteConservationProjection {
 }
 
 export interface BtdScalarVolumeQuoteConservationInput {
-  acceptedNeed?: ReadNeed | null;
+  acceptedEvaluation?: ReadEvaluation | null;
   sourceSafePreview?: AssetPackSourceSafePreview | null;
   selectedFits?: BtdScalarVolumeSelectedFitInput[] | null;
   quote?: ShareToFeeQuote | null;
   assetPackId?: string | null;
-  needFitAssetPackRoot?: string | null;
+  evaluationFitAssetPackRoot?: string | null;
   sourceSafeProofRoot?: string | null;
   sourceManifestRoot?: string | null;
   previewRoot?: string | null;
@@ -229,13 +229,13 @@ function uniqueStrings(values: Array<string | null | undefined>): string[] {
   return [...new Set(values.map((value) => firstString(value)).filter((value): value is string => Boolean(value)))];
 }
 
-function buildMeasurementWeightPolicy(vector: readonly ReadNeedMeasurementDimension[]): BtdScalarVolumeMeasurementWeightPolicy | null {
+function buildMeasurementWeightPolicy(vector: readonly ReadEvaluationMeasurementDimension[]): BtdScalarVolumeMeasurementWeightPolicy | null {
   if (!vector.length) return null;
   const weights = vector.map((measurement) => toBps(measurement.weight, `measurement weight ${measurement.dimension}`));
   const weightTotal = weights.reduce((sum, weight) => sum + weight, 0);
   if (weightTotal !== BPS_SCALE) return null;
   const withoutRoot = {
-    policyId: 'need-relative-fixed-point-weighted-volume' as const,
+    policyId: 'evaluation-relative-fixed-point-weighted-volume' as const,
     arithmetic: 'fixed-point-integer' as const,
     weightScaleBps: BPS_SCALE as 10_000,
     fitQualityScaleBps: BPS_SCALE as 10_000,
@@ -260,7 +260,7 @@ function buildMeasurementWeightPolicy(vector: readonly ReadNeedMeasurementDimens
 }
 
 function buildMeasurementRows(input: {
-  vector: readonly ReadNeedMeasurementDimension[];
+  vector: readonly ReadEvaluationMeasurementDimension[];
   admittedFitQualityBps: number;
 }): BtdScalarVolumeMeasurementRow[] {
   return input.vector.map((measurement) => {
@@ -300,7 +300,7 @@ function deriveSelectedFits(input: BtdScalarVolumeQuoteConservationInput): BtdSc
     depositorWalletId: null,
     sourceManifestRoot: preview.roots.sourceManifestRoot,
     findingFitsResultRoot: preview.fit.rankingRoot || preview.fit.queryRoot,
-    measurementRoot: preview.need.measurementRoot,
+    measurementRoot: preview.evaluation.measurementRoot,
     finalScore: preview.fit.admittedFitQuality,
     fitQualityBps: toBps(preview.fit.admittedFitQuality, 'preview admitted fit quality'),
     accepted: true as const,
@@ -369,11 +369,11 @@ export function buildBtdScalarVolumeQuoteConservation(
   input: BtdScalarVolumeQuoteConservationInput,
 ): BtdScalarVolumeQuoteConservationProjection {
   const preview = input.sourceSafePreview || null;
-  const need = input.acceptedNeed || null;
+  const evaluation = input.acceptedEvaluation || null;
   const quote = input.quote || preview?.feeQuote || null;
   const selectedFits = deriveSelectedFits(input);
   const selectedIds = selectedFitIds(selectedFits);
-  const vector = need?.pricingMeasurementInputs.measurementVector || quote?.measurementVector || [];
+  const vector = evaluation?.pricingMeasurementInputs.measurementVector || quote?.measurementVector || [];
   const policy = buildMeasurementWeightPolicy(vector);
   const admittedFitQualityBps = quote
     ? toBps(quote.admittedFitQuality, 'admitted fit quality')
@@ -392,7 +392,7 @@ export function buildBtdScalarVolumeQuoteConservation(
     weightedMicroBtd > 0n ? Number((weightedMicroBtd + VOLUME_SCALE - 1n) / VOLUME_SCALE) : 0;
   const assetPackId = firstString(input.assetPackId, preview?.assetPackId);
   const previewRoot = firstString(input.previewRoot, preview?.roots.previewRoot);
-  const sourceSafeProofRoot = firstString(input.sourceSafeProofRoot, input.needFitAssetPackRoot, preview?.roots.proofRoot);
+  const sourceSafeProofRoot = firstString(input.sourceSafeProofRoot, input.evaluationFitAssetPackRoot, preview?.roots.proofRoot);
   const sourceManifestRoot = firstString(input.sourceManifestRoot, preview?.roots.sourceManifestRoot);
   const findingFitsResultRoot = firstString(
     input.findingFitsResultRoot,
@@ -403,7 +403,7 @@ export function buildBtdScalarVolumeQuoteConservation(
     selectedIds.length > 0 && selectedIds.length === new Set(selectedIds).size
       ? rootOf({
           dedupe: 'selected-fit-set',
-          needId: need?.needId || null,
+          evaluationId: evaluation?.evaluationId || null,
           assetPackId,
           selectedIds,
           findingFitsResultRoot,
@@ -428,7 +428,7 @@ export function buildBtdScalarVolumeQuoteConservation(
         : rangeStart + rangeTokenCount;
   const measurementRowsRoot = rootOf({ measurementRows, policyRoot: policy?.policyRoot || null });
   const scalarVolumeRoot = rootOf({
-    needId: need?.needId || null,
+    evaluationId: evaluation?.evaluationId || null,
     measurementRowsRoot,
     weightedMicroBtd: weightedMicroBtd.toString(),
     normalizedBitcodeVolume,
@@ -486,10 +486,10 @@ export function buildBtdScalarVolumeQuoteConservation(
       })()
     : null;
   const blockers: BtdScalarVolumeBlockedReason[] = [];
-  if (!need || need.reviewState !== 'accepted') blockers.push('reviewed_need_required');
+  if (!evaluation || evaluation.reviewState !== 'accepted') blockers.push('reviewed_evaluation_required');
   if (!selectedIds.length || selectedIds.length !== new Set(selectedIds).size) blockers.push('selected_fit_set_required');
   if (admittedFitQualityBps <= 0) blockers.push('positive_admitted_fit_quality_required');
-  if (!assetPackId || !previewRoot) blockers.push('need_fit_assetpack_required');
+  if (!assetPackId || !previewRoot) blockers.push('evaluation_fit_assetpack_required');
   if (!policy) blockers.push('measurement_weight_policy_required');
   if (!dedupeProofRoot) blockers.push('dedupe_proof_root_required');
   if (!sourceSafeProofRoot || !sourceManifestRoot) blockers.push('source_safe_proof_root_required');
@@ -501,7 +501,7 @@ export function buildBtdScalarVolumeQuoteConservation(
   if (
     !blockers.length &&
     assetPackId &&
-    need &&
+    evaluation &&
     quote &&
     quoteAudit &&
     rangeProjection &&
@@ -509,9 +509,9 @@ export function buildBtdScalarVolumeQuoteConservation(
     findingFitsResultRoot
   ) {
     const proof = buildSourceToSharesProof({
-      readId: need.needId,
+      readId: evaluation.evaluationId,
       assetPackId,
-      acceptedNeedRoot: need.review?.acceptanceRoot || need.measurementRoot,
+      acceptedEvaluationRoot: evaluation.review?.acceptanceRoot || evaluation.measurementRoot,
       findingFitsResultRoot,
       fitDeposits: sourceToSharesFitDeposits({
         selectedFits,
@@ -519,7 +519,7 @@ export function buildBtdScalarVolumeQuoteConservation(
         depositorWalletId: firstString(input.depositorWalletId) || 'depositor-wallet-pending',
         sourceManifestRoot,
         findingFitsResultRoot,
-        measurementRoot: need.measurementRoot,
+        measurementRoot: evaluation.measurementRoot,
         admittedFitQualityBps,
       }),
       btdRange: {
@@ -577,15 +577,15 @@ export function buildBtdScalarVolumeQuoteConservation(
     if (!sourceToSharesConserved) blockers.push('source_to_shares_conservation_failed');
   }
 
-  const depositPotential = need
+  const depositPotential = evaluation
     ? {
-        state: 'estimate_only_before_need_fit' as const,
-        measurementRoot: need.measurementRoot,
-        weightedRequestedVolume: need.pricingMeasurementInputs.weightedRequestedVolume,
+        state: 'estimate_only_before_evaluation_fit' as const,
+        measurementRoot: evaluation.measurementRoot,
+        weightedRequestedVolume: evaluation.pricingMeasurementInputs.weightedRequestedVolume,
         potentialRoot: rootOf({
-          needId: need.needId,
-          measurementRoot: need.measurementRoot,
-          weightedRequestedVolume: need.pricingMeasurementInputs.weightedRequestedVolume,
+          evaluationId: evaluation.evaluationId,
+          measurementRoot: evaluation.measurementRoot,
+          weightedRequestedVolume: evaluation.pricingMeasurementInputs.weightedRequestedVolume,
           estimateOnly: true,
         }),
       }
@@ -603,7 +603,7 @@ export function buildBtdScalarVolumeQuoteConservation(
     schema: BTD_SCALAR_VOLUME_QUOTE_SCHEMA,
     state,
     blockers,
-    needId: need?.needId || null,
+    evaluationId: evaluation?.evaluationId || null,
     selectedIds,
     assetPackId,
     measurementRowsRoot,
@@ -618,12 +618,12 @@ export function buildBtdScalarVolumeQuoteConservation(
     state,
     blockers,
     depositPotential,
-    need: {
-      needId: need?.needId || null,
-      reviewState: need?.reviewState || null,
-      accepted: need?.reviewState === 'accepted',
-      measurementRoot: need?.measurementRoot || null,
-      acceptanceRoot: need?.review?.acceptanceRoot || null,
+    evaluation: {
+      evaluationId: evaluation?.evaluationId || null,
+      reviewState: evaluation?.reviewState || null,
+      accepted: evaluation?.reviewState === 'accepted',
+      measurementRoot: evaluation?.measurementRoot || null,
+      acceptanceRoot: evaluation?.review?.acceptanceRoot || null,
     },
     selectedFitSet: {
       fitDepositAssetIds: selectedIds,
@@ -632,7 +632,7 @@ export function buildBtdScalarVolumeQuoteConservation(
       findingFitsResultRoot,
       dedupeProofRoot,
     },
-    needFitAssetPack: {
+    evaluationFitAssetPack: {
       assetPackId,
       previewRoot,
       sourceSafeProofRoot,

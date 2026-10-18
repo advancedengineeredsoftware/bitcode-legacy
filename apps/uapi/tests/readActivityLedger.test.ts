@@ -1,17 +1,17 @@
 /**
- * Unit tests for read activity-ledger pure projections (Need anchors).
+ * Unit tests for read activity-ledger pure projections (Evaluation anchors).
  */
 
 import {
   READ_ACTIVITY_LEDGER_SOURCES,
-  deriveNeedAnchors,
+  deriveEvaluationAnchors,
   filterReadPipelineTableRuns,
   isReadActivityLedgerContextSource,
 } from "@/components/reads/models/read-activity-ledger";
 import {
-  buildProductNeedAnchorDraft,
-  formatNeedAnchorDescription,
-  normalizeNeedAnchorPaths,
+  buildProductEvaluationAnchorDraft,
+  formatEvaluationAnchorDescription,
+  normalizeEvaluationAnchorPaths,
 } from "@/components/bitcode/pipeline/models/pipeline-activity-history";
 import type { WorkspaceRun } from "@/components/bitcode/pipeline/models/pipeline-run-data";
 
@@ -27,13 +27,13 @@ describe("read-activity-ledger", () => {
   it("filters activity-ledger sources out of pipeline table runs", () => {
     const runs = [
       run({ id: "pipe-1", contextSource: "deposit-option-synthesis" }),
-      run({ id: "anchor-1", contextSource: "read-need-anchor" }),
+      run({ id: "anchor-1", contextSource: "read-evaluation-anchor" }),
       run({ id: "anchor-2", contextSource: "terminal-repository-context-panel" }),
       run({ id: "pipe-2" }),
     ];
     const filtered = filterReadPipelineTableRuns(runs);
     expect(filtered.map((r) => r.id)).toEqual(["pipe-1", "pipe-2"]);
-    expect(isReadActivityLedgerContextSource("read-need-anchor")).toBe(true);
+    expect(isReadActivityLedgerContextSource("read-evaluation-anchor")).toBe(true);
     expect(READ_ACTIVITY_LEDGER_SOURCES.size).toBe(3);
   });
 
@@ -41,25 +41,25 @@ describe("read-activity-ledger", () => {
     const runs = [
       run({
         id: "a1",
-        contextSource: "read-need-anchor",
-        needAnchorText: "add auth middleware",
-        needAnchorName: "Auth need",
-        needAnchorRelevantPaths: ["src/auth.ts"],
-        needAnchorIrrelevantPaths: ["vendor/"],
+        contextSource: "read-evaluation-anchor",
+        evaluationAnchorText: "add auth middleware",
+        evaluationAnchorName: "Auth need",
+        evaluationAnchorRelevantPaths: ["src/auth.ts"],
+        evaluationAnchorIrrelevantPaths: ["vendor/"],
         repository: "acme/app",
         created_at: "2026-07-02T00:00:00.000Z",
       }),
       run({
         id: "a2",
-        contextSource: "read-need-anchor",
-        needAnchorText: "add auth middleware",
-        needAnchorName: "Auth need",
-        needAnchorRelevantPaths: ["src/auth.ts"],
-        needAnchorIrrelevantPaths: ["vendor/"],
+        contextSource: "read-evaluation-anchor",
+        evaluationAnchorText: "add auth middleware",
+        evaluationAnchorName: "Auth need",
+        evaluationAnchorRelevantPaths: ["src/auth.ts"],
+        evaluationAnchorIrrelevantPaths: ["vendor/"],
         created_at: "2026-07-01T00:00:00.000Z",
       }),
     ];
-    const anchors = deriveNeedAnchors(runs);
+    const anchors = deriveEvaluationAnchors(runs);
     expect(anchors).toHaveLength(1);
     expect(anchors[0]).toMatchObject({
       id: "a1",
@@ -72,14 +72,14 @@ describe("read-activity-ledger", () => {
   });
 });
 
-describe("buildProductNeedAnchorDraft", () => {
+describe("buildProductEvaluationAnchorDraft", () => {
   it("normalizes paths and builds ledger-safe draft", () => {
-    expect(normalizeNeedAnchorPaths(["  a/b  ", "", "a/b", "c"])).toEqual([
+    expect(normalizeEvaluationAnchorPaths(["  a/b  ", "", "a/b", "c"])).toEqual([
       "a/b",
       "c",
     ]);
-    const draft = buildProductNeedAnchorDraft({
-      need: "  fix payment webhooks  ",
+    const draft = buildProductEvaluationAnchorDraft({
+      evaluation: "  fix payment webhooks  ",
       name: "Payments",
       repositoryFullName: "acme/app",
       relevantPaths: ["src/pay.ts", "src/pay.ts"],
@@ -87,13 +87,13 @@ describe("buildProductNeedAnchorDraft", () => {
     });
     expect(draft.selectAfterRecord).toBe(false);
     expect(draft.context).toMatchObject({
-      source: "read-need-anchor",
-      needAnchorName: "Payments",
+      source: "read-evaluation-anchor",
+      evaluationAnchorName: "Payments",
       relevantPathCount: 1,
       irrelevantPathCount: 1,
     });
     expect(draft.output).toMatchObject({
-      needAnchor: {
+      evaluationAnchor: {
         text: "fix payment webhooks",
         name: "Payments",
         relevantPaths: ["src/pay.ts"],
@@ -101,7 +101,7 @@ describe("buildProductNeedAnchorDraft", () => {
       },
     });
     expect(
-      formatNeedAnchorDescription({
+      formatEvaluationAnchorDescription({
         text: "fix payment webhooks",
         relevantPaths: ["src/pay.ts"],
         irrelevantPaths: ["secrets/"],

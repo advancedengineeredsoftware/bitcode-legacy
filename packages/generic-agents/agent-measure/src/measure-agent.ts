@@ -5,12 +5,12 @@
  * Measurement primitives: @bitcode/measurement-generics.
  * Category bases (framing only):
  *   → AbsolutesMeasureAgent (generic-measurements/absolutes)
- *   → NeedinessesMeasureAgent (generic-measurements/needinesses)
+ *   → RelativesMeasureAgent (generic-measurements/relatives)
  * Product:
  *   → SynthesizeAssetPacksAbsolutesMeasureAgent (generic-asset-packs/synthesis)
  *
- * Shared base is intentional: absolutes vs needinesses differ only by category,
- * framing, and neediness `-fit` validation — not by PTRR/prompt plumbing.
+ * Shared base is intentional: absolutes vs relatives differ only by category,
+ * framing, and relative `-fit` validation — not by PTRR/prompt plumbing.
  *
  * Prompt identity: named raw PromptParts under @bitcode/prompts (measure_*).
  */

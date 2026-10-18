@@ -66,7 +66,7 @@ export const AUXILLARY_DESCRIPTORS: Record<ConcreteAuxillaryPane, AuxillaryPaneD
     labelPosition: 'bottom',
     routeTitle: 'Externals Auxillary',
     routeDescription:
-      "Authorize repositories by installing Bitcode's GitHub Application. Configure 3rd-party integrations to provide more source material and to make authoring Needs and Obfuscations easier.",
+      "Authorize repositories by installing Bitcode's GitHub Application. Configure 3rd-party integrations to provide more source material and to make authoring Evaluations and Obfuscations easier.",
     featurePills: ['Repositories', 'GitHub', '3rd-parties'],
   },
   interfaces: {

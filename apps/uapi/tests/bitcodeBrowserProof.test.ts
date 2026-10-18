@@ -92,7 +92,7 @@ describe('Bitcode browser proof contract', () => {
 
     expect(reads?.interactionStates).toEqual([
       'request-read',
-      'review-synthesized-need',
+      'review-synthesized-evaluation',
       'request-fit',
       'review-synthesized-asset-pack',
       'buy-asset-pack-settle',

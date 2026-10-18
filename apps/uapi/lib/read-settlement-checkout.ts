@@ -4,7 +4,7 @@
  *
  * - rehydrate the buyer's selected options from their synthesis run
  *   (V48-Gate5-F01: the browser never supplies commercial material);
- * - price each option independently (1:1 settle law: needinesses → BTD
+ * - price each option independently (1:1 settle law: relatives → BTD
  *   volume → decay → multi-rail spot) and total each pay rail;
  * - name the settlement pay-to recipients per rail;
  * - verify a buyer-broadcast testnet payment covers the total and was not
@@ -17,7 +17,7 @@ import {
   applyBtdSupplyDecay,
   assertPositiveSettlementBtd,
   buildMultiRailSpotQuote,
-  computeSettlementBtdFromNeedinesses,
+  computeSettlementBtdFromRelatives,
   createMockSpotBoard,
   verifyBitcoinTestnetPayment,
   verifyEthereumSepoliaPayment,
@@ -169,7 +169,7 @@ export interface ReadSettlementRailQuote {
 export interface ReadSettlementOptionQuote {
   index: number;
   title: string | null;
-  needFitVolume: number;
+  evaluationFitVolume: number;
   /** Residual-supply decay applied to this option's raw volume. */
   decay: number;
   btdVolume: string;
@@ -180,7 +180,7 @@ export interface ReadSettlementQuote {
   provider: string;
   btdVolume: string;
   btdVolumeDisplay: string;
-  needFitVolume: number;
+  evaluationFitVolume: number;
   decay: number;
   perOption: ReadSettlementOptionQuote[];
   /** Σ per-option amounts, per rail — what the buyer pays in one transaction. */
@@ -208,7 +208,7 @@ export function resolveSettlementSpotBoard(env: NodeJS.ProcessEnv = process.env)
 
 /**
  * Price each selected option on its own (1:1 settle) and total the rails.
- * Throws when an option's needinesses cannot price a positive BTD volume.
+ * Throws when an option's relatives cannot price a positive BTD volume.
  */
 export function quoteReadSettlementSelection(
   options: ReadonlyArray<{ index: number; option: SettleAssetPackOption }>,
@@ -216,8 +216,8 @@ export function quoteReadSettlementSelection(
 ): ReadSettlementQuote {
   const perOption: ReadSettlementOptionQuote[] = options.map(({ index, option }) => {
     const raw = assertPositiveSettlementBtd(
-      computeSettlementBtdFromNeedinesses(
-        option.measurements as Parameters<typeof computeSettlementBtdFromNeedinesses>[0],
+      computeSettlementBtdFromRelatives(
+        option.measurements as Parameters<typeof computeSettlementBtdFromRelatives>[0],
       ),
     );
     const decayed = applyBtdSupplyDecay({ rawVolumeBaseUnits: raw.amountBaseUnits, btdTotalMinted: 0n });
@@ -225,7 +225,7 @@ export function quoteReadSettlementSelection(
     return {
       index,
       title: typeof option.title === 'string' ? option.title : null,
-      needFitVolume: raw.needFitVolume,
+      evaluationFitVolume: raw.evaluationFitVolume,
       decay: decayed.decay,
       btdVolume: decayed.btdVolume.toString(),
       rails: multi.options.map((rail) => ({
@@ -263,7 +263,7 @@ export function quoteReadSettlementSelection(
     provider: board.provider,
     btdVolume: btdTotal.toString(),
     btdVolumeDisplay: formatBaseUnits(btdTotal, 18),
-    needFitVolume: mean((quote) => quote.needFitVolume),
+    evaluationFitVolume: mean((quote) => quote.evaluationFitVolume),
     decay: mean((quote) => quote.decay),
     perOption,
     totals,

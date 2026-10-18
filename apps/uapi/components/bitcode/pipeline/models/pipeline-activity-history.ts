@@ -54,14 +54,14 @@ function buildBitcodeWorkbenchState(workbench: ProductDepositReadWorkbench) {
 }
 
 function buildReadMeasurementState(
-  needState: ProductReadScenariosState,
+  evaluationState: ProductReadScenariosState,
   scenario: ProductReadScenariosState['scenarios'][number],
 ) {
   return {
     scenario,
-    parserKind: needState.parserKind,
-    closureCriteriaCount: needState.closureCriteriaCount,
-    targetKindCount: needState.targetKindCount,
+    parserKind: evaluationState.parserKind,
+    closureCriteriaCount: evaluationState.closureCriteriaCount,
+    targetKindCount: evaluationState.targetKindCount,
   };
 }
 
@@ -156,8 +156,8 @@ function resolveContextSource(
   if (isRecord(output?.obfuscationsAnchor) || isRecord(output?.obfuscations_anchor)) {
     return 'deposit-obfuscations-anchor';
   }
-  if (isRecord(output?.needAnchor) || isRecord(output?.need_anchor)) {
-    return 'read-need-anchor';
+  if (isRecord(output?.evaluationAnchor) || isRecord(output?.evaluation_anchor)) {
+    return 'read-evaluation-anchor';
   }
   if (summary && /recorded repository anchor/i.test(summary)) {
     return 'terminal-repository-context-panel';
@@ -166,7 +166,7 @@ function resolveContextSource(
     return 'deposit-obfuscations-anchor';
   }
   if (summary && /anchored .+need/i.test(summary)) {
-    return 'read-need-anchor';
+    return 'read-evaluation-anchor';
   }
   return null;
 }
@@ -415,15 +415,15 @@ export function buildProductDepositWorkbenchDraft(
 }
 
 export function buildProductReadMeasurementDraft(
-  needState: ProductReadScenariosState,
+  evaluationState: ProductReadScenariosState,
   scenarioOverride?: ProductReadScenariosState['scenarios'][number],
   options?: { sourceRevision?: ProductSourceRevision | null },
 ): ProductActivityRecordDraft {
   const scenario =
     scenarioOverride ||
-    needState.scenarios.find((entry) => entry.selected) ||
-    needState.scenarios.find((entry) => entry.id === needState.selectedScenarioId) ||
-    needState.scenarios[0] || {
+    evaluationState.scenarios.find((entry) => entry.selected) ||
+    evaluationState.scenarios.find((entry) => entry.id === evaluationState.selectedScenarioId) ||
+    evaluationState.scenarios[0] || {
       id: 'unselected-scenario',
       label: 'Unselected scenario',
       repo: '—',
@@ -439,14 +439,14 @@ export function buildProductReadMeasurementDraft(
     summary: `Recorded read measurement for ${scenario.label}.`,
     output: {
       readMeasurement: {
-        parserKind: needState.parserKind,
-        closureCriteriaCount: needState.closureCriteriaCount,
-        targetKindCount: needState.targetKindCount,
+        parserKind: evaluationState.parserKind,
+        closureCriteriaCount: evaluationState.closureCriteriaCount,
+        targetKindCount: evaluationState.targetKindCount,
         scenario,
       },
       assetPackCompletion: {
         bitcodeActivityState: {
-          readMeasurement: buildReadMeasurementState(needState, scenario),
+          readMeasurement: buildReadMeasurementState(evaluationState, scenario),
         },
       },
     },
@@ -598,7 +598,7 @@ export function buildProductRepositoryAnchorDraft(
     type: 'agentic-execution:asset-pack',
     detailSection: 'transaction',
     // Stay on compose after save — opening the anchor row remounts ProductDetailStage
-    // and re-plays Need/Obfuscations entrance motion.
+    // and re-plays Evaluation/Obfuscations entrance motion.
     selectAfterRecord: false,
     // Explicit source package for buildRepoSnapshot (authoritative for save).
     sourceRevision: repositoryFullName
@@ -693,7 +693,7 @@ export function buildProductObfuscationsAnchorDraft(input: {
   return {
     type: 'agentic-execution:asset-pack',
     detailSection: 'transaction',
-    // Stay on compose after save (same as Need / repository anchors).
+    // Stay on compose after save (same as Evaluation / repository anchors).
     selectAfterRecord: false,
     summary: `Anchored ${namedPrefix}Obfuscations configuration${repoSuffix}.`,
     output: {
@@ -719,14 +719,14 @@ export function buildProductObfuscationsAnchorDraft(input: {
   };
 }
 
-/** Normalize path selections for Need anchors (same rules as Obfuscations). */
-export const normalizeNeedAnchorPaths = normalizeObfuscationsAnchorPaths;
+/** Normalize path selections for Evaluation anchors (same rules as Obfuscations). */
+export const normalizeEvaluationAnchorPaths = normalizeObfuscationsAnchorPaths;
 
 /**
- * Plain-text dropdown sub-text for a Need anchor (search / a11y / tests):
- * `[Clipped Need Text] | [# relevant paths] | [# irrelevant paths]`.
+ * Plain-text dropdown sub-text for an Evaluation anchor (search / a11y / tests):
+ * `[Clipped Evaluation Text] | [# relevant paths] | [# irrelevant paths]`.
  */
-export function formatNeedAnchorDescription(input: {
+export function formatEvaluationAnchorDescription(input: {
   text: string;
   relevantPaths?: string[] | null;
   irrelevantPaths?: string[] | null;
@@ -736,8 +736,8 @@ export function formatNeedAnchorDescription(input: {
   const raw = typeof input.text === 'string' ? input.text.trim().replace(/\s+/g, ' ') : '';
   const clipped =
     raw.length > clipAt ? `${raw.slice(0, clipAt).trimEnd()}…` : raw || '(empty)';
-  const relevantCount = normalizeNeedAnchorPaths(input.relevantPaths).length;
-  const irrelevantCount = normalizeNeedAnchorPaths(input.irrelevantPaths).length;
+  const relevantCount = normalizeEvaluationAnchorPaths(input.relevantPaths).length;
+  const irrelevantCount = normalizeEvaluationAnchorPaths(input.irrelevantPaths).length;
   const relevantLabel = `${relevantCount} relevant ${
     relevantCount === 1 ? 'path' : 'paths'
   }`;
@@ -748,25 +748,25 @@ export function formatNeedAnchorDescription(input: {
 }
 
 /**
- * Need anchoring — deposit Obfuscations twin. Saves Need text + Relevant /
+ * Evaluation anchoring — deposit Obfuscations twin. Saves Evaluation text + Relevant /
  * Irrelevant path selections into the activity ledger so a reader can reload
- * a previous Need configuration on a later compose.
+ * a previous Evaluation configuration on a later compose.
  */
-export function buildProductNeedAnchorDraft(input: {
-  need: string;
+export function buildProductEvaluationAnchorDraft(input: {
+  evaluation: string;
   /** Optional human label for the anchor (shown in the Load-anchor dropdown). */
   name?: string | null;
   repositoryFullName?: string | null;
   relevantPaths?: string[] | null;
   irrelevantPaths?: string[] | null;
 }): ProductActivityRecordDraft {
-  const text = input.need.trim();
+  const text = input.evaluation.trim();
   const name =
     typeof input.name === 'string' && input.name.trim()
       ? input.name.trim().slice(0, 80)
       : null;
-  const relevantPaths = normalizeNeedAnchorPaths(input.relevantPaths);
-  const irrelevantPaths = normalizeNeedAnchorPaths(input.irrelevantPaths);
+  const relevantPaths = normalizeEvaluationAnchorPaths(input.relevantPaths);
+  const irrelevantPaths = normalizeEvaluationAnchorPaths(input.irrelevantPaths);
   const namedPrefix = name ? `"${name}" ` : '';
   const repoSuffix = input.repositoryFullName
     ? ` (last used with ${input.repositoryFullName})`
@@ -774,11 +774,11 @@ export function buildProductNeedAnchorDraft(input: {
   return {
     type: 'agentic-execution:asset-pack',
     detailSection: 'transaction',
-    // Stay on Need compose after save — reads has no activity-ledger detail pane.
+    // Stay on Evaluation compose after save — reads has no activity-ledger detail pane.
     selectAfterRecord: false,
-    summary: `Anchored ${namedPrefix}Need configuration${repoSuffix}.`,
+    summary: `Anchored ${namedPrefix}Evaluation configuration${repoSuffix}.`,
     output: {
-      needAnchor: {
+      evaluationAnchor: {
         text,
         name,
         relevantPaths,
@@ -790,10 +790,10 @@ export function buildProductNeedAnchorDraft(input: {
       },
     },
     context: {
-      source: 'read-need-anchor',
+      source: 'read-evaluation-anchor',
       repositoryFullName: input.repositoryFullName || null,
-      // Source-safe label + counts only — never the full Need body.
-      needAnchorName: name,
+      // Source-safe label + counts only — never the full Evaluation body.
+      evaluationAnchorName: name,
       relevantPathCount: relevantPaths.length,
       irrelevantPathCount: irrelevantPaths.length,
     },
@@ -863,13 +863,13 @@ export function mapExecutionHistoryRunToWorkspaceRun(run: PipelineExecution): Wo
     contextSource === 'terminal-repository-context-panel' ||
     contextSource === 'repository-context-panel' ||
     contextSource === 'deposit-obfuscations-anchor' ||
-    contextSource === 'read-need-anchor';
+    contextSource === 'read-evaluation-anchor';
   // Anchors are completed history bookmarks — never present as "AssetPack bundle ready".
   const proofStatus = isLedgerAnchor
     ? contextSource === 'deposit-obfuscations-anchor'
       ? 'Obfuscations anchor'
-      : contextSource === 'read-need-anchor'
-        ? 'Need anchor'
+      : contextSource === 'read-evaluation-anchor'
+        ? 'Evaluation anchor'
         : 'Repository anchor'
     : agenticExecution.proofStatus;
   const closureFocus = isLedgerAnchor
@@ -889,8 +889,8 @@ export function mapExecutionHistoryRunToWorkspaceRun(run: PipelineExecution): Wo
           label:
             contextSource === 'deposit-obfuscations-anchor'
               ? 'Obfuscations anchor'
-              : contextSource === 'read-need-anchor'
-                ? 'Need anchor'
+              : contextSource === 'read-evaluation-anchor'
+                ? 'Evaluation anchor'
                 : 'Repository anchor',
         }
       : agenticExecution,
@@ -959,16 +959,16 @@ export function mapExecutionHistoryRunToWorkspaceRun(run: PipelineExecution): Wo
             'protectedIpExclusions',
           ]);
     })(),
-    needAnchorText: readNestedString(run.output, ['needAnchor', 'text']),
-    needAnchorName:
-      readNestedString(run.output, ['needAnchor', 'name']) ||
-      contextString('needAnchorName'),
-    needAnchorRelevantPaths: readNestedStringArray(run.output, [
-      'needAnchor',
+    evaluationAnchorText: readNestedString(run.output, ['evaluationAnchor', 'text']),
+    evaluationAnchorName:
+      readNestedString(run.output, ['evaluationAnchor', 'name']) ||
+      contextString('evaluationAnchorName'),
+    evaluationAnchorRelevantPaths: readNestedStringArray(run.output, [
+      'evaluationAnchor',
       'relevantPaths',
     ]),
-    needAnchorIrrelevantPaths: readNestedStringArray(run.output, [
-      'needAnchor',
+    evaluationAnchorIrrelevantPaths: readNestedStringArray(run.output, [
+      'evaluationAnchor',
       'irrelevantPaths',
     ]),
     depositProofRoot:
@@ -1016,7 +1016,7 @@ export function mapExecutionHistoryRunToWorkspaceRun(run: PipelineExecution): Wo
     transactionLens:
       contextSource === 'deposit-option-synthesis'
         ? 'deposit'
-        : contextString('synthesisMode') === 'read' || contextSource === 'read-need-anchor'
+        : contextString('synthesisMode') === 'read' || contextSource === 'read-evaluation-anchor'
           ? 'read'
           : isLedgerAnchor
             ? 'deposit'

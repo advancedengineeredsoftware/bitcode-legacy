@@ -302,7 +302,7 @@ describe("DepositPageClient", () => {
       }),
     );
     expect(
-      screen.getByText(/Unfit Need opportunities/u),
+      screen.getByText(/Unfit Evaluation opportunities/u),
     ).toBeInTheDocument();
     // Blueprint option cards are retired from the surface: until a real
     // AssetPacksSynthesis run returns, the options grid shows the
@@ -810,7 +810,7 @@ describe("DepositPageClient", () => {
 
   // -------------------------------------------------------------------------
   // Full synthetic option render: the deposit-decision payload (V48 Gate 3) —
-  // AP contents (patch descriptor), provenant source, the neediness preview
+  // AP contents (patch descriptor), provenant source, the relative preview
   // tile, and the absolutes measurement tiles (magnitude+unit vs volume/weight).
   // -------------------------------------------------------------------------
   function buildMeasuredSynthesisFixture() {
@@ -871,7 +871,7 @@ describe("DepositPageClient", () => {
         provenantSourcePaths: ["src/ledger/journal.ts"],
         provenantSourceCount: 1,
       },
-      neediness: {
+      relative: {
         volume: 0.62,
         demand: 0.7,
         saturation: 0.2,
@@ -906,7 +906,7 @@ describe("DepositPageClient", () => {
         demandAlignmentRoot: "deposit-option-demand-alignment:55555555",
         measurementRoot: "deposit-option-measurements:66666666",
         contentsRoot: "deposit-option-contents:cc33cc33",
-        needinessRoot: "deposit-option-neediness:dd44dd44",
+        relativeRoot: "deposit-option-relative:dd44dd44",
         reviewBoundaryRoot: "deposit-option-review-boundary:77777777",
       },
     };
@@ -971,7 +971,7 @@ describe("DepositPageClient", () => {
     fireEvent.click(synthesizeButton);
   }
 
-  it("renders the full measured option card: contents panel, provenant source, neediness tile, absolutes tiles", async () => {
+  it("renders the full measured option card: contents panel, provenant source, relative tile, absolutes tiles", async () => {
     const synthesis = buildMeasuredSynthesisFixture();
     global.fetch = jest.fn(async (url: string) => {
       if (url === "/api/deposit/synthesize-options") {
@@ -1022,9 +1022,9 @@ describe("DepositPageClient", () => {
     expect(text).toContain("Provenant source · 1 file available to Bitcode");
     expect(text).toContain("src/ledger/journal.ts");
 
-    // Neediness preview: settled-Depository grounding (or Unestimatable when the
+    // Relative preview: settled-Depository grounding (or Unestimatable when the
     // demand-estimate route is not mocked / corpus is thin). Never invent %.
-    expect(text).toContain("Neediness · est. read demand");
+    expect(text).toContain("Relative · est. read demand");
     expect(
       text.includes("Unestimatable") ||
         text.includes("62% · demand 70% · saturation 20%"),

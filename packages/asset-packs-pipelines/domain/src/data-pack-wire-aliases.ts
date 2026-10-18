@@ -30,13 +30,13 @@ export const DATA_PACK_ACTIVITY_WIRE = {
     canon: 'settled-datapack',
     legacy: 'settled-assetpack',
   },
-  needFitSynthesized: {
-    canon: 'need-fit-datapack-synthesized',
-    legacy: 'need-fit-assetpack-synthesized',
+  evaluationFitSynthesized: {
+    canon: 'evaluation-fit-datapack-synthesized',
+    legacy: 'evaluation-fit-assetpack-synthesized',
   },
-  needFitQuoted: {
-    canon: 'need-fit-datapack-quoted',
-    legacy: 'need-fit-assetpack-quoted',
+  evaluationFitQuoted: {
+    canon: 'evaluation-fit-datapack-quoted',
+    legacy: 'evaluation-fit-assetpack-quoted',
   },
   depositoryAdmitted: {
     canon: 'depository-datapack-admitted',

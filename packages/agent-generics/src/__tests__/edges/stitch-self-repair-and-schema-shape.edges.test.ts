@@ -24,7 +24,7 @@ describe('StitchUntilComplete self-repair instruction', () => {
 describe('structured output schema shape rendering', () => {
   it('renders every nested field — required fields beyond the sixth must reach the model', async () => {
     // Mirrors the deposit candidateSetSchema shape whose 7th..9th fields
-    // (confidence, patch, needinessSignal) were hidden by the truncated hint.
+    // (confidence, patch, relativeSignal) were hidden by the truncated hint.
     const candidate = z.object({
       kind: z.string(),
       title: z.string(),
@@ -34,7 +34,7 @@ describe('structured output schema shape rendering', () => {
       measurementRationale: z.string(),
       confidence: z.number(),
       patch: z.object({ fileChanges: z.array(z.object({ path: z.string(), op: z.enum(['create', 'modify', 'delete']) })), patchSummary: z.string() }),
-      needinessSignal: z.object({ demand: z.number(), saturation: z.number(), rationale: z.string() }).optional(),
+      relativeSignal: z.object({ demand: z.number(), saturation: z.number(), rationale: z.string() }).optional(),
     });
     const schema = z.object({ options: z.array(candidate) });
 
@@ -55,7 +55,7 @@ describe('structured output schema shape rendering', () => {
     const structured = factoryStructuredOutput(schema);
     await structured({ context: 'synthesize' }, exec);
 
-    for (const field of ['kind', 'title', 'summary', 'coveredSourcePaths', 'measurements', 'measurementRationale', 'confidence', 'patch', 'needinessSignal']) {
+    for (const field of ['kind', 'title', 'summary', 'coveredSourcePaths', 'measurements', 'measurementRationale', 'confidence', 'patch', 'relativeSignal']) {
       expect(capturedUserPrompt).toContain(`"${field}"`);
     }
   });

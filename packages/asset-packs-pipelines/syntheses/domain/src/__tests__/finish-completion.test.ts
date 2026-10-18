@@ -46,7 +46,7 @@ describe('finish AssetPack completion evidence', () => {
 
   it('ignores settle shippable on the EE — synthesis never emits settle surfaces', async () => {
     const exec = new Execution('pipeline:asset-pack');
-    exec.store('pipeline', 'expressedRead', 'Need: type-safe plain object check');
+    exec.store('pipeline', 'expressedRead', 'Evaluation: type-safe plain object check');
     exec.store('harness', 'sourceRevision', {
       repositoryFullName: 'octocat/Spoon-Knife',
       branch: 'main',

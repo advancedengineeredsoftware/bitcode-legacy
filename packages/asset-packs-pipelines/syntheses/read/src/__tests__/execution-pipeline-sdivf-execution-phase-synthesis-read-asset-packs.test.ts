@@ -1,5 +1,5 @@
 /**
- * Read SDIVF roster mirrors deposit shape (one key per agent, Need not Obfuscations).
+ * Read SDIVF roster mirrors deposit shape (one key per agent, Evaluation not Obfuscations).
  */
 
 import { executionPipelineSDIVFExecutionPhaseSynthesisReadAssetPacks } from '../phases/execution-pipeline-sdivf-execution-phase-synthesis-read-asset-packs';

@@ -50,10 +50,10 @@ export interface DemonstrationDataPack {
   patchSummary: string;
   confidence: number;
   /**
-   * Need vocabulary for domain-fit: `core` names what the pack is about;
+   * Evaluation vocabulary for domain-fit: `core` names what the pack is about;
    * `context` is shared domain language that only partially signals fit.
    */
-  needSignals: { core: string[]; context: string[] };
+  evaluationSignals: { core: string[]; context: string[] };
   /** Interface-fit baseline: how cleanly the surface drops into a host repo. */
   interfaceFit: number;
   /** Regexes ranking depositor checkout paths as plausible provenance. */
@@ -81,7 +81,7 @@ const RESILIENT_HTTP_CLIENT: DemonstrationDataPack = {
   patchSummary:
     'Adds a resilience module: retry policy, circuit breaker, resilientFetch wrapper, and a deterministic test suite.',
   confidence: 0.86,
-  needSignals: {
+  evaluationSignals: {
     core: ['retry', 'retries', 'backoff', 'circuit breaker', 'resilience', 'resilient', 'timeout', 'flaky'],
     context: ['http', 'fetch', 'client', 'api', '429', '503', 'outage'],
   },
@@ -364,7 +364,7 @@ const IDEMPOTENT_WEBHOOK_INGESTION: DemonstrationDataPack = {
   patchSummary:
     'Adds a webhooks module: signature verification, idempotency ledger, ingest pipeline, and tests.',
   confidence: 0.82,
-  needSignals: {
+  evaluationSignals: {
     core: ['webhook', 'hmac', 'signature', 'idempotency', 'idempotent', 'duplicate', 'replay', 'exactly once'],
     context: ['stripe', 'github', 'event', 'payload', 'callback', 'api'],
   },
@@ -559,7 +559,7 @@ const HASH_CHAINED_AUDIT_LOG: DemonstrationDataPack = {
   patchSummary:
     'Adds an audit module: canonical JSON, hash-chained append-only log, verifier with first-break reporting, and tests.',
   confidence: 0.8,
-  needSignals: {
+  evaluationSignals: {
     core: ['audit', 'tamper', 'hash chain', 'hash-chain', 'integrity', 'immutable', 'append-only'],
     context: ['log', 'compliance', 'proof', 'history', 'trail', 'sha'],
   },
@@ -720,7 +720,7 @@ const SQL_GENERATION_EVALUATION_HARNESS: DemonstrationDataPack = {
   patchSummary:
     'Adds an evals/sql_generation package: case model, normalized metrics, execution-accuracy harness, and tests.',
   confidence: 0.84,
-  needSignals: {
+  evaluationSignals: {
     core: ['text-to-sql', 'generation', 'eval', 'evaluation', 'benchmark', 'accuracy'],
     context: ['sql', 'postgres', 'postgresql', 'query', 'queries', 'database', 'llm'],
   },
@@ -929,7 +929,7 @@ const POSTGRES_MIGRATION_SAFETY_LINTER: DemonstrationDataPack = {
   patchSummary:
     'Adds a migrations-lint module: statement splitter, PostgreSQL locking rules with safe rewrites, CLI-friendly report, and tests.',
   confidence: 0.83,
-  needSignals: {
+  evaluationSignals: {
     core: ['migration', 'ddl', 'lock', 'downtime', 'schema', 'alter table', 'index'],
     context: ['postgres', 'postgresql', 'sql', 'database'],
   },
@@ -1156,7 +1156,7 @@ const TOKEN_BUCKET_RATE_LIMITER: DemonstrationDataPack = {
   patchSummary:
     'Adds a ratelimit package: token bucket, per-key limiter with eviction, handler decorator, and tests.',
   confidence: 0.81,
-  needSignals: {
+  evaluationSignals: {
     core: ['rate limit', 'rate-limit', 'ratelimit', 'throttle', 'throttling', 'token bucket', 'quota'],
     context: ['429', 'burst', 'python', 'api', 'tenant'],
   },
@@ -1320,7 +1320,7 @@ const TOKEN_BUCKET_RATE_LIMITER: DemonstrationDataPack = {
 
 /**
  * Ordered catalog. Deposits offer the packs that best fit the depositor
- * checkout; reads rank Depository supply by measured need-fit, so any Need
+ * checkout; reads rank Depository supply by measured evaluation-fit, so any Evaluation
  * shows strong matches alongside clear non-matches.
  */
 export const DEMONSTRATION_DATA_PACK_CATALOG: readonly DemonstrationDataPack[] = [

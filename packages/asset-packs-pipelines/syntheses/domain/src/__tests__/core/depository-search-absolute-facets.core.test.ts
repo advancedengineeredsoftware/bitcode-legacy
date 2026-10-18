@@ -138,8 +138,8 @@ describe('CORE: depository absolute facets', () => {
       ],
     });
     const result = await runDepositDepositoryAssetPackSearch({
-      product: 'read-need-fits',
-      needText: 'session authentication capability',
+      product: 'read-evaluation-fits',
+      evaluationText: 'session authentication capability',
       queryTerms: ['session', 'authentication', 'auth'],
       assets: [rich, other],
       staticFilters: {

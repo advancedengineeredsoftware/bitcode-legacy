@@ -562,7 +562,7 @@ describe('getTelemetryPillExplainer — Setup gold standard product/concept copy
 
     const read = getTelemetryPillExplainer('phase', 'setup', 'read');
     expect(read.specific).toContain('On the Reading Pipeline');
-    expect(read.specific).toContain('Need');
+    expect(read.specific).toContain('Evaluation');
     expect(read.generic).toBe(deposit.generic);
   });
 

@@ -211,6 +211,6 @@ describe('deposit-mode preprocess context assembly', () => {
     expect(execution.get('deposit', 'repository')).toBeUndefined();
     // The read-lens preprocess products land on the SHARED execution too.
     expect(execution.get('pipeline', 'expressedRead')).toContain('Read/Fit QA');
-    expect(execution.get('read/need', 'current')).toBeDefined();
+    expect(execution.get('read/evaluation', 'current')).toBeDefined();
   });
 });

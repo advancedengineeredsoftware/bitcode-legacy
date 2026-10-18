@@ -9,24 +9,24 @@ import type {
 } from '@bitcode/asset-packs-pipelines-syntheses-domain/depository-search';
 import { isAssetPackRealInferenceEnabled } from '@bitcode/asset-packs-pipelines-syntheses-domain/runtime-inference-policy';
 import {
-  READ_NEED_COMPREHENSION_SYNTHESIS,
-  READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT,
+  READ_EVALUATION_COMPREHENSION_SYNTHESIS,
+  READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT,
   listReadingPipelineTelemetryTrace,
 } from './reading-pipeline-contract';
 
-export type ReadNeedReviewState =
+export type ReadEvaluationReviewState =
   | 'needs_acceptance'
   | 'accepted'
   | 'rejected'
   | 'resynthesis_requested';
 
-export interface ReadNeedMeasurementDimension {
+export interface ReadEvaluationMeasurementDimension {
   dimension: string;
   weight: number;
   volume: number;
 }
 
-export interface ReadNeedRequest {
+export interface ReadEvaluationRequest {
   schema: 'bitcode.read.request';
   requestId: string;
   prompt: string;
@@ -37,15 +37,15 @@ export interface ReadNeedRequest {
   closureCriteria: string[];
   failureModes: string[];
   feedbackHistory: string[];
-  previousNeedId?: string | null;
+  previousEvaluationId?: string | null;
 }
 
-export interface ReadNeed {
+export interface ReadEvaluation {
   schema: 'bitcode.read.need';
-  needId: string;
-  reviewState: ReadNeedReviewState;
+  evaluationId: string;
+  reviewState: ReadEvaluationReviewState;
   measurementRoot: string;
-  request: ReadNeedRequest;
+  request: ReadEvaluationRequest;
   read: {
     id?: string | null;
     prompt: string;
@@ -65,7 +65,7 @@ export interface ReadNeed {
   };
   proofExpectations: string[];
   pricingMeasurementInputs: {
-    measurementVector: ReadNeedMeasurementDimension[];
+    measurementVector: ReadEvaluationMeasurementDimension[];
     weightedRequestedVolume: number;
     shareToFeeFormula: string;
   };
@@ -80,16 +80,16 @@ export interface ReadNeed {
     blockedStage?: 'finding_fits';
     feedbackHistory?: string[];
   };
-  inferenceReceipt?: ReadNeedComprehensionSynthesisInferenceReceipt;
+  inferenceReceipt?: ReadEvaluationComprehensionSynthesisInferenceReceipt;
 }
 
-export interface ReadNeedComprehensionSynthesisInferenceReceipt {
-  schema: 'bitcode.read-need-comprehension-synthesis.inference-receipt';
-  pipelineName: typeof READ_NEED_COMPREHENSION_SYNTHESIS;
+export interface ReadEvaluationComprehensionSynthesisInferenceReceipt {
+  schema: 'bitcode.read-evaluation-comprehension-synthesis.inference-receipt';
+  pipelineName: typeof READ_EVALUATION_COMPREHENSION_SYNTHESIS;
   receiptId: string;
-  needId: string;
+  evaluationId: string;
   requestId: string;
-  reviewState: ReadNeedReviewState;
+  reviewState: ReadEvaluationReviewState;
   mode: 'deterministic-fallback' | 'real-inference';
   phaseIds: string[];
   agentIds: string[];
@@ -108,9 +108,9 @@ export interface ReadNeedComprehensionSynthesisInferenceReceipt {
   };
   reviewBoundary: {
     supportsResynthesisWithFeedback: true;
-    acceptedNeedRequiredForFindingFits: true;
+    acceptedEvaluationRequiredForFindingFits: true;
     feedbackHistoryCount: number;
-    previousNeedId: string | null;
+    previousEvaluationId: string | null;
   };
   roots: {
     receiptRoot: string;
@@ -124,7 +124,7 @@ export interface ReadNeedComprehensionSynthesisInferenceReceipt {
 export interface ReadFitsFindingAdmission {
   admitted: boolean;
   blockers: string[];
-  acceptedNeed: ReadNeed | null;
+  acceptedEvaluation: ReadEvaluation | null;
 }
 
 export type AssetPackReadRightState =
@@ -135,9 +135,9 @@ export type AssetPackReadRightState =
 
 export interface ShareToFeeQuote {
   formula: string;
-  needId: string;
-  needMeasurementRoot: string;
-  measurementVector: ReadNeedMeasurementDimension[];
+  evaluationId: string;
+  evaluationMeasurementRoot: string;
+  measurementVector: ReadEvaluationMeasurementDimension[];
   admittedFitQuality: number;
   weightedAdmittedVolume: number;
   sats: number;
@@ -156,10 +156,10 @@ export interface AssetPackSourceSafePreview {
   schema: 'bitcode.asset-pack.source-safe-preview';
   previewId: string;
   assetPackId: string;
-  need: {
-    needId: string;
+  evaluation: {
+    evaluationId: string;
     measurementRoot: string;
-    reviewState: ReadNeedReviewState;
+    reviewState: ReadEvaluationReviewState;
     acceptanceRoot: string | null;
   };
   fit: {
@@ -175,12 +175,12 @@ export interface AssetPackSourceSafePreview {
     scoreBand: 'high' | 'reviewable' | 'blocked' | 'none';
   };
   measurements: {
-    needVector: ReadNeedMeasurementDimension[];
+    evaluationVector: ReadEvaluationMeasurementDimension[];
     weightedRequestedVolume: number;
     weightedAdmittedVolume: number;
   };
   roots: {
-    needMeasurementRoot: string;
+    evaluationMeasurementRoot: string;
     queryRoot: string | null;
     rankingRoot: string | null;
     proofRoot: string;
@@ -226,7 +226,7 @@ export interface AssetPackSourceSafePreview {
   createdAt: string;
 }
 
-type ReadNeedSourceInput = {
+type ReadEvaluationSourceInput = {
   read?: unknown;
   definitionOfRead?: unknown;
   readRequest?: unknown;
@@ -238,8 +238,8 @@ type ReadNeedSourceInput = {
   closureCriteria?: unknown;
   failureModes?: unknown;
   feedback?: unknown;
-  readNeed?: unknown;
-  previousReadNeed?: unknown;
+  readEvaluation?: unknown;
+  previousReadEvaluation?: unknown;
 };
 
 const inferredStringListSchema = z.preprocess(
@@ -250,7 +250,7 @@ const inferredStringListSchema = z.preprocess(
   z.array(z.string()).default([]),
 );
 
-export const ReadNeedComprehensionSynthesisSchema = z.object({
+export const ReadEvaluationComprehensionSynthesisSchema = z.object({
   requirements: inferredStringListSchema,
   closureCriteria: inferredStringListSchema,
   failureModes: inferredStringListSchema,
@@ -317,14 +317,14 @@ function normalizeArtifactKind(value: string): string {
   return value.toLowerCase().replace(/[_\s]+/g, '-');
 }
 
-function priorReadNeed(input: ReadNeedSourceInput): Record<string, unknown> | null {
-  const direct = recordValue(input.readNeed);
+function priorReadEvaluation(input: ReadEvaluationSourceInput): Record<string, unknown> | null {
+  const direct = recordValue(input.readEvaluation);
   if (direct?.schema === 'bitcode.read.need') return direct;
-  const previous = recordValue(input.previousReadNeed);
+  const previous = recordValue(input.previousReadEvaluation);
   return previous?.schema === 'bitcode.read.need' ? previous : null;
 }
 
-function normalizeSource(input: ReadNeedSourceInput) {
+function normalizeSource(input: ReadEvaluationSourceInput) {
   const readRecord = recordValue(input.read);
   const requestRecord = recordValue(input.readRequest);
   const sourceRevision = recordValue(input.sourceRevision);
@@ -371,7 +371,7 @@ function normalizeSource(input: ReadNeedSourceInput) {
   };
 }
 
-function normalizeTargetArtifactKinds(input: ReadNeedSourceInput): string[] {
+function normalizeTargetArtifactKinds(input: ReadEvaluationSourceInput): string[] {
   const readRecord = recordValue(input.read);
   const requestRecord = recordValue(input.readRequest);
   const readMeasurement = recordValue(input.readMeasurement);
@@ -393,7 +393,7 @@ function normalizeTargetArtifactKinds(input: ReadNeedSourceInput): string[] {
 function defaultRequirements(read: ReturnType<typeof normalizeSource>): string[] {
   return [
     'Understand the reader request as a bounded source-reading need before searching the depository.',
-    'Find source-bound deposited evidence that satisfies the accepted Need, not merely related prose.',
+    'Find source-bound deposited evidence that satisfies the accepted Evaluation, not merely related prose.',
     'Preserve proof, measurement, and reconciliation readback requirements through Finding Fits and AssetPack synthesis.',
     'Prevent protected source disclosure before preview approval and settlement readback.',
     ...(read.repositoryFullName ? [`Bind Fit candidates to repository ${read.repositoryFullName}.`] : []),
@@ -403,8 +403,8 @@ function defaultRequirements(read: ReturnType<typeof normalizeSource>): string[]
 
 function defaultClosureCriteria(read: ReturnType<typeof normalizeSource>): string[] {
   return [
-    'The Need has requirements, target artifact kinds, proof expectations, and failure modes.',
-    'Finding Fits discovery is source-bound to the accepted Need repository, branch, and commit constraints.',
+    'The Evaluation has requirements, target artifact kinds, proof expectations, and failure modes.',
+    'Finding Fits discovery is source-bound to the accepted Evaluation repository, branch, and commit constraints.',
     'The Fit result exposes query root, ranking root, fit deposit ids, score evidence, and proof/readback posture.',
     'The AssetPack preview excludes protected source material before settlement.',
     'BTC fee, ownership, license, journal, and ledger rows must be read back before unlock.',
@@ -414,7 +414,7 @@ function defaultClosureCriteria(read: ReturnType<typeof normalizeSource>): strin
 
 function defaultFailureModes(): string[] {
   return [
-    'need_not_accepted',
+    'evaluation_not_accepted',
     'repository_mismatch',
     'source_commit_mismatch',
     'proof_or_measurement_missing',
@@ -423,11 +423,11 @@ function defaultFailureModes(): string[] {
   ];
 }
 
-function measurementVectorForNeed(
+function measurementVectorForEvaluation(
   read: ReturnType<typeof normalizeSource>,
   targetArtifactKinds: string[],
   closureCriteria: string[]
-): ReadNeedMeasurementDimension[] {
+): ReadEvaluationMeasurementDimension[] {
   const promptVolume = Math.max(1, Math.ceil(read.prompt.length / 160));
   const targetVolume = Math.max(1, targetArtifactKinds.length);
   const closureVolume = Math.max(1, closureCriteria.length);
@@ -439,7 +439,7 @@ function measurementVectorForNeed(
   ];
 }
 
-function weightedMeasurementVolume(vector: ReadNeedMeasurementDimension[], admittedFitQuality = 1): number {
+function weightedMeasurementVolume(vector: ReadEvaluationMeasurementDimension[], admittedFitQuality = 1): number {
   return Number(vector
     .reduce((total, entry) => total + (entry.weight * entry.volume * admittedFitQuality), 0)
     .toFixed(6));
@@ -449,21 +449,21 @@ function clampQuality(value: number): number {
   return Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
 }
 
-function readNeedReceiptRoot(value: unknown): string {
+function readEvaluationReceiptRoot(value: unknown): string {
   return `sha256:${sha256(stableStringify(value))}`;
 }
 
-function buildReadNeedComprehensionSynthesisInferenceReceipt(
-  need: Omit<ReadNeed, 'inferenceReceipt'>,
-  mode: ReadNeedComprehensionSynthesisInferenceReceipt['mode']
-): ReadNeedComprehensionSynthesisInferenceReceipt {
-  const trace = listReadingPipelineTelemetryTrace(READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT);
-  const phaseIds = READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT.phases.map((phase) => phase.phaseId);
-  const agentIds = READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT.phases.flatMap((phase) =>
+function buildReadEvaluationComprehensionSynthesisInferenceReceipt(
+  evaluation: Omit<ReadEvaluation, 'inferenceReceipt'>,
+  mode: ReadEvaluationComprehensionSynthesisInferenceReceipt['mode']
+): ReadEvaluationComprehensionSynthesisInferenceReceipt {
+  const trace = listReadingPipelineTelemetryTrace(READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT);
+  const phaseIds = READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT.phases.map((phase) => phase.phaseId);
+  const agentIds = READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT.phases.flatMap((phase) =>
     phase.agents.map((agent) => agent.agentId)
   );
   const promptTemplateIds = uniqueStrings(
-    READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT.phases.flatMap((phase) =>
+    READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT.phases.flatMap((phase) =>
       phase.agents.flatMap((agent) => [
         agent.promptRegistry.agentPromptId,
         ...Object.values(agent.promptRegistry.ptrrStepPromptIds),
@@ -477,7 +477,7 @@ function buildReadNeedComprehensionSynthesisInferenceReceipt(
     )
   );
   const interpolationContextKeys = uniqueStrings(
-    READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT.phases.flatMap((phase) =>
+    READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT.phases.flatMap((phase) =>
       phase.agents.flatMap((agent) =>
         agent.ptrrSteps.flatMap((step) => step.prompt?.interpolatedContextKeys || [])
       )
@@ -485,7 +485,7 @@ function buildReadNeedComprehensionSynthesisInferenceReceipt(
   );
   const outputSchemaIds = uniqueStrings([
     ...trace.map((entry) => entry.outputType),
-    ...READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT.phases.flatMap((phase) =>
+    ...READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT.phases.flatMap((phase) =>
       phase.agents.map((agent) => agent.returnType)
     ),
   ]);
@@ -499,34 +499,34 @@ function buildReadNeedComprehensionSynthesisInferenceReceipt(
       )
     )
   );
-  const promptTemplateRoot = readNeedReceiptRoot({
-    pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
+  const promptTemplateRoot = readEvaluationReceiptRoot({
+    pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
     promptTemplateIds,
     interpolationContextKeys,
   });
-  const telemetryTraceRoot = readNeedReceiptRoot({
-    pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
+  const telemetryTraceRoot = readEvaluationReceiptRoot({
+    pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
     ptrrStepIds,
     failsafeSequenceIds,
     thinkingsGenerationIds,
     telemetryEventIds,
   });
-  const typedOutputRoot = readNeedReceiptRoot({
-    needId: need.needId,
-    requestId: need.request.requestId,
-    reviewState: need.reviewState,
-    requirements: need.requirements,
-    closureCriteria: need.closureCriteria,
-    failureModes: need.failureModes,
-    targetArtifactKinds: need.targetArtifactKinds,
-    proofExpectations: need.proofExpectations,
-    measurementRoot: need.measurementRoot,
+  const typedOutputRoot = readEvaluationReceiptRoot({
+    evaluationId: evaluation.evaluationId,
+    requestId: evaluation.request.requestId,
+    reviewState: evaluation.reviewState,
+    requirements: evaluation.requirements,
+    closureCriteria: evaluation.closureCriteria,
+    failureModes: evaluation.failureModes,
+    targetArtifactKinds: evaluation.targetArtifactKinds,
+    proofExpectations: evaluation.proofExpectations,
+    measurementRoot: evaluation.measurementRoot,
   });
-  const receiptRoot = readNeedReceiptRoot({
-    pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
-    needId: need.needId,
-    requestId: need.request.requestId,
-    reviewState: need.reviewState,
+  const receiptRoot = readEvaluationReceiptRoot({
+    pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
+    evaluationId: evaluation.evaluationId,
+    requestId: evaluation.request.requestId,
+    reviewState: evaluation.reviewState,
     mode,
     phaseIds,
     agentIds,
@@ -539,12 +539,12 @@ function buildReadNeedComprehensionSynthesisInferenceReceipt(
   });
 
   return {
-    schema: 'bitcode.read-need-comprehension-synthesis.inference-receipt',
-    pipelineName: READ_NEED_COMPREHENSION_SYNTHESIS,
-    receiptId: `read-need-receipt-${sha256(receiptRoot).slice(0, 16)}`,
-    needId: need.needId,
-    requestId: need.request.requestId,
-    reviewState: need.reviewState,
+    schema: 'bitcode.read-evaluation-comprehension-synthesis.inference-receipt',
+    pipelineName: READ_EVALUATION_COMPREHENSION_SYNTHESIS,
+    receiptId: `read-evaluation-receipt-${sha256(receiptRoot).slice(0, 16)}`,
+    evaluationId: evaluation.evaluationId,
+    requestId: evaluation.request.requestId,
+    reviewState: evaluation.reviewState,
     mode,
     phaseIds,
     agentIds,
@@ -563,13 +563,13 @@ function buildReadNeedComprehensionSynthesisInferenceReceipt(
     },
     reviewBoundary: {
       supportsResynthesisWithFeedback: true,
-      acceptedNeedRequiredForFindingFits: true,
-      feedbackHistoryCount: need.feedbackHistory.length,
-      previousNeedId: need.request.previousNeedId || null,
+      acceptedEvaluationRequiredForFindingFits: true,
+      feedbackHistoryCount: evaluation.feedbackHistory.length,
+      previousEvaluationId: evaluation.request.previousEvaluationId || null,
     },
     roots: {
       receiptRoot,
-      measurementRoot: need.measurementRoot,
+      measurementRoot: evaluation.measurementRoot,
       promptTemplateRoot,
       telemetryTraceRoot,
       typedOutputRoot,
@@ -577,36 +577,36 @@ function buildReadNeedComprehensionSynthesisInferenceReceipt(
   };
 }
 
-function withReadNeedInferenceReceipt(
-  need: Omit<ReadNeed, 'inferenceReceipt'>,
-  mode: ReadNeedComprehensionSynthesisInferenceReceipt['mode'] = 'deterministic-fallback'
-): ReadNeed {
+function withReadEvaluationInferenceReceipt(
+  evaluation: Omit<ReadEvaluation, 'inferenceReceipt'>,
+  mode: ReadEvaluationComprehensionSynthesisInferenceReceipt['mode'] = 'deterministic-fallback'
+): ReadEvaluation {
   return {
-    ...need,
-    inferenceReceipt: buildReadNeedComprehensionSynthesisInferenceReceipt(need, mode),
+    ...evaluation,
+    inferenceReceipt: buildReadEvaluationComprehensionSynthesisInferenceReceipt(evaluation, mode),
   };
 }
 
-function withoutReadNeedInferenceReceipt(need: ReadNeed): Omit<ReadNeed, 'inferenceReceipt'> {
-  const { inferenceReceipt: _receipt, ...baseNeed } = need;
-  return baseNeed;
+function withoutReadEvaluationInferenceReceipt(evaluation: ReadEvaluation): Omit<ReadEvaluation, 'inferenceReceipt'> {
+  const { inferenceReceipt: _receipt, ...baseEvaluation } = evaluation;
+  return baseEvaluation;
 }
 
-function storeReadNeedInferenceReceipt(execution: any, receipt: ReadNeedComprehensionSynthesisInferenceReceipt): void {
+function storeReadEvaluationInferenceReceipt(execution: any, receipt: ReadEvaluationComprehensionSynthesisInferenceReceipt): void {
   try {
-    execution?.store?.('read-need-comprehension', 'inferenceReceipt', receipt);
-    execution?.store?.('read-need-comprehension', 'receiptRoot', receipt.roots.receiptRoot);
-    execution?.store?.('read-need-comprehension', 'telemetryTraceRoot', receipt.roots.telemetryTraceRoot);
-    execution?.store?.('read-need-comprehension', 'sourceSafety', receipt.sourceSafety);
+    execution?.store?.('read-evaluation-comprehension', 'inferenceReceipt', receipt);
+    execution?.store?.('read-evaluation-comprehension', 'receiptRoot', receipt.roots.receiptRoot);
+    execution?.store?.('read-evaluation-comprehension', 'telemetryTraceRoot', receipt.roots.telemetryTraceRoot);
+    execution?.store?.('read-evaluation-comprehension', 'sourceSafety', receipt.sourceSafety);
   } catch {
     // Receipt storage must never make Need synthesis fail after typed output exists.
   }
 }
 
-export function synthesizeReadNeedForPipelineInput(input: ReadNeedSourceInput): ReadNeed {
+export function synthesizeReadEvaluationForPipelineInput(input: ReadEvaluationSourceInput): ReadEvaluation {
   const read = normalizeSource(input);
   const targetArtifactKinds = normalizeTargetArtifactKinds(input);
-  const previousNeed = priorReadNeed(input);
+  const previousEvaluation = priorReadEvaluation(input);
   const explicitClosureCriteria = [
     ...stringArray(input.closureCriteria),
     ...stringArray(recordValue(input.read)?.closureCriteria),
@@ -623,13 +623,13 @@ export function synthesizeReadNeedForPipelineInput(input: ReadNeedSourceInput): 
     ...stringArray(recordValue(input.readRequest)?.failureModes),
   ];
   const feedbackHistory = uniqueStrings([
-    ...stringArray(previousNeed?.feedbackHistory),
-    ...stringArray(recordValue(previousNeed?.request)?.feedbackHistory),
+    ...stringArray(previousEvaluation?.feedbackHistory),
+    ...stringArray(recordValue(previousEvaluation?.request)?.feedbackHistory),
     ...stringArray(recordValue(input.readRequest)?.feedback),
     ...stringArray(input.feedback),
   ]);
-  const measurementVector = measurementVectorForNeed(read, targetArtifactKinds, closureCriteria);
-  const readRequest: ReadNeedRequest = {
+  const measurementVector = measurementVectorForEvaluation(read, targetArtifactKinds, closureCriteria);
+  const readRequest: ReadEvaluationRequest = {
     schema: 'bitcode.read.request',
     requestId: read.id || `request-${sha256(stableStringify({ read, targetArtifactKinds })).slice(0, 16)}`,
     prompt: read.prompt,
@@ -640,7 +640,7 @@ export function synthesizeReadNeedForPipelineInput(input: ReadNeedSourceInput): 
     closureCriteria,
     failureModes: uniqueStrings(failureModes),
     feedbackHistory,
-    previousNeedId: firstString(previousNeed?.needId),
+    previousEvaluationId: firstString(previousEvaluation?.evaluationId),
   };
   const seed = {
     request: readRequest,
@@ -657,9 +657,9 @@ export function synthesizeReadNeedForPipelineInput(input: ReadNeedSourceInput): 
     measurementVector,
   }))}`;
 
-  const need: Omit<ReadNeed, 'inferenceReceipt'> = {
+  const evaluation: Omit<ReadEvaluation, 'inferenceReceipt'> = {
     schema: 'bitcode.read.need',
-    needId: `need-${sha256(stableStringify(seed)).slice(0, 16)}`,
+    evaluationId: `evaluation-${sha256(stableStringify(seed)).slice(0, 16)}`,
     reviewState: 'needs_acceptance',
     measurementRoot,
     request: readRequest,
@@ -688,38 +688,38 @@ export function synthesizeReadNeedForPipelineInput(input: ReadNeedSourceInput): 
     feedbackHistory,
   };
 
-  return withReadNeedInferenceReceipt(need);
+  return withReadEvaluationInferenceReceipt(evaluation);
 }
 
 // ---------------------------------------------------------------------------
-// ReadNeedComprehensionSynthesis real inference (non-configurable)
+// ReadEvaluationComprehensionSynthesis real inference (non-configurable)
 //
 // There is no profile and no deterministic fallback: when real inference is
-// enabled (the master /deposit switch), the Need comprehension ALWAYS performs
+// enabled (the master /deposit switch), the Evaluation comprehension ALWAYS performs
 // real generation through one ThinkingsGeneration (reason -> judge ->
 // structured output). Determinism for tests comes from mocking the LLM provider
 // at the boundary (execution LLM registry), never from a branch in here.
 // ---------------------------------------------------------------------------
 
-type ReadNeedResolvedLLM = { llm: LLM; model?: string; provider?: string; source: string };
+type ReadEvaluationResolvedLLM = { llm: LLM; model?: string; provider?: string; source: string };
 
-const readNeedStringListSchema = z.preprocess(
+const readEvaluationStringListSchema = z.preprocess(
   (value) => (typeof value === 'string' ? [value] : value),
   z.array(z.string()).default([]),
 );
 
-const ReadNeedReasoningSchema = z.object({
+const ReadEvaluationReasoningSchema = z.object({
   analysis: z.string().default(''),
-  reasoningItems: readNeedStringListSchema,
+  reasoningItems: readEvaluationStringListSchema,
   conclusion: z.string().default(''),
   confidence: z.coerce.number().min(0).max(1).catch(0),
   useTools: z.array(z.any()).optional(),
 });
 
-const ReadNeedJudgmentSchema = z.object({
+const ReadEvaluationJudgmentSchema = z.object({
   quality: z.coerce.number().min(0).max(1).catch(0),
-  issues: readNeedStringListSchema,
-  suggestions: readNeedStringListSchema,
+  issues: readEvaluationStringListSchema,
+  suggestions: readEvaluationStringListSchema,
   approved: z.preprocess((value) => {
     if (typeof value === 'string') {
       const normalized = value.trim().toLowerCase();
@@ -730,14 +730,14 @@ const ReadNeedJudgmentSchema = z.object({
   }, z.boolean().default(false)),
 });
 
-function createReadNeedInferenceNode(execution: any, agentName: string): any {
+function createReadEvaluationInferenceNode(execution: any, agentName: string): any {
   if (typeof execution?.child === 'function') {
     return execution.child(`agent:${agentName}:inference`);
   }
   return execution;
 }
 
-function resolveReadNeedConfiguredLLM(execution: any, agentExecution: any): ReadNeedResolvedLLM | undefined {
+function resolveReadEvaluationConfiguredLLM(execution: any, agentExecution: any): ReadEvaluationResolvedLLM | undefined {
   const candidates = [
     execution?.getRoot?.(),
     execution,
@@ -753,7 +753,7 @@ function resolveReadNeedConfiguredLLM(execution: any, agentExecution: any): Read
   return undefined;
 }
 
-function readNeedHasProviderCredential(provider: string): boolean {
+function readEvaluationHasProviderCredential(provider: string): boolean {
   switch (provider.toLowerCase()) {
     case 'openai':
       return Boolean(process.env.OPENAI_API_KEY);
@@ -770,9 +770,9 @@ function readNeedHasProviderCredential(provider: string): boolean {
   }
 }
 
-function resolveReadNeedEnvironmentLLM(): ReadNeedResolvedLLM | undefined {
+function resolveReadEvaluationEnvironmentLLM(): ReadEvaluationResolvedLLM | undefined {
   const { provider, model } = resolveDefaultLLMConfig();
-  if (!readNeedHasProviderCredential(provider)) return undefined;
+  if (!readEvaluationHasProviderCredential(provider)) return undefined;
   try {
     const registry = factoryLLMRegistryWithProviders();
     if (typeof (registry as any).setDefaultProvider === 'function') {
@@ -795,7 +795,7 @@ function resolveReadNeedEnvironmentLLM(): ReadNeedResolvedLLM | undefined {
   }
 }
 
-function mergeReadNeedUsage(...usages: Array<Record<string, number> | undefined>): Record<string, number> | undefined {
+function mergeReadEvaluationUsage(...usages: Array<Record<string, number> | undefined>): Record<string, number> | undefined {
   const merged: Record<string, number> = {};
   for (const usage of usages) {
     if (!usage) continue;
@@ -808,7 +808,7 @@ function mergeReadNeedUsage(...usages: Array<Record<string, number> | undefined>
   return Object.keys(merged).length ? merged : undefined;
 }
 
-async function runReadNeedComprehensionInference<T>(params: {
+async function runReadEvaluationComprehensionInference<T>(params: {
   agentName: string;
   phase: string;
   step?: string;
@@ -819,7 +819,7 @@ async function runReadNeedComprehensionInference<T>(params: {
   execution: any;
 }): Promise<T> {
   const { agentName, phase, step = 'try', systemPrompt, userPrompt, promptTemplate, schema, execution } = params;
-  const agentExecution = createReadNeedInferenceNode(execution, agentName);
+  const agentExecution = createReadEvaluationInferenceNode(execution, agentName);
   const messages = [
     { role: 'system' as const, content: systemPrompt },
     { role: 'user' as const, content: userPrompt },
@@ -848,7 +848,7 @@ async function runReadNeedComprehensionInference<T>(params: {
     });
   } catch {}
 
-  const resolvedLLM = resolveReadNeedConfiguredLLM(execution, agentExecution) ?? resolveReadNeedEnvironmentLLM();
+  const resolvedLLM = resolveReadEvaluationConfiguredLLM(execution, agentExecution) ?? resolveReadEvaluationEnvironmentLLM();
   if (!resolvedLLM) {
     const error = 'Real AssetPack inference is enabled, but no configured LLM could be resolved.';
     try {
@@ -880,7 +880,7 @@ async function runReadNeedComprehensionInference<T>(params: {
       ],
       config: { responseFormat: 'json', temperature: 0.2, maxTokens: 2048 },
     });
-    const reasoning = ReadNeedReasoningSchema.parse(JSON.parse(extractJsonFromResponse(reasoningOutput.content)));
+    const reasoning = ReadEvaluationReasoningSchema.parse(JSON.parse(extractJsonFromResponse(reasoningOutput.content)));
 
     const judgmentOutput = await resolvedLLM.llm({
       messages: [
@@ -896,7 +896,7 @@ async function runReadNeedComprehensionInference<T>(params: {
       ],
       config: { responseFormat: 'json', temperature: 0.2, maxTokens: 2048 },
     });
-    const judgment = ReadNeedJudgmentSchema.parse(JSON.parse(extractJsonFromResponse(judgmentOutput.content)));
+    const judgment = ReadEvaluationJudgmentSchema.parse(JSON.parse(extractJsonFromResponse(judgmentOutput.content)));
 
     const output = await resolvedLLM.llm({
       messages: [
@@ -938,7 +938,7 @@ async function runReadNeedComprehensionInference<T>(params: {
         provider: output.metadata?.provider ?? resolvedLLM.provider,
         model: output.metadata?.model ?? resolvedLLM.model,
       });
-      agentExecution?.store?.('llm', 'usage', mergeReadNeedUsage(reasoningOutput.usage, judgmentOutput.usage, output.usage));
+      agentExecution?.store?.('llm', 'usage', mergeReadEvaluationUsage(reasoningOutput.usage, judgmentOutput.usage, output.usage));
     } catch {}
 
     let parsed: T;
@@ -987,13 +987,13 @@ async function runReadNeedComprehensionInference<T>(params: {
   }
 }
 
-export async function synthesizeReadNeedForPipelineInputWithInference(
-  input: ReadNeedSourceInput,
+export async function synthesizeReadEvaluationForPipelineInputWithInference(
+  input: ReadEvaluationSourceInput,
   execution?: any,
-): Promise<ReadNeed> {
-  const fallbackNeed = synthesizeReadNeedForPipelineInput(input);
+): Promise<ReadEvaluation> {
+  const fallbackEvaluation = synthesizeReadEvaluationForPipelineInput(input);
   if (!isAssetPackRealInferenceEnabled()) {
-    return fallbackNeed;
+    return fallbackEvaluation;
   }
 
   const read = normalizeSource(input);
@@ -1004,15 +1004,15 @@ export async function synthesizeReadNeedForPipelineInputWithInference(
     ...stringArray(recordValue(input.readRequest)?.closureCriteria),
     ...stringArray(recordValue(input.readMeasurement)?.closureCriteria),
   ];
-  const inferred = await runReadNeedComprehensionInference({
-    agentName: 'ReadNeedComprehensionSynthesis.comprehend.need-synthesizer',
-    phase: 'ReadNeedComprehensionSynthesis.comprehend',
+  const inferred = await runReadEvaluationComprehensionInference({
+    agentName: 'ReadEvaluationComprehensionSynthesis.comprehend.evaluation-synthesizer',
+    phase: 'ReadEvaluationComprehensionSynthesis.comprehend',
     step: 'try',
     systemPrompt: [
-      'You are the ReadNeedComprehensionSynthesis PTRR agent for Bitcode Reading.',
+      'You are the ReadEvaluationComprehensionSynthesis PTRR agent for Bitcode Reading.',
       'Synthesize exactly and only what the reader asked Bitcode to read, no more and no less.',
-      'Return only schema-valid source-constrained Need comprehension fields that can later drive ReadFitsFindingSynthesis after user review and acceptance.',
-      'Preserve repository, branch, commit, target artifact kinds, closure criteria, failure modes, feedback history, and prior Need lineage as constraints on the Need.',
+      'Return only schema-valid source-constrained Evaluation comprehension fields that can later drive ReadFitsFindingSynthesis after user review and acceptance.',
+      'Preserve repository, branch, commit, target artifact kinds, closure criteria, failure modes, feedback history, and prior Evaluation lineage as constraints on the Evaluation.',
       'Do not search deposits, rank fits, claim that a fit exists, quote final BTC payment, transfer BTD rights, promise delivery, or show protected AssetPack source.',
     ].join('\n'),
     userPrompt: JSON.stringify({
@@ -1020,19 +1020,19 @@ export async function synthesizeReadNeedForPipelineInputWithInference(
       targetArtifactKinds,
       closureCriteria: explicitClosureCriteria,
       failureModes: stringArray(input.failureModes),
-      feedbackHistory: fallbackNeed.feedbackHistory,
-      previousNeedId: fallbackNeed.request.previousNeedId,
-      sourceConstraints: fallbackNeed.sourceConstraints,
-      reviewBoundary: fallbackNeed.inferenceReceipt?.reviewBoundary,
+      feedbackHistory: fallbackEvaluation.feedbackHistory,
+      previousEvaluationId: fallbackEvaluation.request.previousEvaluationId,
+      sourceConstraints: fallbackEvaluation.sourceConstraints,
+      reviewBoundary: fallbackEvaluation.inferenceReceipt?.reviewBoundary,
       requiredOutput:
         'requirements, closureCriteria, failureModes, targetArtifactKinds, proofExpectations',
     }),
     promptTemplate: {
-      templateId: 'ReadNeedComprehensionSynthesis.prompt.need-synthesis',
-      system: 'ReadNeedComprehensionSynthesis PTRR agent prompt',
+      templateId: 'ReadEvaluationComprehensionSynthesis.prompt.evaluation-synthesis',
+      system: 'ReadEvaluationComprehensionSynthesis PTRR agent prompt',
       user: 'Read request, source constraints, closure criteria, target artifact kinds, failure modes, and feedback history.',
     },
-    schema: ReadNeedComprehensionSynthesisSchema,
+    schema: ReadEvaluationComprehensionSynthesisSchema,
     execution,
   });
 
@@ -1043,19 +1043,19 @@ export async function synthesizeReadNeedForPipelineInputWithInference(
   const inferredProofExpectations = stringArray(inferred.proofExpectations);
   const closureCriteria = inferredClosureCriteria.length
     ? inferredClosureCriteria
-    : fallbackNeed.closureCriteria;
-  const synthesized = synthesizeReadNeedForPipelineInput({
+    : fallbackEvaluation.closureCriteria;
+  const synthesized = synthesizeReadEvaluationForPipelineInput({
     ...input,
     closureCriteria,
     failureModes: inferredFailureModes.length
       ? inferredFailureModes
-      : fallbackNeed.failureModes,
+      : fallbackEvaluation.failureModes,
     targetArtifactKinds: inferredTargetArtifactKinds.length
       ? inferredTargetArtifactKinds
-      : fallbackNeed.targetArtifactKinds,
+      : fallbackEvaluation.targetArtifactKinds,
   });
 
-  const inferredNeed = {
+  const inferredEvaluation = {
     ...synthesized,
     requirements: inferredRequirements.length
       ? inferredRequirements
@@ -1064,27 +1064,27 @@ export async function synthesizeReadNeedForPipelineInputWithInference(
       ? inferredProofExpectations
       : synthesized.proofExpectations,
   };
-  const withReceipt = withReadNeedInferenceReceipt(
-    withoutReadNeedInferenceReceipt(inferredNeed),
+  const withReceipt = withReadEvaluationInferenceReceipt(
+    withoutReadEvaluationInferenceReceipt(inferredEvaluation),
     'real-inference'
   );
-  storeReadNeedInferenceReceipt(execution, withReceipt.inferenceReceipt!);
+  storeReadEvaluationInferenceReceipt(execution, withReceipt.inferenceReceipt!);
   return withReceipt;
 }
 
-export function acceptReadNeed(
-  need: ReadNeed,
+export function acceptReadEvaluation(
+  evaluation: ReadEvaluation,
   acceptedAt = new Date().toISOString()
-): ReadNeed {
+): ReadEvaluation {
   const acceptanceRoot = `sha256:${sha256(stableStringify({
-    needId: need.needId,
-    measurementRoot: need.measurementRoot,
+    evaluationId: evaluation.evaluationId,
+    measurementRoot: evaluation.measurementRoot,
     acceptedAt,
     nextStage: 'finding_fits',
   }))}`;
-  const baseNeed = withoutReadNeedInferenceReceipt(need);
-  const accepted: Omit<ReadNeed, 'inferenceReceipt'> = {
-    ...baseNeed,
+  const baseEvaluation = withoutReadEvaluationInferenceReceipt(evaluation);
+  const accepted: Omit<ReadEvaluation, 'inferenceReceipt'> = {
+    ...baseEvaluation,
     reviewState: 'accepted',
     review: {
       status: 'accepted',
@@ -1093,32 +1093,32 @@ export function acceptReadNeed(
       nextStage: 'finding_fits',
     },
   };
-  return withReadNeedInferenceReceipt(accepted, need.inferenceReceipt?.mode || 'deterministic-fallback');
+  return withReadEvaluationInferenceReceipt(accepted, evaluation.inferenceReceipt?.mode || 'deterministic-fallback');
 }
 
-export function rejectReadNeed(
-  need: ReadNeed,
+export function rejectReadEvaluation(
+  evaluation: ReadEvaluation,
   feedback: string[] = [],
   rejectedAt = new Date().toISOString()
-): ReadNeed {
+): ReadEvaluation {
   const feedbackHistory = uniqueStrings([
-    ...need.feedbackHistory,
+    ...evaluation.feedbackHistory,
     ...feedback,
   ]);
   const rejectionRoot = `sha256:${sha256(stableStringify({
-    needId: need.needId,
-    measurementRoot: need.measurementRoot,
+    evaluationId: evaluation.evaluationId,
+    measurementRoot: evaluation.measurementRoot,
     rejectedAt,
     blockedStage: 'finding_fits',
     feedbackHistory,
   }))}`;
-  const baseNeed = withoutReadNeedInferenceReceipt(need);
-  const rejected: Omit<ReadNeed, 'inferenceReceipt'> = {
-    ...baseNeed,
+  const baseEvaluation = withoutReadEvaluationInferenceReceipt(evaluation);
+  const rejected: Omit<ReadEvaluation, 'inferenceReceipt'> = {
+    ...baseEvaluation,
     reviewState: 'rejected',
     feedbackHistory,
     request: {
-      ...baseNeed.request,
+      ...baseEvaluation.request,
       feedbackHistory,
     },
     review: {
@@ -1129,69 +1129,69 @@ export function rejectReadNeed(
       feedbackHistory,
     },
   };
-  return withReadNeedInferenceReceipt(rejected, need.inferenceReceipt?.mode || 'deterministic-fallback');
+  return withReadEvaluationInferenceReceipt(rejected, evaluation.inferenceReceipt?.mode || 'deterministic-fallback');
 }
 
-export function isAcceptedReadNeed(value: unknown): value is ReadNeed {
+export function isAcceptedReadEvaluation(value: unknown): value is ReadEvaluation {
   const record = recordValue(value);
   return Boolean(
     record?.schema === 'bitcode.read.need' &&
     record.reviewState === 'accepted' &&
-    typeof record.needId === 'string' &&
+    typeof record.evaluationId === 'string' &&
     typeof record.measurementRoot === 'string'
   );
 }
 
-export function resolveReadNeedFromPipelineInput(input: unknown): ReadNeed | null {
+export function resolveReadEvaluationFromPipelineInput(input: unknown): ReadEvaluation | null {
   const record = recordValue(input);
-  const direct = record?.acceptedReadNeed ?? record?.readNeed ?? record?.need;
-  return isAcceptedReadNeed(direct) || recordValue(direct)?.schema === 'bitcode.read.need'
-    ? direct as ReadNeed
+  const direct = record?.acceptedReadEvaluation ?? record?.readEvaluation ?? record?.evaluation;
+  return isAcceptedReadEvaluation(direct) || recordValue(direct)?.schema === 'bitcode.read.need'
+    ? direct as ReadEvaluation
     : null;
 }
 
-export function shouldRequireAcceptedReadNeed(input: unknown): boolean {
+export function shouldRequireAcceptedReadEvaluation(input: unknown): boolean {
   const record = recordValue(input);
   return Boolean(
-    process.env.BITCODE_PIPELINE_REQUIRE_ACCEPTED_READ_NEED === '1' ||
-    record?.requireAcceptedReadNeed === true ||
-    recordValue(record?.harness)?.requireAcceptedReadNeed === true
+    process.env.BITCODE_PIPELINE_REQUIRE_ACCEPTED_READ_EVALUATION === '1' ||
+    record?.requireAcceptedReadEvaluation === true ||
+    recordValue(record?.harness)?.requireAcceptedReadEvaluation === true
   );
 }
 
 export function admitReadFitsFinding(input: unknown): ReadFitsFindingAdmission {
-  const readNeed = resolveReadNeedFromPipelineInput(input);
-  if (isAcceptedReadNeed(readNeed)) {
-    return { admitted: true, blockers: [], acceptedNeed: readNeed };
+  const readEvaluation = resolveReadEvaluationFromPipelineInput(input);
+  if (isAcceptedReadEvaluation(readEvaluation)) {
+    return { admitted: true, blockers: [], acceptedEvaluation: readEvaluation };
   }
-  if (!shouldRequireAcceptedReadNeed(input)) {
-    return { admitted: true, blockers: [], acceptedNeed: null };
+  if (!shouldRequireAcceptedReadEvaluation(input)) {
+    return { admitted: true, blockers: [], acceptedEvaluation: null };
   }
-  const blockers = recordValue(readNeed)?.reviewState === 'rejected'
-    ? ['read_need_rejected', 'accepted_read_need_missing']
-    : ['accepted_read_need_missing'];
+  const blockers = recordValue(readEvaluation)?.reviewState === 'rejected'
+    ? ['read_evaluation_rejected', 'accepted_read_evaluation_missing']
+    : ['accepted_read_evaluation_missing'];
   return {
     admitted: false,
     blockers,
-    acceptedNeed: null,
+    acceptedEvaluation: null,
   };
 }
 
-export function readNeedToDepositorySearchRead(need: ReadNeed): DepositorySearchRead {
+export function readEvaluationToDepositorySearchRead(evaluation: ReadEvaluation): DepositorySearchRead {
   return {
-    id: need.needId,
-    prompt: need.read.prompt,
-    repositoryFullName: need.sourceConstraints.repositoryFullName,
-    sourceBranch: need.sourceConstraints.sourceBranch,
-    sourceCommit: need.sourceConstraints.sourceCommit,
-    targetArtifactKinds: need.targetArtifactKinds,
-    closureCriteria: need.closureCriteria,
-    failureModes: need.failureModes,
+    id: evaluation.evaluationId,
+    prompt: evaluation.read.prompt,
+    repositoryFullName: evaluation.sourceConstraints.repositoryFullName,
+    sourceBranch: evaluation.sourceConstraints.sourceBranch,
+    sourceCommit: evaluation.sourceConstraints.sourceCommit,
+    targetArtifactKinds: evaluation.targetArtifactKinds,
+    closureCriteria: evaluation.closureCriteria,
+    failureModes: evaluation.failureModes,
   };
 }
 
 export function buildShareToFeePreview(input: {
-  need: ReadNeed;
+  evaluation: ReadEvaluation;
   admittedFitQuality: number;
   satsPerWeightedVolume?: number;
   minimumSats?: number;
@@ -1199,7 +1199,7 @@ export function buildShareToFeePreview(input: {
 }): ShareToFeeQuote {
   const admittedFitQuality = clampQuality(input.admittedFitQuality);
   const weightedAdmittedVolume = weightedMeasurementVolume(
-    input.need.pricingMeasurementInputs.measurementVector,
+    input.evaluation.pricingMeasurementInputs.measurementVector,
     admittedFitQuality
   );
   const satsPerWeightedVolume = input.satsPerWeightedVolume ?? 1000;
@@ -1213,10 +1213,10 @@ export function buildShareToFeePreview(input: {
     networkFeePosture: 'reader_wallet_authorized_before_broadcast' as const,
   };
   const quoteRoot = `sha256:${sha256(stableStringify({
-    formula: input.need.pricingMeasurementInputs.shareToFeeFormula,
-    needId: input.need.needId,
-    needMeasurementRoot: input.need.measurementRoot,
-    measurementVector: input.need.pricingMeasurementInputs.measurementVector,
+    formula: input.evaluation.pricingMeasurementInputs.shareToFeeFormula,
+    evaluationId: input.evaluation.evaluationId,
+    evaluationMeasurementRoot: input.evaluation.measurementRoot,
+    measurementVector: input.evaluation.pricingMeasurementInputs.measurementVector,
     admittedFitQuality,
     weightedAdmittedVolume,
     sats,
@@ -1224,10 +1224,10 @@ export function buildShareToFeePreview(input: {
   }))}`;
 
   return {
-    formula: input.need.pricingMeasurementInputs.shareToFeeFormula,
-    needId: input.need.needId,
-    needMeasurementRoot: input.need.measurementRoot,
-    measurementVector: input.need.pricingMeasurementInputs.measurementVector,
+    formula: input.evaluation.pricingMeasurementInputs.shareToFeeFormula,
+    evaluationId: input.evaluation.evaluationId,
+    evaluationMeasurementRoot: input.evaluation.measurementRoot,
+    measurementVector: input.evaluation.pricingMeasurementInputs.measurementVector,
     admittedFitQuality,
     weightedAdmittedVolume,
     sats,
@@ -1272,7 +1272,7 @@ export function resolveAssetPackReadRightState(input: {
 }
 
 export function buildAssetPackSourceSafePreview(input: {
-  need: ReadNeed;
+  evaluation: ReadEvaluation;
   fitResult?: DepositoryFitResultEvidence | null;
   assetPackId?: string | null;
   proofRoot?: string | null;
@@ -1289,14 +1289,14 @@ export function buildAssetPackSourceSafePreview(input: {
     ? highestSelectedFitQuality(fitResult)
     : 0;
   const feeQuote = buildShareToFeePreview({
-    need: input.need,
+    evaluation: input.evaluation,
     admittedFitQuality,
   });
   const fitDepositAssetIds = fitResult?.fitDepositAssetIds || fitResult?.selectedCandidateAssetIds || [];
   const selectedCandidateAssetIds = fitResult?.selectedCandidateAssetIds || fitDepositAssetIds;
   const assetPackId = firstString(input.assetPackId)
     || `asset-pack-${sha256(stableStringify({
-      needId: input.need.needId,
+      evaluationId: input.evaluation.evaluationId,
       fitDepositAssetIds,
       queryRoot: fitResult?.queryRoot || null,
       rankingRoot: fitResult?.rankingRoot || null,
@@ -1310,7 +1310,7 @@ export function buildAssetPackSourceSafePreview(input: {
   const proofRoot = firstString(input.proofRoot)
     || firstSelectedProofRoot(fitResult)
     || `sha256:${sha256(stableStringify({
-      needId: input.need.needId,
+      evaluationId: input.evaluation.evaluationId,
       assetPackId,
       queryRoot: fitResult?.queryRoot || null,
       rankingRoot: fitResult?.rankingRoot || null,
@@ -1329,7 +1329,7 @@ export function buildAssetPackSourceSafePreview(input: {
   const rangeEndExclusive = rangeStart === null ? null : rangeStart + tokenCount;
   const projectionRoot = `sha256:${sha256(stableStringify({
     assetPackId,
-    needId: input.need.needId,
+    evaluationId: input.evaluation.evaluationId,
     feeQuoteRoot: feeQuote.quoteRoot,
     tokenCount,
     normalizedBitcodeVolume,
@@ -1338,7 +1338,7 @@ export function buildAssetPackSourceSafePreview(input: {
   }))}`;
   const previewRoot = `sha256:${sha256(stableStringify({
     assetPackId,
-    needId: input.need.needId,
+    evaluationId: input.evaluation.evaluationId,
     fitResultState: fitResult?.resultState || 'blocked_readiness',
     fitDepositAssetIds,
     feeQuoteRoot: feeQuote.quoteRoot,
@@ -1353,11 +1353,11 @@ export function buildAssetPackSourceSafePreview(input: {
     schema: 'bitcode.asset-pack.source-safe-preview',
     previewId: `preview-${sha256(previewRoot).slice(0, 16)}`,
     assetPackId,
-    need: {
-      needId: input.need.needId,
-      measurementRoot: input.need.measurementRoot,
-      reviewState: input.need.reviewState,
-      acceptanceRoot: input.need.review?.acceptanceRoot || null,
+    evaluation: {
+      evaluationId: input.evaluation.evaluationId,
+      measurementRoot: input.evaluation.measurementRoot,
+      reviewState: input.evaluation.reviewState,
+      acceptanceRoot: input.evaluation.review?.acceptanceRoot || null,
     },
     fit: {
       resultState: fitResult?.resultState || 'blocked_readiness',
@@ -1372,12 +1372,12 @@ export function buildAssetPackSourceSafePreview(input: {
       scoreBand: scoreBandFor(admittedFitQuality),
     },
     measurements: {
-      needVector: input.need.pricingMeasurementInputs.measurementVector,
-      weightedRequestedVolume: input.need.pricingMeasurementInputs.weightedRequestedVolume,
+      evaluationVector: input.evaluation.pricingMeasurementInputs.measurementVector,
+      weightedRequestedVolume: input.evaluation.pricingMeasurementInputs.weightedRequestedVolume,
       weightedAdmittedVolume: feeQuote.weightedAdmittedVolume,
     },
     roots: {
-      needMeasurementRoot: input.need.measurementRoot,
+      evaluationMeasurementRoot: input.evaluation.measurementRoot,
       queryRoot: fitResult?.queryRoot || null,
       rankingRoot: fitResult?.rankingRoot || null,
       proofRoot,

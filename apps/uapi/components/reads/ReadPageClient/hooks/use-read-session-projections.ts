@@ -126,11 +126,11 @@ export function useReadSessionProjections(input: {
             selectedRun?.contextWorkbench === "read-admission" ||
             selectedRun?.transactionLens === "read",
         ),
-        hasSynthesizedNeed: Boolean(
+        hasSynthesizedEvaluation: Boolean(
           admittedReadActivityId ||
             selectedRun?.contextSource === "terminal-staged-reading",
         ),
-        hasAcceptedNeed: Boolean(admittedReadActivityId),
+        hasAcceptedEvaluation: Boolean(admittedReadActivityId),
         findingFitsRunning: Boolean(
           selectedRun?.type?.includes("asset-pack") &&
             selectedRun.status === "running",

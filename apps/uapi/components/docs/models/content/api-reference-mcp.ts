@@ -96,11 +96,11 @@ export const mcpApiReference = [
         method: 'tools/call',
         packagePath: 'apps/mcp/src/tools/product-tools.ts',
         useWhen:
-          'Synthesize Read DataPack options from Need configuration — same law as /reads.',
+          'Synthesize Read DataPack options from Evaluation configuration — same law as /reads.',
         howToUse: 'Pass repository and need (prompt required). Requires confirmation (write).',
         inputs: [
           'repository: required target/source RepositoryContext.',
-          'need: required Need configuration (prompt and optional accepted-need fields).',
+          'need: required Evaluation configuration (prompt and optional accepted-evaluation fields).',
           'streaming, organizationId, connections, attachments.',
         ],
         outputs: [

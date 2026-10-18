@@ -8,4 +8,4 @@
  */
 import { PromptPart } from '../../parts/PromptPart';
 export const PROMPTPART_SPECIFIC_PHASE_SYNTHESIZEREADS_SETUP_ROSTER_DETAILCONTENT: PromptPart =
-  'Read Setup roster (typical): clone-vcs → parallel {initialize-lsp, initialize-mcps-tools, comprehend-needs} → danger-wall.' as PromptPart;
+  'Read Setup roster (typical): clone-vcs → parallel {initialize-lsp, initialize-mcps-tools, comprehend-evaluations} → danger-wall.' as PromptPart;

@@ -2,11 +2,11 @@
  * Read AssetPack option card — unpaid commercial disclosure only.
  *
  * Pre-settle law (V48-Gate5-F01): title + summary + measurements (absolutes /
- * needinesses / need-fit / confidence) + optional coverage % of request-SHA
+ * relatives / evaluation-fit / confidence) + optional coverage % of request-SHA
  * catalog. Forbidden: covered path names, path-ops, patch bodies, patchfile
  * download, host source.
  *
- * Commercial buy/no-buy: needinesses (*-fit) first; absolute gates/quality
+ * Commercial buy/no-buy: relatives (*-fit) first; absolute gates/quality
  * second; full catalogue behind expand.
  */
 "use client";
@@ -121,7 +121,7 @@ export function ReadsOptionCard(props: {
   const [showFullCatalogue, setShowFullCatalogue] = useState(false);
 
   const absolutes = asReadings(option.measurements?.absolutes);
-  const needinesses = asReadings(option.measurements?.needinesses);
+  const relatives = asReadings(option.measurements?.relatives);
   const coveragePercent =
     typeof option.coveragePercent === "number"
       ? option.coveragePercent
@@ -132,13 +132,13 @@ export function ReadsOptionCard(props: {
   const projection = useMemo(
     () =>
       buildReadBuyerMeasurementProjection({
-        needinesses,
+        relatives,
         absolutes,
-        needFit: option.needFit,
+        evaluationFit: option.evaluationFit,
       }),
     // option identity drives recompute; lists are derived each render
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [option.index, option.needFit, option.measurements, option.title],
+    [option.index, option.evaluationFit, option.measurements, option.title],
   );
 
   const recTone =
@@ -197,14 +197,14 @@ export function ReadsOptionCard(props: {
             <li key={r}>{r}</li>
           ))}
         </ul>
-        {typeof projection.needFitVolume === "number" ? (
+        {typeof projection.evaluationFitVolume === "number" ? (
           <p className="mt-2 font-mono text-[0.7rem]">
-            need-fit {projection.needFitVolume.toFixed(3)}
+            evaluation-fit {projection.evaluationFitVolume.toFixed(3)}
             <span className="ml-2 opacity-70">
-              ({projection.needFitSource})
+              ({projection.evaluationFitSource})
             </span>
             {" · "}
-            BTD volume tracks needinesses only
+            BTD volume tracks relatives only
           </p>
         ) : null}
       </div>
@@ -215,7 +215,7 @@ export function ReadsOptionCard(props: {
         data-testid={`reads-option-fit-panel-${option.index}`}
       >
         <p className="text-[0.6rem] uppercase tracking-[0.14em] text-neutral-500">
-          Need fit (buy signal)
+          Evaluation fit (buy signal)
         </p>
         <div className="grid gap-2.5">
           {projection.fitRows.map((row) => (
@@ -268,10 +268,10 @@ export function ReadsOptionCard(props: {
 
       <div className="flex flex-wrap items-center gap-2 text-[0.65rem] text-neutral-400">
         <span className="border border-white/10 px-2 py-0.5">
-          absolutes {projection.absoluteCount || absolutes.length}
+          Absolute {projection.absoluteCount || absolutes.length}
         </span>
         <span className="border border-white/10 px-2 py-0.5">
-          needinesses {projection.needinessCount || needinesses.length}
+          Relative {projection.relativeCount || relatives.length}
         </span>
         {projection.honesty.total > 0 ? (
           <span
@@ -313,7 +313,7 @@ export function ReadsOptionCard(props: {
         Source material unlocks only after settle — PR delivery on a{" "}
         <span className="font-mono text-neutral-400">bitcode/</span> branch from
         your request SHA, plus entitled downloads on Packs. Buy/no-buy above is
-        measurement-only (needinesses + absolute gates), not legal advice.
+        measurement-only (relatives + absolute gates), not legal advice.
       </p>
 
       {showFullCatalogue ? (
@@ -324,7 +324,7 @@ export function ReadsOptionCard(props: {
           {absolutes.length > 0 ? (
             <div>
               <p className="text-[0.6rem] uppercase tracking-wide text-neutral-500">
-                Absolutes (full)
+                Absolute (full catalogue)
               </p>
               <ul className="mt-1 max-h-48 space-y-0.5 overflow-y-auto">
                 {absolutes.map((row, i) => (
@@ -339,14 +339,14 @@ export function ReadsOptionCard(props: {
               </ul>
             </div>
           ) : null}
-          {needinesses.length > 0 ? (
+          {relatives.length > 0 ? (
             <div>
               <p className="text-[0.6rem] uppercase tracking-wide text-neutral-500">
-                Needinesses (*-fit)
+                Relative
               </p>
               <ul className="mt-1 space-y-0.5">
-                {needinesses.map((row, i) => (
-                  <li key={`need-${i}`}>
+                {relatives.map((row, i) => (
+                  <li key={`evaluation-${i}`}>
                     {row.label || row.measurementKind || row.kind || "fit"}
                     {typeof row.volume === "number"
                       ? ` · ${row.volume.toFixed(3)}`

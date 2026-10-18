@@ -37,7 +37,7 @@ export type DepositorySearchChannelId =
 export interface DepositorySearchQueryPlan {
   schema: 'bitcode.asset-pack.depository-search.query-plan';
   pipelineName: typeof READ_FITS_FINDING_SYNTHESIS;
-  derivedFrom: 'accepted-read-need';
+  derivedFrom: 'accepted-read-evaluation';
   channelIds: DepositorySearchChannelId[];
   channels: Array<{
     channelId: DepositorySearchChannelId;
@@ -367,7 +367,7 @@ export const READ_FITS_FINDING_SYNTHESIS_SEARCH_CHANNELS: DepositorySearchQueryP
   {
     channelId: 'lexical',
     scoreField: 'channelScores.lexical',
-    sourceSafeEvidence: 'overlap between Need query terms and source-safe asset corpus terms',
+    sourceSafeEvidence: 'overlap between Evaluation query terms and source-safe asset corpus terms',
   },
   {
     channelId: 'symbolic',

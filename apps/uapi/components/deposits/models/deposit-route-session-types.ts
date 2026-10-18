@@ -42,7 +42,7 @@ export interface DepositRouteSessionInput extends DepositOptionSynthesisRequest 
    */
   precomputedOptionSynthesis?: DepositAssetPackOptionSynthesis | null;
   sourceCriticalitySignals?: DepositOptionCriticalitySignal[] | null;
-  unfitNeedOpportunitySignals?: DepositOptionDemandSignal[] | null;
+  unfitEvaluationOpportunitySignals?: DepositOptionDemandSignal[] | null;
   /** Settled Depository DataPack demand estimate (search-grounded). */
   settledDemandEstimate?: {
     estimatable: boolean;

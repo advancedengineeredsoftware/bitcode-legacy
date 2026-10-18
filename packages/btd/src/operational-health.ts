@@ -508,7 +508,7 @@ function buildOperationalMintingRead(input: {
     {
       assetPackId,
       readId: 'operational-read',
-      acceptedNeed: true,
+      acceptedEvaluation: true,
       acceptedFit: true,
       sourceManifestRoot: 'operational-source-manifest-root',
       measurementReceiptRoot: measurement.receipt.proofRoot,
@@ -598,9 +598,9 @@ function buildOperationalMintingRead(input: {
       databaseFacts: databaseProjectedFacts,
       metaphysicalFacts: [
         {
-          factId: 'operational-need-fit-context',
-          factKind: 'need_fit_context',
-          canonicalRoot: 'operational-private-need-fit-root',
+          factId: 'operational-evaluation-fit-context',
+          factKind: 'evaluation_fit_context',
+          canonicalRoot: 'operational-private-evaluation-fit-root',
           receiptRoot: mintReceipt.fitReceiptRoot,
           private: true,
         },

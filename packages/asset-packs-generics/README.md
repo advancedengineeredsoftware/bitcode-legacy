@@ -20,7 +20,7 @@ Measurements are **part of the AssetPack shape**, not an optional product add-on
 ```ts
 measurements: {
   absolutes: MeasurementReading[];
-  needinesses: MeasurementReading[];  // always [] on deposit; populated on read
+  relatives: MeasurementReading[];  // always [] on deposit; populated on read
 }
 ```
 

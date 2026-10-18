@@ -2,7 +2,7 @@
   "name": "@bitcode/generic-asset-packs-read-synthesized",
   "version": "0.1.0",
   "private": true,
-  "description": "ReadSynthesizedAssetPack: shared synthesis base + needinesses + BTD/BTC commercial fields",
+  "description": "ReadSynthesizedAssetPack: shared synthesis base + relatives + BTD/BTC commercial fields",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "exports": {

@@ -246,7 +246,7 @@ export function finalizeSettle(
       depositor: master,
       amountBaseUnits: totalMinted,
       assetPackKey: quote.assetPackKey,
-      needFitMicro: quote.needFitMicro,
+      evaluationFitMicro: quote.evaluationFitMicro,
       settlementSequence,
       issuedAt,
     },

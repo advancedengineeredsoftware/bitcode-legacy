@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { buildAssetPackPostprocessedResult, normalizeAssetPackOutput } from '../postprocess';
 import { Execution } from '@bitcode/execution-generics';
-import { acceptReadNeed, synthesizeReadNeedForPipelineInput } from '../../../read/src/read-need';
+import { acceptReadEvaluation, synthesizeReadEvaluationForPipelineInput } from '../../../read/src/read-evaluation';
 
 describe('normalizeAssetPackOutput', () => {
   it('backfills filesModified and summary; PR only from settle shippable, never finish/*', () => {
@@ -219,9 +219,9 @@ describe('normalizeAssetPackOutput', () => {
     expect((result.deliveryMechanism as any)?.pullRequest).toBeUndefined();
   });
 
-  it('derives and stores source-safe preview evidence from an accepted Need and Finding Fits result', () => {
+  it('derives and stores source-safe preview evidence from an accepted Evaluation and Finding Fits result', () => {
     const exec = new Execution('pipeline:asset-pack');
-    const acceptedNeed = acceptReadNeed(synthesizeReadNeedForPipelineInput({
+    const acceptedEvaluation = acceptReadEvaluation(synthesizeReadEvaluationForPipelineInput({
       read: {
         id: 'read-1',
         prompt: 'Find deposited source evidence for a source-safe product AssetPack preview.',
@@ -261,7 +261,7 @@ describe('normalizeAssetPackOutput', () => {
       },
     };
 
-    exec.store('read/need', 'accepted', acceptedNeed);
+    exec.store('read/evaluation', 'accepted', acceptedEvaluation);
     exec.store('fit', 'result', fitResult);
 
     const normalized = normalizeAssetPackOutput({
@@ -276,8 +276,8 @@ describe('normalizeAssetPackOutput', () => {
 
     expect(normalized.sourceSafePreview).toMatchObject({
       schema: 'bitcode.asset-pack.source-safe-preview',
-      need: {
-        needId: acceptedNeed.needId,
+      evaluation: {
+        evaluationId: acceptedEvaluation.evaluationId,
         reviewState: 'accepted',
       },
       fit: {

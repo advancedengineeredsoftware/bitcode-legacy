@@ -7,12 +7,12 @@ import {
   type DepositoryAsset,
 } from '@bitcode/asset-packs-pipelines-syntheses-domain/depository-search';
 import { buildReadFitsFindingRuntime } from '../read-fits-finding-runtime';
-import { buildReadNeedReviewResynthesisRuntime } from '../read-need-review-resynthesis';
+import { buildReadEvaluationReviewResynthesisRuntime } from '../read-evaluation-review-resynthesis';
 import {
-  acceptReadNeed,
+  acceptReadEvaluation,
   admitReadFitsFinding,
-  synthesizeReadNeedForPipelineInput,
-} from '../read-need';
+  synthesizeReadEvaluationForPipelineInput,
+} from '../read-evaluation';
 import { buildReadingInterfaceProductParity } from '../reading-interface-product-parity';
 import { buildReadingOperationalTelemetryRepairReadback } from '../reading-operational-telemetry-repair-readback';
 import {
@@ -33,12 +33,12 @@ const readInput = {
   read: {
     id: 'read-gate10',
     prompt:
-      'Request a local and staging Reading rehearsal that understands a Need, finds many deposits, previews an AssetPack, settles, and ships a pull request after BTD rights transfer.',
+      'Request a local and staging Reading rehearsal that understands an Evaluation, finds many deposits, previews an AssetPack, settles, and ships a pull request after BTD rights transfer.',
   },
   sourceRevision,
   targetArtifactKinds: ['asset-pack', 'fit-provenance', 'settlement-proof', 'pull-request'],
   closureCriteria: [
-    'ReadNeedComprehensionSynthesis produces an accepted Need.',
+    'ReadEvaluationComprehensionSynthesis produces an accepted Evaluation.',
     'ReadFitsFindingSynthesis finds many Depository fits above threshold.',
     'AssetPack preview remains source-safe until BTC settlement and BTD rights transfer.',
     'Telemetry streaming and ledger/database/storage readback are replayable.',
@@ -50,7 +50,7 @@ function depositoryAsset(assetId: string): DepositoryAsset {
     assetId,
     title: 'Local staging rehearsal fit deposit',
     summary:
-      'Source-safe summary for local and staging Reading rehearsal, accepted Need, many fits, preview, settlement, BTD rights transfer, and pull-request delivery.',
+      'Source-safe summary for local and staging Reading rehearsal, accepted Evaluation, many fits, preview, settlement, BTD rights transfer, and pull-request delivery.',
     artifactKind: 'asset-pack',
     repositoryFullName: sourceRevision.repositoryFullName,
     sourceBranch: sourceRevision.branch,
@@ -61,7 +61,7 @@ function depositoryAsset(assetId: string): DepositoryAsset {
         unitId: `${assetId}:unit-1`,
         unitKind: 'asset-pack',
         text:
-          'local staging rehearsal accepted Need many fits depository search source-safe preview settlement BTD rights pull request telemetry ledger database storage',
+          'local staging rehearsal accepted Evaluation many fits depository search source-safe preview settlement BTD rights pull request telemetry ledger database storage',
         unitHash: `sha256:${assetId}-unit`,
       },
     ],
@@ -76,18 +76,18 @@ function depositoryAsset(assetId: string): DepositoryAsset {
 }
 
 async function settledInputs() {
-  const need = acceptReadNeed(
-    synthesizeReadNeedForPipelineInput(readInput),
+  const evaluation = acceptReadEvaluation(
+    synthesizeReadEvaluationForPipelineInput(readInput),
     '2026-05-23T00:00:00.000Z',
   );
-  const readNeedRuntime = buildReadNeedReviewResynthesisRuntime({
-    action: 'accept_read_need',
-    readNeed: need,
+  const readEvaluationRuntime = buildReadEvaluationReviewResynthesisRuntime({
+    action: 'accept_read_evaluation',
+    readEvaluation: evaluation,
   });
   const search = await runDepositorySearchForPipelineInput({
     ...readInput,
-    acceptedReadNeed: need,
-    requireAcceptedReadNeed: true,
+    acceptedReadEvaluation: evaluation,
+    requireAcceptedReadEvaluation: true,
     depositoryAssets: [
       depositoryAsset('fit-deposit-rehearsal-1'),
       depositoryAsset('fit-deposit-rehearsal-2'),
@@ -96,12 +96,12 @@ async function settledInputs() {
   });
   const fitResult = buildDepositoryFitResultEvidence(search);
   const readFitsRuntime = buildReadFitsFindingRuntime({
-    admission: admitReadFitsFinding({ acceptedReadNeed: need, requireAcceptedReadNeed: true }),
+    admission: admitReadFitsFinding({ acceptedReadEvaluation: evaluation, requireAcceptedReadEvaluation: true }),
     result: search,
     fitResult,
   });
   const previewBoundary = buildAssetPackPreviewBoundary({
-    need,
+    evaluation,
     fitResult,
     pullRequestTarget: 'https://github.com/octocat/Spoon-Knife/pull/410',
     createdAt: '2026-05-23T00:00:00.000Z',
@@ -115,14 +115,14 @@ async function settledInputs() {
   });
   const operationalReadback = buildReadingOperationalTelemetryRepairReadback({
     runId: 'reading-rehearsal-gate10',
-    readNeedRuntime,
+    readEvaluationRuntime,
     readFitsRuntime,
     previewBoundary,
     settlementBoundary,
     createdAt: '2026-05-23T00:00:00.000Z',
   });
   const interfaceParity = buildReadingInterfaceProductParity({
-    readNeedRuntime,
+    readEvaluationRuntime,
     readFitsRuntime,
     previewBoundary,
     settlementBoundary,
@@ -130,7 +130,7 @@ async function settledInputs() {
   });
 
   return {
-    readNeedRuntime,
+    readEvaluationRuntime,
     readFitsRuntime,
     previewBoundary,
     settlementBoundary,
@@ -155,8 +155,8 @@ describe('Reading local and staging rehearsal', () => {
         stagingTestnetLaneCovered: true,
         stagingProjectRef: 'tkpyosihuouusyaxtbau',
         stagingRestHost: 'https://tkpyosihuouusyaxtbau.supabase.co/rest/v1/',
-        readNeedComprehensionCovered: true,
-        acceptedNeedCovered: true,
+        readEvaluationComprehensionCovered: true,
+        acceptedEvaluationCovered: true,
         readFitsFindingCovered: true,
         depositoryManyFitsCovered: true,
         sourceSafePreviewCovered: true,
@@ -183,7 +183,7 @@ describe('Reading local and staging rehearsal', () => {
     expect(rehearsal.rows.map((row) => row.rowId)).toEqual(
       expect.arrayContaining([
         'stage:request-read',
-        'stage:review-synthesized-need',
+        'stage:review-synthesized-evaluation',
         'stage:request-finding-fits',
         'stage:review-assetpack-preview',
         'stage:buy-assetpack-settle',

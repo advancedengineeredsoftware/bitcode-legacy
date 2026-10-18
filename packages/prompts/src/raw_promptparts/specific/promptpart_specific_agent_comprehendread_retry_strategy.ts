@@ -12,4 +12,4 @@ import { PromptPart } from '../../parts/PromptPart';
  * ]
  */
 export const PROMPTPART_SPECIFIC_AGENT_COMPREHENDREAD_RETRY_STRATEGY: PromptPart =
-  'Recover Read-Need comprehension by reducing the output to the safest evidence-backed Need: use deterministic defaults only when the Read Request or source context supports them, keep ambiguous or missing facts out of typed fields, carry feedback history for resynthesis, preserve the accepted-Need gate before Finding Fits, and fail closed rather than inventing fits, BTC settlement, BTD rights, or deliverable source.' as PromptPart;
+  'Recover Read-Evaluation comprehension by reducing the output to the safest evidence-backed Evaluation: use deterministic defaults only when the Read Request or source context supports them, keep ambiguous or missing facts out of typed fields, carry feedback history for resynthesis, preserve the accepted-Evaluation gate before Finding Fits, and fail closed rather than inventing fits, BTC settlement, BTD rights, or deliverable source.' as PromptPart;

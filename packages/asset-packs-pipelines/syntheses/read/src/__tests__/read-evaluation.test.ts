@@ -1,14 +1,14 @@
 import {
-  acceptReadNeed,
+  acceptReadEvaluation,
   admitReadFitsFinding,
   buildAssetPackSourceSafePreview,
   buildShareToFeePreview,
-  isAcceptedReadNeed,
-  readNeedToDepositorySearchRead,
+  isAcceptedReadEvaluation,
+  readEvaluationToDepositorySearchRead,
   resolveAssetPackReadRightState,
-  synthesizeReadNeedForPipelineInputWithInference,
-  synthesizeReadNeedForPipelineInput,
-} from '../read-need';
+  synthesizeReadEvaluationForPipelineInputWithInference,
+  synthesizeReadEvaluationForPipelineInput,
+} from '../read-evaluation';
 import {
   buildDepositoryFitResultEvidence,
   runDepositorySearchForPipelineInput,
@@ -54,7 +54,7 @@ function depositoryAsset() {
   };
 }
 
-describe('Read-Need synthesis and Finding Fits admission', () => {
+describe('Read-Evaluation synthesis and Finding Fits admission', () => {
   const originalRealInferenceFlag = process.env.BITCODE_ASSET_PACK_REAL_INFERENCE;
 
   afterEach(() => {
@@ -65,38 +65,38 @@ describe('Read-Need synthesis and Finding Fits admission', () => {
     }
   });
 
-  it('synthesizes a measured Need that remains pending until accepted', () => {
-    const need = synthesizeReadNeedForPipelineInput(input);
+  it('synthesizes a measured Evaluation that remains pending until accepted', () => {
+    const evaluation = synthesizeReadEvaluationForPipelineInput(input);
 
-    expect(need.schema).toBe('bitcode.read.need');
-    expect(need.needId).toMatch(/^need-[a-f0-9]{16}$/);
-    expect(need.reviewState).toBe('needs_acceptance');
-    expect(need.measurementRoot).toMatch(/^sha256:/);
-    expect(need.request).toMatchObject({
+    expect(evaluation.schema).toBe('bitcode.read.need');
+    expect(evaluation.evaluationId).toMatch(/^evaluation-[a-f0-9]{16}$/);
+    expect(evaluation.reviewState).toBe('needs_acceptance');
+    expect(evaluation.measurementRoot).toMatch(/^sha256:/);
+    expect(evaluation.request).toMatchObject({
       schema: 'bitcode.read.request',
       requestId: 'read-1',
       prompt: input.read.prompt,
       repositoryFullName: 'octocat/Spoon-Knife',
       sourceBranch: 'main',
       sourceCommit: '31bbc0c5227b6b3aed5d107fd8507d35ec22970a',
-      previousNeedId: null,
+      previousEvaluationId: null,
     });
-    expect(need.sourceConstraints).toMatchObject({
+    expect(evaluation.sourceConstraints).toMatchObject({
       repositoryFullName: 'octocat/Spoon-Knife',
       sourceBranch: 'main',
       sourceCommit: '31bbc0c5227b6b3aed5d107fd8507d35ec22970a',
       protectedSourceDisclosure: 'forbidden_before_settlement',
     });
-    expect(need.pricingMeasurementInputs.measurementVector).toEqual(
+    expect(evaluation.pricingMeasurementInputs.measurementVector).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ dimension: 'semantic_relevance' }),
         expect.objectContaining({ dimension: 'source_binding' }),
       ])
     );
-    expect(need.inferenceReceipt).toMatchObject({
-      schema: 'bitcode.read-need-comprehension-synthesis.inference-receipt',
-      pipelineName: 'ReadNeedComprehensionSynthesis',
-      needId: need.needId,
+    expect(evaluation.inferenceReceipt).toMatchObject({
+      schema: 'bitcode.read-evaluation-comprehension-synthesis.inference-receipt',
+      pipelineName: 'ReadEvaluationComprehensionSynthesis',
+      evaluationId: evaluation.evaluationId,
       requestId: 'read-1',
       reviewState: 'needs_acceptance',
       mode: 'deterministic-fallback',
@@ -108,80 +108,80 @@ describe('Read-Need synthesis and Finding Fits admission', () => {
       },
       reviewBoundary: {
         supportsResynthesisWithFeedback: true,
-        acceptedNeedRequiredForFindingFits: true,
+        acceptedEvaluationRequiredForFindingFits: true,
         feedbackHistoryCount: 0,
-        previousNeedId: null,
+        previousEvaluationId: null,
       },
     });
-    expect(need.inferenceReceipt?.phaseIds).toEqual([
-      'ReadNeedComprehensionSynthesis.request',
-      'ReadNeedComprehensionSynthesis.comprehend',
-      'ReadNeedComprehensionSynthesis.measure',
-      'ReadNeedComprehensionSynthesis.review',
+    expect(evaluation.inferenceReceipt?.phaseIds).toEqual([
+      'ReadEvaluationComprehensionSynthesis.request',
+      'ReadEvaluationComprehensionSynthesis.comprehend',
+      'ReadEvaluationComprehensionSynthesis.measure',
+      'ReadEvaluationComprehensionSynthesis.review',
     ]);
-    expect(need.inferenceReceipt?.agentIds).toHaveLength(4);
-    expect(need.inferenceReceipt?.ptrrStepIds).toHaveLength(16);
-    expect(need.inferenceReceipt?.failsafeSequenceIds).toHaveLength(48);
-    expect(need.inferenceReceipt?.thinkingsGenerationIds).toHaveLength(48);
-    expect(need.inferenceReceipt?.promptTemplateIds).toEqual(
+    expect(evaluation.inferenceReceipt?.agentIds).toHaveLength(4);
+    expect(evaluation.inferenceReceipt?.ptrrStepIds).toHaveLength(16);
+    expect(evaluation.inferenceReceipt?.failsafeSequenceIds).toHaveLength(48);
+    expect(evaluation.inferenceReceipt?.thinkingsGenerationIds).toHaveLength(48);
+    expect(evaluation.inferenceReceipt?.promptTemplateIds).toEqual(
       expect.arrayContaining([
-        'ReadNeedComprehensionSynthesis.prompt.comprehend.need-synthesizer.agent',
-        'ReadNeedComprehensionSynthesis.prompt.need-synthesis',
+        'ReadEvaluationComprehensionSynthesis.prompt.comprehend.evaluation-synthesizer.agent',
+        'ReadEvaluationComprehensionSynthesis.prompt.evaluation-synthesis',
       ])
     );
-    expect(need.inferenceReceipt?.roots.receiptRoot).toMatch(/^sha256:/);
+    expect(evaluation.inferenceReceipt?.roots.receiptRoot).toMatch(/^sha256:/);
   });
 
   it('carries Read Request lineage and feedback through resynthesis', () => {
-    const first = synthesizeReadNeedForPipelineInput({
+    const first = synthesizeReadEvaluationForPipelineInput({
       ...input,
       feedback: ['Keep proof roots prominent.'],
     });
-    const second = synthesizeReadNeedForPipelineInput({
+    const second = synthesizeReadEvaluationForPipelineInput({
       ...input,
-      previousReadNeed: first,
-      feedback: ['Exclude settlement completion from Need comprehension.'],
+      previousReadEvaluation: first,
+      feedback: ['Exclude settlement completion from Evaluation comprehension.'],
     });
 
-    expect(second.needId).not.toBe(first.needId);
-    expect(second.request.previousNeedId).toBe(first.needId);
+    expect(second.evaluationId).not.toBe(first.evaluationId);
+    expect(second.request.previousEvaluationId).toBe(first.evaluationId);
     expect(second.feedbackHistory).toEqual([
       'Keep proof roots prominent.',
-      'Exclude settlement completion from Need comprehension.',
+      'Exclude settlement completion from Evaluation comprehension.',
     ]);
     expect(second.request.feedbackHistory).toEqual(second.feedbackHistory);
     expect(second.reviewState).toBe('needs_acceptance');
     expect(second.inferenceReceipt?.reviewBoundary).toMatchObject({
       feedbackHistoryCount: 2,
-      previousNeedId: first.needId,
+      previousEvaluationId: first.evaluationId,
     });
   });
 
-  it('accepts a Need as the only admissible input to strict Finding Fits search', () => {
-    const accepted = acceptReadNeed(synthesizeReadNeedForPipelineInput(input), '2026-05-18T00:00:00.000Z');
+  it('accepts an Evaluation as the only admissible input to strict Finding Fits search', () => {
+    const accepted = acceptReadEvaluation(synthesizeReadEvaluationForPipelineInput(input), '2026-05-18T00:00:00.000Z');
 
-    expect(isAcceptedReadNeed(accepted)).toBe(true);
+    expect(isAcceptedReadEvaluation(accepted)).toBe(true);
     expect(accepted.inferenceReceipt).toMatchObject({
-      pipelineName: 'ReadNeedComprehensionSynthesis',
+      pipelineName: 'ReadEvaluationComprehensionSynthesis',
       reviewState: 'accepted',
       mode: 'deterministic-fallback',
       reviewBoundary: {
-        acceptedNeedRequiredForFindingFits: true,
+        acceptedEvaluationRequiredForFindingFits: true,
       },
     });
-    expect(admitReadFitsFinding({ acceptedReadNeed: accepted, requireAcceptedReadNeed: true })).toMatchObject({
+    expect(admitReadFitsFinding({ acceptedReadEvaluation: accepted, requireAcceptedReadEvaluation: true })).toMatchObject({
       admitted: true,
-      acceptedNeed: accepted,
+      acceptedEvaluation: accepted,
       blockers: [],
     });
-    expect(readNeedToDepositorySearchRead(accepted)).toMatchObject({
-      id: accepted.needId,
+    expect(readEvaluationToDepositorySearchRead(accepted)).toMatchObject({
+      id: accepted.evaluationId,
       prompt: accepted.read.prompt,
       sourceCommit: '31bbc0c5227b6b3aed5d107fd8507d35ec22970a',
     });
   });
 
-  it('runs real-inference ReadNeedComprehension through one ThinkingsGeneration contract when enabled', async () => {
+  it('runs real-inference ReadEvaluationComprehension through one ThinkingsGeneration contract when enabled', async () => {
     process.env.BITCODE_ASSET_PACK_REAL_INFERENCE = '1';
     const llm = jest
       .fn()
@@ -189,7 +189,7 @@ describe('Read-Need synthesis and Finding Fits admission', () => {
         content: JSON.stringify({
           analysis: 'The reader needs a source-bound product readiness AssetPack.',
           steps: ['read request', 'bound source revision', 'extract closure criteria'],
-          conclusion: 'Synthesize a narrow Need for product readiness evidence.',
+          conclusion: 'Synthesize a narrow Evaluation for product readiness evidence.',
           confidence: 0.91,
         }),
       })
@@ -205,7 +205,7 @@ describe('Read-Need synthesis and Finding Fits admission', () => {
         content: JSON.stringify({
           requirements: [
             'Find source-bound evidence for the Deposit and Reading path.',
-            'Keep the Need constrained to the selected repository revision.',
+            'Keep the Evaluation constrained to the selected repository revision.',
           ],
           closureCriteria: [
             'Finding Fits discovery must return source-bound fit deposit ids.',
@@ -218,21 +218,21 @@ describe('Read-Need synthesis and Finding Fits admission', () => {
       });
     const execution = fakeInferenceExecution(llm);
 
-    const need = await synthesizeReadNeedForPipelineInputWithInference(input, execution);
+    const evaluation = await synthesizeReadEvaluationForPipelineInputWithInference(input, execution);
 
     expect(llm).toHaveBeenCalledTimes(3);
-    expect(need.requirements).toContain('Find source-bound evidence for the Deposit and Reading path.');
-    expect(need.closureCriteria).toContain('Finding Fits discovery must return source-bound fit deposit ids.');
-    expect(need.failureModes).toContain('protected_source_disclosed_before_settlement');
-    expect(need.targetArtifactKinds).toEqual(['asset-pack-evidence', 'proof-root']);
-    expect(need.proofExpectations).toContain(
+    expect(evaluation.requirements).toContain('Find source-bound evidence for the Deposit and Reading path.');
+    expect(evaluation.closureCriteria).toContain('Finding Fits discovery must return source-bound fit deposit ids.');
+    expect(evaluation.failureModes).toContain('protected_source_disclosed_before_settlement');
+    expect(evaluation.targetArtifactKinds).toEqual(['asset-pack-evidence', 'proof-root']);
+    expect(evaluation.proofExpectations).toContain(
       'ThinkingsGeneration telemetry contains reasoning, judgment, and typed output.'
     );
-    expect(need.reviewState).toBe('needs_acceptance');
-    expect(need.inferenceReceipt).toMatchObject({
-      pipelineName: 'ReadNeedComprehensionSynthesis',
+    expect(evaluation.reviewState).toBe('needs_acceptance');
+    expect(evaluation.inferenceReceipt).toMatchObject({
+      pipelineName: 'ReadEvaluationComprehensionSynthesis',
       mode: 'real-inference',
-      needId: need.needId,
+      evaluationId: evaluation.evaluationId,
       reviewState: 'needs_acceptance',
     });
     expect(execution.store).toHaveBeenCalledWith('bounded-inference', 'mode', 'thinkings-generation');
@@ -246,13 +246,13 @@ describe('Read-Need synthesis and Finding Fits admission', () => {
     );
     expect(execution.store).toHaveBeenCalledWith('bounded-inference', 'status', 'success');
     expect(execution.store).toHaveBeenCalledWith(
-      'read-need-comprehension',
+      'read-evaluation-comprehension',
       'inferenceReceipt',
       expect.objectContaining({
-        pipelineName: 'ReadNeedComprehensionSynthesis',
+        pipelineName: 'ReadEvaluationComprehensionSynthesis',
         mode: 'real-inference',
         ptrrStepIds: expect.arrayContaining([
-          'ReadNeedComprehensionSynthesis.comprehend.need-synthesizer.try',
+          'ReadEvaluationComprehensionSynthesis.comprehend.evaluation-synthesizer.try',
         ]),
       })
     );
@@ -266,53 +266,53 @@ describe('Read-Need synthesis and Finding Fits admission', () => {
     );
   });
 
-  it('blocks strict Finding Fits search before Need acceptance', async () => {
+  it('blocks strict Finding Fits search before Evaluation acceptance', async () => {
     const result = await runDepositorySearchForPipelineInput({
       ...input,
-      requireAcceptedReadNeed: true,
+      requireAcceptedReadEvaluation: true,
       depositoryAssets: [depositoryAsset()],
     });
 
     expect(result.resultState).toBe('blocked_readiness');
     expect(result.resultReasons).toEqual(
       expect.arrayContaining([
-        'Finding Fits search requires an accepted Read-Need before depository discovery.',
-        'accepted_read_need_missing',
+        'Finding Fits search requires an accepted Read-Evaluation before depository discovery.',
+        'accepted_read_evaluation_missing',
       ])
     );
     expect(result.candidateRanking).toHaveLength(0);
   });
 
-  it('uses the accepted Need measurement and source constraints for Finding Fits', async () => {
-    const acceptedReadNeed = acceptReadNeed(
-      synthesizeReadNeedForPipelineInput(input),
+  it('uses the accepted Evaluation measurement and source constraints for Finding Fits', async () => {
+    const acceptedReadEvaluation = acceptReadEvaluation(
+      synthesizeReadEvaluationForPipelineInput(input),
       '2026-05-18T00:00:00.000Z'
     );
 
     const result = await runDepositorySearchForPipelineInput({
       ...input,
-      acceptedReadNeed,
-      requireAcceptedReadNeed: true,
+      acceptedReadEvaluation,
+      requireAcceptedReadEvaluation: true,
       depositoryAssets: [depositoryAsset()],
     });
 
     expect(result.resultState).toBe('worthy_fit');
-    expect(result.read.id).toBe(acceptedReadNeed.needId);
-    expect(result.read.sourceCommit).toBe(acceptedReadNeed.sourceConstraints.sourceCommit);
+    expect(result.read.id).toBe(acceptedReadEvaluation.evaluationId);
+    expect(result.read.sourceCommit).toBe(acceptedReadEvaluation.sourceConstraints.sourceCommit);
     expect(result.selectedCandidateAssetIds).toEqual(['deposit-asset-1']);
   });
 
-  it('derives a source-safe Share-to-Fee preview from accepted Need measurements', () => {
-    const acceptedReadNeed = acceptReadNeed(synthesizeReadNeedForPipelineInput(input));
+  it('derives a source-safe Share-to-Fee preview from accepted Evaluation measurements', () => {
+    const acceptedReadEvaluation = acceptReadEvaluation(synthesizeReadEvaluationForPipelineInput(input));
     const preview = buildShareToFeePreview({
-      need: acceptedReadNeed,
+      evaluation: acceptedReadEvaluation,
       admittedFitQuality: 0.75,
     });
 
     expect(preview).toMatchObject({
       formula: 'sum(measurement.weight * measurement.volume * admitted_fit_quality)',
-      needId: acceptedReadNeed.needId,
-      needMeasurementRoot: acceptedReadNeed.measurementRoot,
+      evaluationId: acceptedReadEvaluation.evaluationId,
+      evaluationMeasurementRoot: acceptedReadEvaluation.measurementRoot,
       finalityState: 'preview_not_paid',
       payer: 'reader',
     });
@@ -322,25 +322,25 @@ describe('Read-Need synthesis and Finding Fits admission', () => {
       dustFloorSats: 546,
       networkFeePosture: 'reader_wallet_authorized_before_broadcast',
     });
-    expect(preview.measurementVector).toBe(acceptedReadNeed.pricingMeasurementInputs.measurementVector);
+    expect(preview.measurementVector).toBe(acceptedReadEvaluation.pricingMeasurementInputs.measurementVector);
     expect(preview.quoteRoot).toMatch(/^sha256:/);
     expect(preview.sats).toBeGreaterThanOrEqual(546);
   });
 
   it('builds a source-safe AssetPack preview without unlocking protected source', async () => {
-    const acceptedReadNeed = acceptReadNeed(
-      synthesizeReadNeedForPipelineInput(input),
+    const acceptedReadEvaluation = acceptReadEvaluation(
+      synthesizeReadEvaluationForPipelineInput(input),
       '2026-05-18T00:00:00.000Z'
     );
     const search = await runDepositorySearchForPipelineInput({
       ...input,
-      acceptedReadNeed,
-      requireAcceptedReadNeed: true,
+      acceptedReadEvaluation,
+      requireAcceptedReadEvaluation: true,
       depositoryAssets: [depositoryAsset()],
     });
     const fitResult = buildDepositoryFitResultEvidence(search);
     const preview = buildAssetPackSourceSafePreview({
-      need: acceptedReadNeed,
+      evaluation: acceptedReadEvaluation,
       fitResult,
       rangeStart: 42,
       pullRequestTarget: 'https://github.com/octocat/Spoon-Knife/pull/6',
@@ -349,9 +349,9 @@ describe('Read-Need synthesis and Finding Fits admission', () => {
 
     expect(preview).toMatchObject({
       schema: 'bitcode.asset-pack.source-safe-preview',
-      need: {
-        needId: acceptedReadNeed.needId,
-        measurementRoot: acceptedReadNeed.measurementRoot,
+      evaluation: {
+        evaluationId: acceptedReadEvaluation.evaluationId,
+        measurementRoot: acceptedReadEvaluation.measurementRoot,
         reviewState: 'accepted',
       },
       fit: {

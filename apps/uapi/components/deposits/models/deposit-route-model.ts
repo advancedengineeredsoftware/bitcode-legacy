@@ -220,10 +220,10 @@ export function buildDepositRouteSession(
   });
   const earningSupplyIntelligence = buildDepositorEarningSupplyIntelligence({
     policyReport: policy,
-    unfitNeedOpportunitySignals:
+    unfitEvaluationOpportunitySignals:
       settledDemand.estimatable === false
         ? []
-        : input.unfitNeedOpportunitySignals,
+        : input.unfitEvaluationOpportunitySignals,
     createdAt: input.createdAt,
     demandUnestimatable: settledDemand.estimatable === false,
     demandUnestimatableRationale:

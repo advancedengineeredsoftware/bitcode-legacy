@@ -169,7 +169,7 @@ export interface OrganizationPolicyWalletAuthority {
 const ROUTE_ACTIONS: Record<OrganizationPolicyRoute, BtdOrganizationPermissionAction[]> = {
   '/reads': [
     'request_read',
-    'review_need',
+    'review_evaluation',
     'request_finding_fits',
     'review_asset_pack_preview',
     'pay_btc_fee',

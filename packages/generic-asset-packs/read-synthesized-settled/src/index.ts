@@ -31,7 +31,7 @@ export const READ_SYNTHESIZED_SETTLED_ASSET_PACK_SCHEMA =
 
 /** Settled BTD rights after mint-btd + settle-btd. */
 export interface ReadSynthesizedSettledBtdRights {
-  needFitVolume: number;
+  evaluationFitVolume: number;
   amountBaseUnits: string;
   masterAccount: string;
   buyerAccount: string;
@@ -71,7 +71,7 @@ export interface ReadSynthesizedSettledDelivery {
 }
 
 /**
- * Settled read AssetPack — synthesis base + read needinesses + settlement rights.
+ * Settled read AssetPack — synthesis base + read relatives + settlement rights.
  */
 export interface ReadSynthesizedSettledAssetPack
   extends Omit<ReadSynthesizedAssetPack, 'identity' | 'settleable' | 'selectable'> {
@@ -81,7 +81,7 @@ export interface ReadSynthesizedSettledAssetPack
   };
   measurements: {
     absolutes: SynthesisMeasurementReading[];
-    needinesses: SynthesisMeasurementReading[];
+    relatives: SynthesisMeasurementReading[];
   };
   btdRights: ReadSynthesizedSettledBtdRights;
   btcSettlement: ReadSynthesizedSettledBtcSettlement;
@@ -115,10 +115,10 @@ export function buildReadSynthesizedSettledAssetPack(
     },
     measurements: {
       absolutes: [...readOption.measurements.absolutes],
-      needinesses: [...readOption.measurements.needinesses],
+      relatives: [...readOption.measurements.relatives],
     },
     btd: {
-      needFitVolume: input.btdRights.needFitVolume,
+      evaluationFitVolume: input.btdRights.evaluationFitVolume,
       amountBaseUnits: input.btdRights.amountBaseUnits,
       quoteRoot: readOption.btd?.quoteRoot ?? null,
       proofRoot: input.btdRights.mintProofRoot ?? null,

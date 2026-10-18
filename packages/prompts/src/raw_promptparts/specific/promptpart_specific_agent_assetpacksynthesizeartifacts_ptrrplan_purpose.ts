@@ -11,4 +11,4 @@
 import { PromptPart } from '../../parts/PromptPart';
 
 export const PROMPTPART_SPECIFIC_AGENT_ASSETPACKSYNTHESIZEARTIFACTS_PTRRPLAN_PURPOSE: PromptPart =
-  'PTRR Plan Step: plan AssetPack synthesis from the accepted Read-Need, ranked fit deposits, selected source-safe evidence, repository constraints, proof obligations, preview measurements, and post-settlement delivery boundary.' as PromptPart;
+  'PTRR Plan Step: plan AssetPack synthesis from the accepted Read-Evaluation, ranked fit deposits, selected source-safe evidence, repository constraints, proof obligations, preview measurements, and post-settlement delivery boundary.' as PromptPart;

@@ -1,0 +1,125 @@
+{
+  "artifactId": "v49-evaluations-rename",
+  "schemaId": "bitcode.v49.evaluationsRename.v1",
+  "version": "V49",
+  "currentTarget": "V48",
+  "artifactPath": ".proofs/v49/evaluations-rename.json",
+  "sourceSafetyVerdict": "source-safe-evaluations-rename",
+  "migrationPath": "supabase/migrations/20261018120000_v49_evaluations_rename.sql",
+  "forbiddenPayloadIds": [
+    "protected_source_payload",
+    "raw_source_text",
+    "raw_protected_prompt",
+    "raw_provider_response",
+    "stored_row_contents"
+  ],
+  "vocabularyScan": {
+    "offendingFileCount": 0,
+    "offendingFiles": []
+  },
+  "predicateResults": [
+    {
+      "id": "living-source-has-no-need-vocabulary",
+      "sourcePath": "git ls-files (living scope)",
+      "passed": true
+    },
+    {
+      "id": "old-paths-removed",
+      "sourcePath": "packages/generic-measurements/needinesses",
+      "passed": true
+    },
+    {
+      "id": "relatives-package-renamed",
+      "sourcePath": "packages/generic-measurements/relatives/package.json",
+      "passed": true
+    },
+    {
+      "id": "measurement-category-relative",
+      "sourcePath": "packages/measurement-generics/src/types.ts",
+      "passed": true
+    },
+    {
+      "id": "settlement-btd-from-relatives",
+      "sourcePath": "packages/btd/src/erc1155/settlement-btd-from-relatives.ts",
+      "passed": true
+    },
+    {
+      "id": "read-route-accepts-evaluation-only",
+      "sourcePath": "apps/uapi/app/api/read/synthesize-options/route.ts",
+      "passed": true
+    },
+    {
+      "id": "compose-panel-evaluations-copy",
+      "sourcePath": "apps/uapi/components/reads/ReadsEvaluationComposePanel/ReadsEvaluationComposePanel.tsx",
+      "passed": true
+    },
+    {
+      "id": "option-card-absolute-relative-sections",
+      "sourcePath": "apps/uapi/components/reads/ReadsOptionCard/ReadsOptionCard.tsx",
+      "passed": true
+    },
+    {
+      "id": "migration-renames-column-and-rows",
+      "sourcePath": "supabase/migrations/20261018120000_v49_evaluations_rename.sql",
+      "passed": true
+    },
+    {
+      "id": "local-ci-step-renamed",
+      "sourcePath": "scripts/run-bitcode-local-ci.mjs",
+      "passed": true
+    },
+    {
+      "id": "spec-carries-rename-law",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49.md",
+      "passed": true
+    },
+    {
+      "id": "package-json-exposes-gate2",
+      "sourcePath": "package.json",
+      "passed": true
+    },
+    {
+      "id": "package-exports-gate2",
+      "sourcePath": "scripts/specifying/src/index.js",
+      "passed": true
+    },
+    {
+      "id": "generator-checker-test-exist",
+      "sourcePath": "scripts/generate-v49-evaluations-rename.mjs",
+      "passed": true
+    }
+  ],
+  "sourceRoots": {
+    "spec": ".specifications/BITCODE_SPEC_V49.md:3f7e811048b5db3dc8b4ff62",
+    "migration": "supabase/migrations/20261018120000_v49_evaluations_rename.sql:6b5a1229d7914c36973e31ea",
+    "relativesPackage": "packages/generic-measurements/relatives/package.json:a9be46332e42c39e819a26cc",
+    "relativesCatalog": "packages/generic-measurements/relatives/src/relatives-catalog.ts:42628e069d5f00d647323241",
+    "measurementTypes": "packages/measurement-generics/src/types.ts:61fa4051bac631e281002b35",
+    "settlementBtd": "packages/btd/src/erc1155/settlement-btd-from-relatives.ts:2da60588c1b03bf98d2ada16",
+    "readEvaluation": "packages/asset-packs-pipelines/syntheses/read/src/read-evaluation.ts:4f656f0096af629053aeb6e2",
+    "readRoute": "apps/uapi/app/api/read/synthesize-options/route.ts:55f5d940fed5f980ccd38ae9",
+    "composePanel": "apps/uapi/components/reads/ReadsEvaluationComposePanel/ReadsEvaluationComposePanel.tsx:26e237f31a9c2870a9b4a9fd",
+    "optionCard": "apps/uapi/components/reads/ReadsOptionCard/ReadsOptionCard.tsx:459447e77a19b1b3222b3997",
+    "localCi": "scripts/run-bitcode-local-ci.mjs:c292eb52cd0ade4f87814c2e",
+    "packageJson": "package.json:3cc857ce55469a2ce5628721",
+    "protocolIndex": "scripts/specifying/src/index.js:15ee52cce625aef8c6f10ea6",
+    "protocolTypes": "scripts/specifying/src/index.d.ts:7a6284b3cc86710267b5aa15",
+    "generator": "scripts/generate-v49-evaluations-rename.mjs:e4293297a740dacbbdc53523",
+    "checker": "scripts/check-v49-gate2-evaluations-rename.mjs:c677c2b2d1172c5ee0ac6cdc",
+    "protocolTest": "scripts/specifying/test/v49-evaluations-rename.test.js:5beddb3c575ab8cb55a2f2fe"
+  },
+  "artifactRoot": "v49-evaluations-rename:656b50bf4e1443f8c35ed8ec",
+  "coverage": {
+    "requiredPredicateCount": 14,
+    "passedPredicateCount": 14,
+    "failedPredicateIds": [],
+    "livingVocabularyRenamed": true,
+    "storedRowsMigrated": true,
+    "dualReadPresent": false,
+    "sourceSafeMetadataOnly": true,
+    "protectedSourceVisible": false,
+    "rawPromptVisible": false,
+    "valueBearingMainnetEnabled": false
+  },
+  "passed": true
+}

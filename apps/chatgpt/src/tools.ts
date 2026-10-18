@@ -1478,8 +1478,8 @@ const AWS_WRITE_SCHEMA = {
 };
 
 const CHATGPT_READING_ACTION_NEXT_ACTION: Record<BtdChatGptAppActionId, string> = {
-  bitcode_request_read: 'synthesize-read-need',
-  bitcode_review_read_need: 'request-finding-fits',
+  bitcode_request_read: 'synthesize-read-evaluation',
+  bitcode_review_read_evaluation: 'request-finding-fits',
   bitcode_request_finding_fits: 'review-assetpack-preview',
   bitcode_review_asset_pack_preview: 'quote-assetpack-fee',
   bitcode_quote_asset_pack_fee: 'settle-assetpack-fee',
@@ -1555,7 +1555,7 @@ function executeChatGptReadingAction(
     } else if (field === 'reviewState') {
       responseFields[field] = args.decision ?? 'reviewed';
     } else if (field === 'readinessState') {
-      responseFields[field] = 'admitted-for-read-need-comprehension';
+      responseFields[field] = 'admitted-for-read-evaluation-comprehension';
     } else if (field.endsWith('Root')) {
       responseFields[field] = args[field] ?? stableChatGptActionRoot(`chatgpt-${field}`, contract.actionId, args);
     } else {

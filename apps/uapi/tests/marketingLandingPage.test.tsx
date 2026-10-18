@@ -112,7 +112,7 @@ describe('MarketingLandingPage', () => {
     // Upper depot renders mobile + laptop trees (CSS-hidden), so labels can match more than once.
     expect(screen.getAllByText('Source Measurements').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Absolutes').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Needinesses').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Relatives').length).toBeGreaterThan(0);
     expect(screen.getAllByText("Packs' BTD Volume").length).toBeGreaterThan(0);
     expect(screen.getAllByText('431').length).toBeGreaterThan(0);
     expect(screen.getByTestId('landing-depot-upper')).toBeInTheDocument();

@@ -5,9 +5,9 @@ Bare measurement **implementations** (not tools, not agents). Commodity: **DataP
 ## Hierarchy (canon)
 
 ```
-measurement-generics                          # carrier: absolutes | needinesses | materialIdentity
+measurement-generics                          # carrier: absolutes | relatives | materialIdentity
   → generic-measurements/absolutes/<kind>     # one package per absolute (bare)
-  → generic-measurements/needinesses          # read *-fit
+  → generic-measurements/relatives          # read *-fit
   → generic-measurements/domain/
         data-pack-absolutes-catalog           # commercial Σ=1 catalogue law
         data-pack-material-identity           # compositions / inventories / tags
@@ -28,16 +28,16 @@ measurement-generics                          # carrier: absolutes | needinesses
 | `shared/absolute-measure-input/` | `@bitcode/generic-measurements-shared-absolute-measure-input` | DP-facing input contracts |
 | `domain/data-pack-absolutes-catalog/` | `@bitcode/generic-measurements-domain-data-pack-absolutes-catalog` | Commercial law: full catalogue, each weighted, **Σ = 1** |
 | `domain/data-pack-material-identity/` | `@bitcode/generic-measurements-domain-data-pack-material-identity` | Buyer multi-valued identity + companion scalars |
-| `needinesses/` | neediness packages (read) | Read *-fit |
+| `relatives/` | relative packages (read) | Read *-fit |
 | `tech-types/` | tech signal vocabulary | Existing |
 
 ## Law
 
 - Measure a **DataPack** (synthesized), not the repository as the commercial object.
-- Deposit: `needinesses` always empty; **materialIdentity** attached when measured.
+- Deposit: `relatives` always empty; **materialIdentity** attached when measured.
 - Absolute catalogue law: full `DATA_PACK_ABSOLUTES_CATALOG` (structure/quality +
   material-identity companions), each weighted, **Σ weights = 1**.
-- **No learning-gain** — BTD / need-fit owns exchange value.
+- **No learning-gain** — BTD / evaluation-fit owns exchange value.
 - `policyRole` (gate / penalty / flag / weighted) is operational metadata; all kinds remain in Σ.
 - Models do not invent volumes or identity tags — host/tools measure; agents classify into closed vocabs only over measured signals.
 

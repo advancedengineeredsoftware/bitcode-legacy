@@ -14,11 +14,11 @@ compensation split — without waiting on (or paying for) live SDIVF inference.
 | Surface | Demonstration mode |
 | --- | --- |
 | Deposit SDIVF (`POST /api/deposit/synthesize-options`) | **Replayed.** Paced Setup → Discovery → Implementation ×4 → Validation → Finish telemetry (same UI log rows / pills), curated DataPacks. |
-| Read SDIVF (`POST /api/read/synthesize-options`) | **Replayed** the same way; options ranked by measured need-fit. |
+| Read SDIVF (`POST /api/read/synthesize-options`) | **Replayed** the same way; options ranked by measured evaluation-fit. |
 | Request checkout (repo tree, primary language) | **Live** — GitHub App installation token; covered paths bind to real files. |
 | Deposit fail-closed validation + option projection | **Live** (`validateDepositSynthesisOptions`, `buildRealDepositAssetPackOptionSynthesis`). |
 | Read Finish (unpaid envelope + server `fullOptions`) | **Live** (`read-finish-synthesize-run-agent`). |
-| Absolutes / needinesses | Structural absolutes **measured** from pack bodies; qualitative absolutes **estimated** (honesty status says so); static `*-fit` needinesses measured against the Need. |
+| Absolutes / relatives | Structural absolutes **measured** from pack bodies; qualitative absolutes **estimated** (honesty status says so); static `*-fit` relatives measured against the Evaluation. |
 | Wallet session (Ethereum / Bitcoin) | **Live.** |
 | Payment | **Live testnet, required.** Sepolia ETH or BTC testnet4 from the buyer's wallet; settle verifies recipient + amount on-chain, one checkout per txid. |
 | Settle pipeline (BTD volume, escrow mint, co-own) | **Live** (projected ERC1155 state, as in all testnet settles). |
@@ -32,7 +32,7 @@ routes show a **Demonstration** badge whose tooltip states the split above.
 
 Only the account's **wallet and GitHub connections** are real. Every
 execution row written in demonstration mode (deposit/read runs, admissions,
-Need anchors, settles, payouts) carries `context.dataset = "demonstration"`:
+Evaluation anchors, settles, payouts) carries `context.dataset = "demonstration"`:
 
 | Surface | Demonstration mode shows |
 | --- | --- |
@@ -52,7 +52,7 @@ Six self-contained, dependency-free DataPacks with bundled tests. They ship
 verbatim into reader PRs, so the TypeScript packs compile under `strict` and
 every pack's own tests pass (Jest / pytest):
 
-| Pack | Language | Kind | Lands in reader repo | Core Need signals |
+| Pack | Language | Kind | Lands in reader repo | Core Evaluation signals |
 | --- | --- | --- | --- | --- |
 | Resilient HTTP client (retry + circuit breaker) | TypeScript | capability-slice | `src/resilience/*` | retry, backoff, timeout, flaky |
 | Idempotent webhook ingestion (HMAC + exactly-once) | TypeScript | implementation-pattern | `src/webhooks/*` | webhook, signature, duplicate, replay |
@@ -64,12 +64,12 @@ every pack's own tests pass (Jest / pytest):
 **Deposits** offer the 4 packs that best fit the selected repository (checkout
 path hints + primary language). **Reads** draw from admitted Depository supply
 first (seller-linked), measure `language-fit` / `domain-fit` / `interface-fit`
-against the Need and repository, and present the best matches plus the weakest
+against the Evaluation and repository, and present the best matches plus the weakest
 option as an explicit non-match. Shared domain words ("postgres", "api") only
-count as partial fit; a pack's core signals carry it. Example — Need
+count as partial fit; a pack's core signals carry it. Example — Evaluation
 "PostgreSQL query generation evaluations improvements" on a TypeScript repo:
 
-| Option | need-fit | Buyer gate |
+| Option | evaluation-fit | Buyer gate |
 | --- | --- | --- |
 | Text-to-SQL evaluation harness | ≈ 0.77 | buy recommended |
 | PostgreSQL migration linter (shares context only) | ≈ 0.49 | buy with caution |
@@ -141,9 +141,9 @@ The chip refreshes right after settle and after a payout finalize.
    (absolutes, contents, `.patch` download) → approve/admit each to the
    Depository.
 2. **Reader — `/reads`**: New (+) → pick the target repository + commit → write
-   a Need (e.g. "our webhook handler double-processes Stripe events; verify
+   an Evaluation (e.g. "our webhook handler double-processes Stripe events; verify
    signatures and dedupe retries") → Synthesize. Options arrive ranked by
-   need-fit, linked to the seller's admitted supply.
+   evaluation-fit, linked to the seller's admitted supply.
 3. **Reader — buy**: select option(s) → the checkout quotes each pack (BTD
    volume + per-rail totals) and shows the pay-to address → **Pay & settle** →
    confirm in the wallet → the server verifies the payment on-chain → one settle
@@ -173,7 +173,7 @@ The chip refreshes right after settle and after a payout finalize.
   is projected per settle run (no on-chain mint, no on-chain seller transfer).
 - SOL is quote-only (no live verification rail).
 - `/exchange` "Purchase" deep links still land on `/reads` with a banner; the
-  reader composes a Need (a listing is not directly buyable).
+  reader composes an Evaluation (a listing is not directly buyable).
 - Deposit admission is decided client-side and recorded as an activity row; the
   Depository index call is fire-and-forget.
 - The legacy `apps/uapi/mocking/` system and most `apps/uapi/mocks/*.json` are

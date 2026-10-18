@@ -6,8 +6,8 @@
 import type {
   AssetPackMeasurementsForSettlement,
   BitcodeErc1155State,
-  NeedinessRowInput,
-  SettlementBtdFromNeedinessesResult,
+  RelativeRowInput,
+  SettlementBtdFromRelativesResult,
   SerializedBitcodeErc1155State,
   UsdSpotBoard,
 } from '@bitcode/btd/erc1155';
@@ -136,9 +136,9 @@ export interface MintBtdReceiptWire {
   tokenId: string;
   to: string;
   amountBaseUnits: string;
-  needFitVolume: number;
-  weightedNeedinessesSum: number;
-  needinessesCount: number;
+  evaluationFitVolume: number;
+  weightedRelativesSum: number;
+  relativesCount: number;
   btdTotalMintedBefore: string;
   btdTotalMintedAfter: string;
   maxSupplyBaseUnits: string;
@@ -159,7 +159,7 @@ export interface SettlePendingPayout {
   btdVolume: string;
   payAmount: string;
   payAsset: 'ETH' | 'BTC' | 'SOL';
-  needFitVolume: number;
+  evaluationFitVolume: number;
   quoteId: string;
   apTokenId: string;
   /** Buyer-entitled source-safe patch summary (full patch when entitled). */
@@ -175,7 +175,7 @@ export interface SettlePendingPayout {
 export interface MintBtdArtifact {
   schema: 'bitcode.settle-asset-pack.mint-btd';
   agent: 'mint-btd';
-  settlementBtd: SettlementBtdFromNeedinessesResult;
+  settlementBtd: SettlementBtdFromRelativesResult;
   receipt: MintBtdReceiptWire;
   masterAccount: string;
   masterBtdBalance: string;
@@ -266,7 +266,7 @@ export interface SettleShippable {
 
 export interface SourceSafePackMeasurementRow {
   kind: string;
-  category: 'absolute' | 'neediness';
+  category: 'absolute' | 'relative';
   volume: number | null;
   magnitude: number | null;
   unit: string | null;
@@ -313,7 +313,7 @@ export interface SettlePackActivity {
   prUrl: string | null;
   paymentObservation: PackActivityPaymentObservation | null;
   mintBtd: {
-    needFitVolume: number | null;
+    evaluationFitVolume: number | null;
     amountBaseUnits: string | null;
     masterAccount: string | null;
   } | null;
@@ -361,14 +361,14 @@ export interface SettleAssetPackInput {
    * board the buyer was quoted (and paid) with; defaults to the mock board.
    */
   spotBoard?: UsdSpotBoard | null;
-  need?: string | null;
+  evaluation?: string | null;
   synthesisRunId?: string | null;
   assetPackSettlementRightsDeliveryBoundary?: SettleValidationBoundary | null;
   /** Populated as stages complete (threaded through Simple pipeline). */
   mintBtd?: MintBtdArtifact;
   settleBtd?: SettleBtdArtifact;
   settleAssetPack?: SettleAssetPackArtifact;
-  settlementBtd?: SettlementBtdFromNeedinessesResult;
+  settlementBtd?: SettlementBtdFromRelativesResult;
   shippable?: SettleShippable;
   packActivity?: SettlePackActivity;
   settlementFinalized?: boolean;
@@ -387,7 +387,7 @@ export interface SettleAssetPackResult extends SettleAssetPackInput {
   mintBtd: MintBtdArtifact;
   settleBtd: SettleBtdArtifact;
   settleAssetPack: SettleAssetPackArtifact;
-  settlementBtd: SettlementBtdFromNeedinessesResult;
+  settlementBtd: SettlementBtdFromRelativesResult;
   shippable: SettleShippable;
   paymentObservation: SettleBtcPaymentObservation;
   pendingPayout?: SettlePendingPayout | null;
@@ -417,14 +417,14 @@ export type SettleStoreValue =
   | MintBtdArtifact
   | SettleBtdArtifact
   | SettleAssetPackArtifact
-  | SettlementBtdFromNeedinessesResult
+  | SettlementBtdFromRelativesResult
   | SettleRightsArtifact
   | SettleShippable
   | SettlePackActivity
   | SettlePendingPayout
   | SerializedBitcodeErc1155State
   | BitcodeErc1155State
-  | NeedinessRowInput[]
+  | RelativeRowInput[]
   | SourceSafePackMeasurementRow[];
 
-export type { NeedinessRowInput, AssetPackMeasurementsForSettlement, SerializedBitcodeErc1155State };
+export type { RelativeRowInput, AssetPackMeasurementsForSettlement, SerializedBitcodeErc1155State };

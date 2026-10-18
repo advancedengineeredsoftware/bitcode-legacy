@@ -196,11 +196,11 @@ export function buildDemonstrationExecutionPipelineSDIVFTelemetryScript(
     b.agent('setup', 'comprehend-obfuscations');
     b.llm('setup', 'comprehend-obfuscations', 'structure Obfuscations guidance against catalog paths');
   } else {
-    b.agent('setup', 'comprehend-needs');
-    b.llm('setup', 'comprehend-needs', 'comprehend the Need and plan dynamic *-fit measurements');
+    b.agent('setup', 'comprehend-evaluations');
+    b.llm('setup', 'comprehend-evaluations', 'comprehend the Evaluation and plan dynamic *-fit measurements');
   }
   b.agent('setup', 'danger-wall');
-  b.decision('setup', 'danger-wall', lens === 'deposit' ? 'Danger wall admitted obfuscation posture (safe).' : 'Danger wall admitted Need and *-fit plan (safe).');
+  b.decision('setup', 'danger-wall', lens === 'deposit' ? 'Danger wall admitted obfuscation posture (safe).' : 'Danger wall admitted Evaluation and *-fit plan (safe).');
 
   // Discovery (parallel in live runs; interleaved here)
   b.store('setup', 'pipeline', 'pipeline', 'currentIteration', 1);
@@ -211,7 +211,7 @@ export function buildDemonstrationExecutionPipelineSDIVFTelemetryScript(
   b.llm('discovery', 'comprehend-codebase', 'build the knowledge map of capabilities and notable modules');
   b.agent('discovery', 'search-depository');
   b.tool('discovery', 'search-depository', 'depository-asset-pack-search', `Searched ${context.depositorySupplyCount} Depository DataPack(s) (lexical + vector).`);
-  b.llm('discovery', 'search-depository', lens === 'deposit' ? 'derive demand guidance and underserved topics' : 'rank Depository supply for Need fits');
+  b.llm('discovery', 'search-depository', lens === 'deposit' ? 'derive demand guidance and underserved topics' : 'rank Depository supply for Evaluation fits');
   b.agent('discovery', 'inherent-regurgitation');
   b.llm('discovery', 'inherent-regurgitation', 'recall model-inherent patterns relevant to this source (source-safe)');
 
@@ -229,7 +229,7 @@ export function buildDemonstrationExecutionPipelineSDIVFTelemetryScript(
     b.tool('implementation', `${impl}-measurements-synthesis`, tool, `Absolute catalogue family measured for ${optionCount} pack(s).`, 600);
   }
   if (lens === 'read') {
-    b.tool('implementation', `${impl}-measurements-synthesis`, 'measure-needinesses', `Static *-fit needinesses measured for ${optionCount} pack(s).`, 600);
+    b.tool('implementation', `${impl}-measurements-synthesis`, 'measure-relatives', `Static *-fit relatives measured for ${optionCount} pack(s).`, 600);
   }
   b.llm('implementation', `${impl}-measurements-synthesis`, 'author source-safe measurement descriptors');
   b.agent('implementation', `${impl}-commercial-nl`);

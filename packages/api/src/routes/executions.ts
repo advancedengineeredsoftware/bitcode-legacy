@@ -682,7 +682,7 @@ export async function postExecutionHistoryRoute(request: Request) {
     (body.output as Record<string, unknown> | null | undefined) ||
     (body.output_data as Record<string, unknown> | null | undefined) ||
     null;
-  // Admissions / Need anchors recorded in demonstration mode join its dataset.
+  // Admissions / Evaluation anchors recorded in demonstration mode join its dataset.
   const context = withDemonstrationDataset(
     (body.context as Record<string, unknown> | null | undefined) ||
       (body.metadata as Record<string, unknown> | null | undefined) ||
@@ -864,7 +864,7 @@ export async function getExecutionHistoryRunRoute(
  */
 const DELETABLE_ACTIVITY_ANCHOR_SOURCES = new Set([
   'deposit-obfuscations-anchor',
-  'read-need-anchor',
+  'read-evaluation-anchor',
   'repository-context-panel',
   'terminal-repository-context-panel',
 ]);

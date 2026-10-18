@@ -53,7 +53,7 @@ export interface DepositAssetPackOptionMeasurement {
   weight: number;
   volume: number;
   /** Which measurement category — absolutes form the weighted composite. */
-  category?: 'absolute' | 'neediness';
+  category?: 'absolute' | 'relative';
   /** Raw count for size measurements (functions / types / files). */
   magnitude?: number;
   /** functions | types | files | estimate | normalized. */
@@ -122,10 +122,10 @@ export interface DepositAssetPackOption {
     unifiedDiff?: string | null;
   } | null;
   /**
-   * @deprecated Neediness is entirely a Read-pipeline concept.
-   * Demand guidance lives under demandAlignment; never a neediness measurement row.
+   * @deprecated Relative is entirely a Read-pipeline concept.
+   * Demand guidance lives under demandAlignment; never a relative measurement row.
    */
-  neediness?: DepositDemandEstimate | null;
+  relative?: DepositDemandEstimate | null;
   reviewBoundary: {
     state: DepositAssetPackOptionReviewState;
     decision: 'pending-depositor-review';
@@ -154,8 +154,8 @@ export interface DepositAssetPackOption {
     demandAlignmentRoot: string;
     measurementRoot: string;
     contentsRoot?: string | null;
-    /** @deprecated Neediness is Read-pipeline only. */
-    needinessRoot?: string | null;
+    /** @deprecated Relative is Read-pipeline only. */
+    relativeRoot?: string | null;
     reviewBoundaryRoot: string;
   };
 }

@@ -92,9 +92,9 @@ const repoMatch =
   /github\.com[/:]([^/]+)\/([^/.]+)/i.exec(repoUrl) || ['', 'public', 'repo'];
 const fullName = `${repoMatch[1]}/${repoMatch[2]}`;
 
-const expressedNeed =
-  process.env.BITCODE_READ_NEED ||
-  'Need a source-safe plain-object type guard AssetPack that fits a TypeScript utility library.';
+const expressedEvaluation =
+  process.env.BITCODE_READ_EVALUATION ||
+  'Evaluate a source-safe plain-object type guard AssetPack that fits a TypeScript utility library.';
 
 const manifest = {
   schema: 'bitcode.pipeline-host.manifest',
@@ -106,21 +106,21 @@ const manifest = {
     commit,
   },
   read: {
-    id: 'local-read-debug-need',
-    prompt: expressedNeed,
+    id: 'local-read-debug-evaluation',
+    prompt: expressedEvaluation,
   },
   deposit: {
     id: 'local-read-debug-no-deposit',
     hasWalletOrAttestationProof: true,
     hasAssetMeasurementEvidence: false,
   },
-  // Read path: Need is primary steering (not deposit obfuscations).
+  // Read path: Evaluation is primary steering (not deposit obfuscations).
   depositSteering: {
     obfuscations: null,
     impermissibleSources: ['**/.env*', '**/secrets/**'],
     demandContext: [],
   },
-  requireAcceptedReadNeed: false,
+  requireAcceptedReadEvaluation: false,
   deliveryMechanismTemplate: 'pull-request',
 };
 

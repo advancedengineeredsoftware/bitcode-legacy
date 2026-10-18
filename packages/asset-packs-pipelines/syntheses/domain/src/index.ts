@@ -31,7 +31,7 @@ export { EXECUTION_PIPELINE_SDIVF_SYNTHESIZE_ASSET_PACKS_PROMPT } from './prompt
 export * from './asset-packs-synthesis';
 export * from './asset-packs-synthesis-catalogs';
 export * from './asset-packs-synthesis-inventory';
-export * from './asset-packs-synthesis-neediness';
+export * from './asset-packs-synthesis-relative';
 export * from './asset-packs-synthesis-pipeline';
 // Types only (SynthesizeAssetPacksMode is not re-exported from here).
 export type {
@@ -40,7 +40,7 @@ export type {
   AssetPackCandidate,
   AssetPackCandidateMeasurement,
   AssetPackMeasurementSpec,
-  AssetPackNeediness,
+  AssetPackRelative,
   AssetPacksSynthesisInferenceAccounting,
   AssetPacksSynthesisRequest,
   AssetPacksSynthesisResult,

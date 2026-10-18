@@ -2,12 +2,12 @@
  * Read-side buyer measurement projection — commercial buy/no-buy legibility.
  *
  * Product law:
- * - Needinesses (*-fit) are the primary buy/no-buy signal vs the stated Need
+ * - Relative measurements are the primary buy/no-buy signal vs the stated Evaluation
  *   and the only driver of BTD mint volume (absolutes never mint BTD).
  * - Absolutes are secondary quality / risk gates under unpaid preview.
  * - Honesty status is a trust gate: measured ≫ estimated ≫ insufficient_evidence.
  *
- * Default unpaid card: fit trio + composite need-fit + top quality + risk chips.
+ * Default unpaid card: fit trio + composite evaluation-fit + top quality + risk chips.
  * Full absolute catalogue is secondary ("show all").
  */
 
@@ -69,8 +69,8 @@ export const BUYER_PENALTY_ABSOLUTE_KINDS = [
   'generated-code-mass',
 ] as const;
 
-/** Static needinesses catalogue order (weights match settlement SSOT). */
-export const BUYER_NEEDINESSES_STATIC: ReadonlyArray<{
+/** Static relatives catalogue order (weights match settlement SSOT). */
+export const BUYER_RELATIVES_STATIC: ReadonlyArray<{
   measurementKind: string;
   label: string;
   weight: number;
@@ -119,8 +119,8 @@ export type BuyerBuyRecommendation =
 
 export type ReadBuyerMeasurementProjection = {
   fitRows: BuyerFitRow[];
-  needFitVolume: number | null;
-  needFitSource: 'option' | 'computed' | 'missing';
+  evaluationFitVolume: number | null;
+  evaluationFitSource: 'option' | 'computed' | 'missing';
   qualityChips: BuyerAbsoluteChip[];
   gateChips: BuyerAbsoluteChip[];
   penaltyChips: BuyerAbsoluteChip[];
@@ -134,7 +134,7 @@ export type ReadBuyerMeasurementProjection = {
   recommendation: BuyerBuyRecommendation;
   recommendationReasons: string[];
   absoluteCount: number;
-  needinessCount: number;
+  relativeCount: number;
 };
 
 function clamp01(n: number): number {
@@ -172,17 +172,17 @@ function indexByKind(rows: MeasurementReadingLike[]): Map<string, MeasurementRea
   return map;
 }
 
-/** Weighted mean of present *-fit needinesses (excludes composite need-fit row). */
-export function computeNeedFitFromReadings(needinesses: MeasurementReadingLike[]): number | null {
+/** Weighted mean of present *-fit relatives (excludes composite evaluation-fit row). */
+export function computeEvaluationFitFromReadings(relatives: MeasurementReadingLike[]): number | null {
   const weightByKind = new Map(
-    BUYER_NEEDINESSES_STATIC.map((s) => [s.measurementKind, s.weight]),
+    BUYER_RELATIVES_STATIC.map((s) => [s.measurementKind, s.weight]),
   );
   let sumW = 0;
   let sum = 0;
   let any = false;
-  for (const row of needinesses) {
+  for (const row of relatives) {
     const k = kindOf(row);
-    if (!k || k === 'need-fit' || !k.endsWith('-fit')) continue;
+    if (!k || k === 'evaluation-fit' || !k.endsWith('-fit')) continue;
     const v = volumeOf(row);
     if (v === null) continue;
     const w =
@@ -250,18 +250,18 @@ function honestyCounts(absolutes: MeasurementReadingLike[]) {
  * Project option measurements into a compact buy/no-buy view for unpaid /reads.
  */
 export function buildReadBuyerMeasurementProjection(input: {
-  needinesses?: MeasurementReadingLike[] | null;
+  relatives?: MeasurementReadingLike[] | null;
   absolutes?: MeasurementReadingLike[] | null;
   /** Option-level composite when already computed by synthesis finish. */
-  needFit?: number | null;
+  evaluationFit?: number | null;
 }): ReadBuyerMeasurementProjection {
-  const needinesses = Array.isArray(input.needinesses) ? input.needinesses : [];
+  const relatives = Array.isArray(input.relatives) ? input.relatives : [];
   const absolutes = Array.isArray(input.absolutes) ? input.absolutes : [];
   const byAbs = indexByKind(absolutes);
-  const byNeed = indexByKind(needinesses);
+  const byEvaluation = indexByKind(relatives);
 
-  const fitRows: BuyerFitRow[] = BUYER_NEEDINESSES_STATIC.map((spec) => {
-    const row = byNeed.get(spec.measurementKind);
+  const fitRows: BuyerFitRow[] = BUYER_RELATIVES_STATIC.map((spec) => {
+    const row = byEvaluation.get(spec.measurementKind);
     return {
       measurementKind: spec.measurementKind,
       label: row ? labelOf(row, spec.label) : spec.label,
@@ -272,16 +272,16 @@ export function buildReadBuyerMeasurementProjection(input: {
     };
   });
 
-  let needFitVolume: number | null = null;
-  let needFitSource: ReadBuyerMeasurementProjection['needFitSource'] = 'missing';
-  if (typeof input.needFit === 'number' && Number.isFinite(input.needFit)) {
-    needFitVolume = clamp01(input.needFit);
-    needFitSource = 'option';
+  let evaluationFitVolume: number | null = null;
+  let evaluationFitSource: ReadBuyerMeasurementProjection['evaluationFitSource'] = 'missing';
+  if (typeof input.evaluationFit === 'number' && Number.isFinite(input.evaluationFit)) {
+    evaluationFitVolume = clamp01(input.evaluationFit);
+    evaluationFitSource = 'option';
   } else {
-    const computed = computeNeedFitFromReadings(needinesses);
+    const computed = computeEvaluationFitFromReadings(relatives);
     if (computed !== null) {
-      needFitVolume = computed;
-      needFitSource = 'computed';
+      evaluationFitVolume = computed;
+      evaluationFitSource = 'computed';
     }
   }
 
@@ -345,10 +345,10 @@ export function buildReadBuyerMeasurementProjection(input: {
       `Safety/license gate concern: ${hardGates.map((g) => g.label).join(', ')}`,
     );
   }
-  if (needFitVolume === null || fitRows.every((r) => !r.present)) {
-    reasons.push('Need-fit measurements missing — cannot assess fit to your Need');
-  } else if (needFitVolume < 0.35) {
-    reasons.push(`Low need-fit (${needFitVolume.toFixed(2)}) for this Need`);
+  if (evaluationFitVolume === null || fitRows.every((r) => !r.present)) {
+    reasons.push('Evaluation-fit measurements missing — cannot assess fit to your Evaluation');
+  } else if (evaluationFitVolume < 0.35) {
+    reasons.push(`Low evaluation-fit (${evaluationFitVolume.toFixed(2)}) for this Evaluation`);
   }
   const softPenalties = penaltyChips.filter((c) => c.softWarn);
   if (softPenalties.length > 0) {
@@ -361,14 +361,14 @@ export function buildReadBuyerMeasurementProjection(input: {
   let recommendation: BuyerBuyRecommendation = 'cannot_assess';
   if (hardGates.length > 0) {
     recommendation = 'do_not_buy';
-  } else if (needFitVolume === null || fitRows.filter((r) => r.present).length === 0) {
+  } else if (evaluationFitVolume === null || fitRows.filter((r) => r.present).length === 0) {
     recommendation = 'cannot_assess';
-  } else if (needFitVolume < 0.35) {
+  } else if (evaluationFitVolume < 0.35) {
     recommendation = 'do_not_buy';
-    if (!reasons.some((r) => r.includes('Low need-fit'))) {
-      reasons.push(`Low need-fit (${needFitVolume.toFixed(2)})`);
+    if (!reasons.some((r) => r.includes('Low evaluation-fit'))) {
+      reasons.push(`Low evaluation-fit (${evaluationFitVolume.toFixed(2)})`);
     }
-  } else if (softPenalties.length > 0 || needFitVolume < 0.55) {
+  } else if (softPenalties.length > 0 || evaluationFitVolume < 0.55) {
     recommendation = 'buy_with_caution';
   } else {
     recommendation = 'buy_recommended';
@@ -379,8 +379,8 @@ export function buildReadBuyerMeasurementProjection(input: {
 
   return {
     fitRows,
-    needFitVolume,
-    needFitSource,
+    evaluationFitVolume,
+    evaluationFitSource,
     qualityChips: qualityChips.slice(0, 6),
     gateChips,
     penaltyChips: penaltyChips.filter((c) => c.softWarn || byAbs.has(c.measurementKind)).slice(0, 6),
@@ -388,7 +388,7 @@ export function buildReadBuyerMeasurementProjection(input: {
     recommendation,
     recommendationReasons: reasons,
     absoluteCount: absolutes.length,
-    needinessCount: needinesses.length,
+    relativeCount: relatives.length,
   };
 }
 
@@ -408,9 +408,9 @@ export function recommendationLabel(rec: BuyerBuyRecommendation): string {
 export type SelectedOptionMeasurementInput = {
   index?: number;
   title?: string | null;
-  needFit?: number | null;
+  evaluationFit?: number | null;
   measurements?: {
-    needinesses?: MeasurementReadingLike[] | null;
+    relatives?: MeasurementReadingLike[] | null;
     absolutes?: MeasurementReadingLike[] | null;
   } | null;
 };
@@ -428,7 +428,7 @@ export type SelectedSettleMeasurementGate = {
     index: number;
     title: string;
     recommendation: BuyerBuyRecommendation;
-    needFitVolume: number | null;
+    evaluationFitVolume: number | null;
     reasons: string[];
   }>;
 };
@@ -456,15 +456,15 @@ export function assessSelectedOptionsForSettle(
 
   const perOption = options.map((opt, i) => {
     const projection = buildReadBuyerMeasurementProjection({
-      needinesses: opt.measurements?.needinesses ?? [],
+      relatives: opt.measurements?.relatives ?? [],
       absolutes: opt.measurements?.absolutes ?? [],
-      needFit: opt.needFit,
+      evaluationFit: opt.evaluationFit,
     });
     return {
       index: typeof opt.index === 'number' ? opt.index : i,
       title: (typeof opt.title === 'string' && opt.title.trim()) || `Option ${i + 1}`,
       recommendation: projection.recommendation,
-      needFitVolume: projection.needFitVolume,
+      evaluationFitVolume: projection.evaluationFitVolume,
       reasons: projection.recommendationReasons,
     };
   });
@@ -490,7 +490,7 @@ export function assessSelectedOptionsForSettle(
       );
     } else if (row.recommendation === 'cannot_assess') {
       blockers.push(
-        `"${row.title}": missing need-fit measurements (BTD volume cannot be priced)`,
+        `"${row.title}": missing evaluation-fit measurements (BTD volume cannot be priced)`,
       );
     } else if (row.recommendation === 'buy_with_caution') {
       cautions.push(

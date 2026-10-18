@@ -1,5 +1,5 @@
 /**
- * Reading activity-ledger recording: POST history, Need anchor save/delete.
+ * Reading activity-ledger recording: POST history, Evaluation anchor save/delete.
  */
 "use client";
 
@@ -10,7 +10,7 @@ import type { WorkspaceRun } from "@/components/bitcode/pipeline/models/pipeline
 import type { RepositoryContextState } from "@/components/bitcode/pipeline/models/repository-context";
 import {
   buildProductExecutionHistoryRequest,
-  buildProductNeedAnchorDraft,
+  buildProductEvaluationAnchorDraft,
   mapExecutionHistoryRunToWorkspaceRun,
   readProductRouteError,
   upsertWorkspaceRun,
@@ -24,13 +24,13 @@ export function useReadActivityRecording(input: {
   setLiveRuns: Dispatch<SetStateAction<WorkspaceRun[]>>;
   refreshLiveRuns: (options?: { soft?: boolean }) => void | Promise<unknown>;
   openReadRouteTransaction: (id: string) => void;
-  need: string;
-  needAnchorName: string;
+  evaluation: string;
+  evaluationAnchorName: string;
   relevantPaths: string[];
   irrelevantPaths: string[];
-  setIsAnchoringNeed: (v: boolean) => void;
-  setNeedAnchorMessage: (v: string | null) => void;
-  setIsNeedAnchorPopoverOpen: (v: boolean) => void;
+  setIsAnchoringEvaluation: (v: boolean) => void;
+  setEvaluationAnchorMessage: (v: string | null) => void;
+  setIsEvaluationAnchorPopoverOpen: (v: boolean) => void;
 }) {
   const {
     repositoryContext,
@@ -39,13 +39,13 @@ export function useReadActivityRecording(input: {
     setLiveRuns,
     refreshLiveRuns,
     openReadRouteTransaction,
-    need,
-    needAnchorName,
+    evaluation,
+    evaluationAnchorName,
     relevantPaths,
     irrelevantPaths,
-    setIsAnchoringNeed,
-    setNeedAnchorMessage,
-    setIsNeedAnchorPopoverOpen,
+    setIsAnchoringEvaluation,
+    setEvaluationAnchorMessage,
+    setIsEvaluationAnchorPopoverOpen,
   } = input;
 
   const handleRecordActivity = useCallback(
@@ -98,54 +98,54 @@ export function useReadActivityRecording(input: {
     ],
   );
 
-  const handleAnchorNeed = useCallback(async () => {
-    if (!need.trim()) return;
-    setIsAnchoringNeed(true);
-    setNeedAnchorMessage(null);
+  const handleAnchorEvaluation = useCallback(async () => {
+    if (!evaluation.trim()) return;
+    setIsAnchoringEvaluation(true);
+    setEvaluationAnchorMessage(null);
     try {
       await handleRecordActivity(
-        buildProductNeedAnchorDraft({
-          need,
-          name: needAnchorName,
+        buildProductEvaluationAnchorDraft({
+          evaluation,
+          name: evaluationAnchorName,
           repositoryFullName:
             repositoryContext?.selectedRepository?.fullName || null,
           relevantPaths,
           irrelevantPaths,
         }),
       );
-      setNeedAnchorMessage(
-        needAnchorName.trim()
-          ? `Need anchor "${needAnchorName.trim()}" saved into the Bitcode activity ledger.`
-          : "Need configuration anchored into the Bitcode activity ledger.",
+      setEvaluationAnchorMessage(
+        evaluationAnchorName.trim()
+          ? `Evaluation anchor "${evaluationAnchorName.trim()}" saved into the Bitcode activity ledger.`
+          : "Evaluation configuration anchored into the Bitcode activity ledger.",
       );
-      setIsNeedAnchorPopoverOpen(false);
+      setIsEvaluationAnchorPopoverOpen(false);
     } catch (error) {
-      setNeedAnchorMessage(
+      setEvaluationAnchorMessage(
         error instanceof Error
           ? error.message
-          : "Unable to anchor the Need configuration.",
+          : "Unable to anchor the Evaluation configuration.",
       );
     } finally {
-      setIsAnchoringNeed(false);
+      setIsAnchoringEvaluation(false);
     }
   }, [
     handleRecordActivity,
     irrelevantPaths,
-    need,
-    needAnchorName,
+    evaluation,
+    evaluationAnchorName,
     relevantPaths,
     repositoryContext,
-    setIsAnchoringNeed,
-    setIsNeedAnchorPopoverOpen,
-    setNeedAnchorMessage,
+    setIsAnchoringEvaluation,
+    setIsEvaluationAnchorPopoverOpen,
+    setEvaluationAnchorMessage,
   ]);
 
-  const handleDeleteNeedAnchor = useCallback(
+  const handleDeleteEvaluationAnchor = useCallback(
     async (anchorId: string) => {
       if (!anchorId) return;
       const previousRuns = liveRuns;
       setLiveRuns((current) => current.filter((run) => run.id !== anchorId));
-      setNeedAnchorMessage(null);
+      setEvaluationAnchorMessage(null);
       try {
         const response = await fetch(
           `/api/executions/history/${encodeURIComponent(anchorId)}`,
@@ -156,25 +156,25 @@ export function useReadActivityRecording(input: {
             error?: string;
           } | null;
           throw new Error(
-            payload?.error || "Unable to delete the Need anchor.",
+            payload?.error || "Unable to delete the Evaluation anchor.",
           );
         }
-        setNeedAnchorMessage("Need anchor deleted.");
+        setEvaluationAnchorMessage("Evaluation anchor deleted.");
       } catch (error) {
         setLiveRuns(previousRuns);
-        setNeedAnchorMessage(
+        setEvaluationAnchorMessage(
           error instanceof Error
             ? error.message
-            : "Unable to delete the Need anchor.",
+            : "Unable to delete the Evaluation anchor.",
         );
       }
     },
-    [liveRuns, setLiveRuns, setNeedAnchorMessage],
+    [liveRuns, setLiveRuns, setEvaluationAnchorMessage],
   );
 
   return {
     handleRecordActivity,
-    handleAnchorNeed,
-    handleDeleteNeedAnchor,
+    handleAnchorEvaluation,
+    handleDeleteEvaluationAnchor,
   };
 }

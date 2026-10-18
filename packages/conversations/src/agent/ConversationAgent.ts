@@ -56,10 +56,10 @@ const ConversationPlanSchema = z.object({
   
   // Strategy
   responseStrategy: z.string().describe('Strategy for generating response'),
-  toolsNeeded: z.array(z.string()).describe('Tools that will be needed'),
+  toolsEvaluationed: z.array(z.string()).describe('Tools that will be needed'),
   
   // Context requirements
-  contextNeeded: z.object({
+  contextEvaluationed: z.object({
     needsDigest: z.boolean(),
     needsCodeSearch: z.boolean(),
     needsFileReading: z.boolean(),

@@ -49,7 +49,7 @@ export function isActivityLedgerRun(run: WorkspaceRun | null | undefined): boole
   if (run.contextSource && DEPOSIT_ACTIVITY_LEDGER_SOURCES.has(run.contextSource)) {
     return true;
   }
-  if (run.obfuscationsAnchorText || run.needAnchorText) return true;
+  if (run.obfuscationsAnchorText || run.evaluationAnchorText) return true;
   if (run.summary && /recorded repository anchor/i.test(run.summary)) return true;
   if (run.summary && /anchored .+obfuscations/i.test(run.summary)) return true;
   if (run.proofStatus === 'Repository anchor' || run.proofStatus === 'Obfuscations anchor') {

@@ -10,5 +10,5 @@ import type { PromptPart } from '../../parts/PromptPart';
 import { createPromptPart } from '../../parts/PromptPart';
 
 export const PROMPTPART_SPECIFIC_PHASE_SYNTHESIZEREADS_IMPLEMENTATION_OBJECTIVE_CORESTATEMENT: PromptPart = createPromptPart(
-  'Implementation (read): synthesize measured read-satisfaction AssetPack options from Discovery evidence under source-safety and Need steering.',
+  'Implementation (read): synthesize measured read-satisfaction AssetPack options from Discovery evidence under source-safety and Evaluation steering.',
 );

@@ -189,7 +189,7 @@ describe('validateDepositSynthesisOptions absolutes wiring', () => {
         {
           ...baseOption,
           // Finish envelope product shape (no top-level absolutes).
-          measurements: { absolutes, needinesses: [] },
+          measurements: { absolutes, relatives: [] },
         },
       ],
       context,

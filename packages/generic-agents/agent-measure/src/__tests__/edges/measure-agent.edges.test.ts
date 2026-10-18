@@ -9,7 +9,7 @@ import {
   MeasurementReadingSchema,
 } from '../../index';
 import {
-  NEEDINESS_LIKE_SPECS,
+  RELATIVE_LIKE_SPECS,
   QUANTITY_AND_QUALITY_SPECS,
 } from '../support/measure-fixtures';
 
@@ -41,7 +41,7 @@ describe('EDGES: factoryMeasureAgent input rejection', () => {
       createMeasurePrompt({
         name: 'p',
         subject: 'x',
-        category: 'neediness',
+        category: 'relative',
         categoryFraming: 'reader-relative',
         measurements: [],
       }),
@@ -49,17 +49,17 @@ describe('EDGES: factoryMeasureAgent input rejection', () => {
   });
 });
 
-describe('EDGES: category framing (neediness vs absolute)', () => {
-  it('carries neediness category without inventing absolute framing', () => {
+describe('EDGES: category framing (relative vs absolute)', () => {
+  it('carries relative category without inventing absolute framing', () => {
     const agent = factoryMeasureAgent({
-      name: 'neediness-base',
-      subject: 'a pack under a stated Need',
-      category: 'neediness',
-      categoryFraming: 'You measure NEEDINESSES — READER-RELATIVE properties.',
-      measurements: NEEDINESS_LIKE_SPECS,
+      name: 'relative-base',
+      subject: 'a pack under a stated Evaluation',
+      category: 'relative',
+      categoryFraming: 'You measure RELATIVES — READER-RELATIVE properties.',
+      measurements: RELATIVE_LIKE_SPECS,
     });
 
-    expect(agent.measurementCategory).toBe('neediness');
+    expect(agent.measurementCategory).toBe('relative');
     expect(agent.measurementSpecs[0].measurementKind).toBe('language-fit');
     const identity = String(agent.measurePrompt.get('agent:identity') ?? '');
     expect(identity).toMatch(/READER-RELATIVE/);

@@ -76,7 +76,7 @@ export default async function runDepositStoreArtifactsAgent(input: any, executio
       kind: opt?.kind,
       patch: opt?.patch,
       coveredSourcePaths: opt?.coveredSourcePaths,
-      // Deposit: absolutes only (neediness is Read-pipeline).
+      // Deposit: absolutes only (relative is Read-pipeline).
       measurements:
         opt?.measurements && typeof opt.measurements === 'object' && !Array.isArray(opt.measurements)
           ? {

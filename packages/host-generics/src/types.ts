@@ -65,9 +65,9 @@ export function normalizeBitcodePipelineResultState(
 }
 
 export type PipelineHostStage =
-  | 'need-synthesis'
-  | 'need-review'
-  | 'need-fit-search'
+  | 'evaluation-synthesis'
+  | 'evaluation-review'
+  | 'evaluation-fit-search'
   | 'deposit-search'
   | 'candidate-ranking'
   | 'read-comprehension'
@@ -152,8 +152,8 @@ export interface PipelineHostManifest {
   pipelineName: 'asset-pack-read-fit';
   hostMode: PipelineHostMode;
   read: PipelineReadRequest;
-  requireAcceptedReadNeed?: boolean;
-  readNeed?: unknown;
+  requireAcceptedReadEvaluation?: boolean;
+  readEvaluation?: unknown;
   deposit: PipelineDepositReference;
   sourceRevision: PipelineSourceRevision;
   sourceOverlay?: PipelineHostSourceOverlay;

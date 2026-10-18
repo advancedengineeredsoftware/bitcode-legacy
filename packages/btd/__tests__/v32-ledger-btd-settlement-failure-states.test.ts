@@ -108,7 +108,7 @@ function sourceToSharesProof(overrides: Record<string, unknown> = {}) {
   return buildSourceToSharesProof({
     readId: 'read-v32-gate5',
     assetPackId: 'asset-pack-v32-gate5',
-    acceptedNeedRoot: 'accepted-need-root-v32-gate5',
+    acceptedEvaluationRoot: 'accepted-need-root-v32-gate5',
     findingFitsResultRoot: 'finding-fits-root-v32-gate5',
     fitDeposits: [
       {
@@ -285,7 +285,7 @@ describe('V32 Gate 5 ledger BTD settlement failure-state coverage', () => {
     const mintDraft = buildBtdMintDraft({
       assetPackId: 'asset-pack-v32-gate5',
       readId: 'read-v32-gate5',
-      acceptedNeed: true,
+      acceptedEvaluation: true,
       acceptedFit: true,
       sourceManifestRoot: 'source-root-v32-gate5',
       fitReceiptRoot: 'fit-root-v32-gate5',
@@ -328,7 +328,7 @@ describe('V32 Gate 5 ledger BTD settlement failure-state coverage', () => {
       assetPackId: 'asset-pack-v32-gate5',
       readId: 'read-v32-gate5',
       readRequestId: 'read-request-v32-gate5',
-      acceptedNeedRoot: 'accepted-need-root-v32-gate5',
+      acceptedEvaluationRoot: 'accepted-need-root-v32-gate5',
       findingFitsResultRoot: 'finding-fits-root-v32-gate5',
       readerWalletId: 'wallet-reader-v32-gate5',
       depositorWalletId: 'wallet-depositor-v32-gate5',

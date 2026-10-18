@@ -5,7 +5,7 @@
  * Sequence: THIS → patchfile → measurements → commercial-nl
  *
  * Uses domain base host only — never imports the deposit product package.
- * Product deltas: Need + Relevant/Irrelevant paths as demand/impermissible steering.
+ * Product deltas: Evaluation + Relevant/Irrelevant paths as demand/impermissible steering.
  */
 
 function findValue(execution: any, namespace: string, key: string): any {
@@ -23,9 +23,9 @@ export default async function runReadImplementationAgentAssetPacksPatchPlan(
     findValue(execution, 'read', 'repository') ??
     findValue(execution, 'deposit', 'repository') ??
     {};
-  const needText = findValue(execution, 'read', 'need') ?? input?.need ?? '';
-  const needComprehension =
-    findValue(execution, 'setup', 'needComprehension') ??
+  const evaluationText = findValue(execution, 'read', 'evaluation') ?? input?.evaluation ?? '';
+  const evaluationComprehension =
+    findValue(execution, 'setup', 'evaluationComprehension') ??
     findValue(execution, 'setup', 'inputComprehension');
   const relevantPaths =
     findValue(execution, 'read', 'relevantPaths') ?? input?.relevantPaths ?? [];
@@ -38,8 +38,8 @@ export default async function runReadImplementationAgentAssetPacksPatchPlan(
     ? input.demandContext
     : [
         {
-          topic: 'reader-need',
-          summary: needComprehension?.summary || String(needText || ''),
+          topic: 'reader-evaluation',
+          summary: evaluationComprehension?.summary || String(evaluationText || ''),
         },
       ];
 
@@ -53,7 +53,7 @@ export default async function runReadImplementationAgentAssetPacksPatchPlan(
       execution?.store?.('deposit', 'permissibleSources', relevantPaths);
     }
     execution?.store?.('implementation', 'productLens', 'read');
-    if (needText) execution?.store?.('implementation', 'need', needText);
+    if (evaluationText) execution?.store?.('implementation', 'evaluation', evaluationText);
   } catch {
     /* store optional */
   }
@@ -68,7 +68,7 @@ export default async function runReadImplementationAgentAssetPacksPatchPlan(
       demandContext,
       impermissibleSources: irrelevantPaths,
       permissibleSources: relevantPaths,
-      instructions: needText || input?.instructions,
+      instructions: evaluationText || input?.instructions,
     },
     execution,
   );

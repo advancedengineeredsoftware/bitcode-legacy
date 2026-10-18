@@ -16,7 +16,7 @@
 import type { PayAsset } from './types';
 
 export interface PayoutSplitInput {
-  /** Full needinesses BTD volume minted at settle (base units). */
+  /** Full relatives BTD volume minted at settle (base units). */
   btdVolume: bigint;
   /** Full external payment held at settle (wei/sats/lamports). */
   payAmount: bigint;

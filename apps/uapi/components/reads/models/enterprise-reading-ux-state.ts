@@ -48,8 +48,8 @@ export function inferEnterpriseReadingActiveStep(
   if (input.hasSourceSafePreview && !input.sourceSafePreviewBlocked && !input.disclosureLeakageDetected) {
     return 'review-synthesized-asset-pack';
   }
-  if (input.findingFitsRunning || input.hasAcceptedNeed) return 'request-fit';
-  if (input.hasSynthesizedNeed) return 'review-synthesized-need';
+  if (input.findingFitsRunning || input.hasAcceptedEvaluation) return 'request-fit';
+  if (input.hasSynthesizedEvaluation) return 'review-synthesized-evaluation';
   return 'request-read';
 }
 
@@ -89,8 +89,8 @@ function failureKindFor(input: EnterpriseReadingUxStateInput): ProductEnterprise
 function repairActionsForFailure(kind: ProductEnterpriseReadingFailureKind): string[] {
   if (kind === 'none') return [];
   if (kind === 'read_request_invalid') return ['repair-read-request'];
-  if (kind === 'need_review_required') return ['review-or-resynthesize-need'];
-  if (kind === 'fits_finding_failed') return ['retry-finding-fits-from-accepted-need'];
+  if (kind === 'evaluation_review_required') return ['review-or-resynthesize-evaluation'];
+  if (kind === 'fits_finding_failed') return ['retry-finding-fits-from-accepted-evaluation'];
   if (kind === 'asset_pack_preview_blocked') return ['repair-source-safe-preview'];
   if (kind === 'settlement_blocked') return ['repair-settlement-readback'];
   if (kind === 'delivery_blocked') return ['repair-repository-delivery'];
@@ -101,8 +101,8 @@ function blockersFor(stepId: EnterpriseReadingStepId, input: EnterpriseReadingUx
   const blockers: string[] = [];
   if (stepId === 'request-read' && !input.hasRepositorySource) blockers.push('repository source required');
   if (stepId !== 'request-read' && !input.hasReadMeasurement) blockers.push('measured Read required');
-  if (['request-fit', 'review-synthesized-asset-pack', 'buy-asset-pack-settle'].includes(stepId) && !input.hasAcceptedNeed) {
-    blockers.push('accepted Need required');
+  if (['request-fit', 'review-synthesized-asset-pack', 'buy-asset-pack-settle'].includes(stepId) && !input.hasAcceptedEvaluation) {
+    blockers.push('accepted Evaluation required');
   }
   if (
     ['review-synthesized-asset-pack', 'buy-asset-pack-settle'].includes(stepId) &&
@@ -144,7 +144,7 @@ export function buildEnterpriseReadingUxState(
     steps: steps.map((step) => ({ id: step.id, state: step.state, blockers: step.blockers })),
     hasRepositorySource: Boolean(input.hasRepositorySource),
     hasReadMeasurement: Boolean(input.hasReadMeasurement),
-    hasAcceptedNeed: Boolean(input.hasAcceptedNeed),
+    hasAcceptedEvaluation: Boolean(input.hasAcceptedEvaluation),
     hasSourceSafePreview: Boolean(input.hasSourceSafePreview),
     hasSettlementReadback: Boolean(input.hasSettlementReadback),
     hasDeliveryReadback: Boolean(input.hasDeliveryReadback),
@@ -175,7 +175,7 @@ export function buildEnterpriseReadingUxState(
       terminalOwnsTransactionAuthority: true,
       conversationMayHandoffIntent: true,
       transactionRouteRequiredForRecovery: true,
-      acceptedNeedRequiredBeforeFindingFits: true,
+      acceptedEvaluationRequiredBeforeFindingFits: true,
       sourceSafePreviewRequiredBeforeSettlement: true,
       deliveryRequiresSettlementUnlock: true,
       restartRestoresReadingStage: true,
@@ -192,7 +192,7 @@ export function buildEnterpriseReadingUxState(
       restartRequested: Boolean(input.restartRequested),
       restartRestoresActiveStage: true,
       retryRequested: Boolean(input.retryRequested),
-      retryPreservesNeedLineage: true,
+      retryPreservesEvaluationLineage: true,
       retryPreservesSettlementBoundary: true,
       failureKind,
       failureStateSourceSafe: true,
@@ -217,7 +217,7 @@ export function assertEnterpriseReadingUxStateSourceSafe(state: EnterpriseReadin
     state.routeContract.terminalOwnsTransactionAuthority === true &&
     state.routeContract.conversationMayHandoffIntent === true &&
     state.routeContract.transactionRouteRequiredForRecovery === true &&
-    state.routeContract.acceptedNeedRequiredBeforeFindingFits === true &&
+    state.routeContract.acceptedEvaluationRequiredBeforeFindingFits === true &&
     state.routeContract.sourceSafePreviewRequiredBeforeSettlement === true &&
     state.routeContract.deliveryRequiresSettlementUnlock === true &&
     state.routeContract.restartRestoresReadingStage === true &&
@@ -226,7 +226,7 @@ export function assertEnterpriseReadingUxStateSourceSafe(state: EnterpriseReadin
     state.routeState.transactionIdRequiredForRecovery === true &&
     state.routeState.readingStageQueryParam === 'readingStage' &&
     state.routeState.restartRestoresActiveStage === true &&
-    state.routeState.retryPreservesNeedLineage === true &&
+    state.routeState.retryPreservesEvaluationLineage === true &&
     state.routeState.retryPreservesSettlementBoundary === true &&
     state.routeState.failureStateSourceSafe === true &&
     PRODUCT_ENTERPRISE_READING_FORBIDDEN_FIELDS.every((field) =>

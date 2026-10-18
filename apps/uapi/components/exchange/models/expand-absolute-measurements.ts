@@ -120,7 +120,7 @@ export function expandAbsoluteMeasurementsToFullCatalog<T extends AbsoluteMeasur
       kind === 'source-coverage' ||
       kind === 'demand-alignment' ||
       kind === 'reuse-likelihood' ||
-      kind === 'need-fit'
+      kind === 'evaluation-fit'
     ) {
       continue;
     }

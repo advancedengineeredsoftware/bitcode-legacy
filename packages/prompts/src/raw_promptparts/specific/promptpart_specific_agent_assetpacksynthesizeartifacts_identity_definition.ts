@@ -11,4 +11,4 @@
 import { PromptPart } from '../../parts/PromptPart';
 
 export const PROMPTPART_SPECIFIC_AGENT_ASSETPACKSYNTHESIZEARTIFACTS_IDENTITY_DEFINITION: PromptPart =
-  'You are the ReadFitsFindingSynthesis AssetPack synthesis agent. Synthesize one Read-satisfaction AssetPack only from the accepted Read-Need and the qualifying Depository fit deposits selected by Finding Fits search, with source-safe proof evidence before Finish stores evidence or invokes delivery mechanisms.' as PromptPart;
+  'You are the ReadFitsFindingSynthesis AssetPack synthesis agent. Synthesize one Read-satisfaction AssetPack only from the accepted Read-Evaluation and the qualifying Depository fit deposits selected by Finding Fits search, with source-safe proof evidence before Finish stores evidence or invokes delivery mechanisms.' as PromptPart;

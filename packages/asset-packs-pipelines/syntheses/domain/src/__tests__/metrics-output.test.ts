@@ -23,7 +23,7 @@ jest.mock('../agents/setup/asset-pack-initialize-mcps-tools-agent', () => ({
   __esModule: true,
   default: jest.fn().mockResolvedValue({ success: true, active: {}, initialized: [] }),
 }));
-jest.mock('../../../read/src/agents/setup/read-need-comprehension-agent', () => ({
+jest.mock('../../../read/src/agents/setup/read-evaluation-comprehension-agent', () => ({
   __esModule: true,
   default: jest.fn().mockResolvedValue({ success: true, summary: 'test need' }),
 }));

@@ -59,13 +59,13 @@ const PIPELINE_SOURCE_SAFETY = part(
 const PRODUCT_PIPELINE_ROLE: Record<SynthesizeAssetPacksMode, PromptPart> = {
   deposit: part(
     'Product pipeline: synthesize-deposits. Depositors supply DataPacks (bounded, source-safe ' +
-      'slices of repository knowledge) into a Depository where future buyers find Need-fitting ' +
+      'slices of repository knowledge) into a Depository where future buyers find Evaluation-fitting ' +
       'packs. Synthesize distinct deposit DataPack options the depositor can review and admit.',
   ),
   read: part(
-    'Product pipeline: synthesize-reads. Readers ask Bitcode to satisfy a reviewed Need by ' +
-      'finding and synthesizing Need-fitting DataPacks from Depository source. Synthesize ' +
-      'distinct Need-fitting DataPack candidates the reader can review and buy.',
+    'Product pipeline: synthesize-reads. Readers ask Bitcode to satisfy a reviewed Evaluation by ' +
+      'finding and synthesizing Evaluation-fitting DataPacks from Depository source. Synthesize ' +
+      'distinct Evaluation-fitting DataPack candidates the reader can review and buy.',
   ),
 };
 
@@ -90,7 +90,7 @@ function buildRulesPart(candidateKinds: string[], maxCandidates: number): Prompt
       '- coveredSourcePaths must be chosen ONLY from the provided inventory paths, exactly as written.',
       '- Each candidate is a distinct knowledge slice (different kind and coverage), commercially legible to a buyer.',
       `- candidate kind must be one of: ${candidateKinds.join(', ')}.`,
-      '- Do NOT invent absolute measurement volumes, magnitudes, or neediness scores.',
+      '- Do NOT invent absolute measurement volumes, magnitudes, or relative scores.',
     ].join('\n'),
   );
 }

@@ -180,7 +180,7 @@ export function buildSecretRotationFamilyRows(): SecretRotationFamilyInput[] {
       runtimeAvailabilityCheck: 'pipeline host preflight checks provider-key presence class without echoing value',
       auditEventName: 'secret_rotation.model_provider_openai',
       serializedValuePolicy: 'family id and value-presence class only; no provider credential bytes',
-      proofRootBasis: ['ReadNeedComprehensionSynthesis', 'ReadFitsFindingSynthesis', 'PipelineHarnessPreflight'],
+      proofRootBasis: ['ReadEvaluationComprehensionSynthesis', 'ReadFitsFindingSynthesis', 'PipelineHarnessPreflight'],
     },
     {
       familyId: 'database_supabase_project',

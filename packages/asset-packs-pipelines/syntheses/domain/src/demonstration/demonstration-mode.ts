@@ -21,7 +21,7 @@ export function isBitcodeDemonstrationModeEnabled(
 
 /**
  * Demonstration testnet spot for BTD in USD. Keeps a single read DataPack
- * (need-fit ≤ 0.97 BTD) under 0.000009 ETH at the mock $3,500/ETH board.
+ * (evaluation-fit ≤ 0.97 BTD) under 0.000009 ETH at the mock $3,500/ETH board.
  * (BTC testnet4 amounts at this spot fall below the dust limit — demo on ETH.)
  */
 export const DEFAULT_DEMONSTRATION_BTD_USD = 0.03;

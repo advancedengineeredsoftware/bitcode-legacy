@@ -566,7 +566,7 @@ agent2.get('local', 'attempts'); // undefined - can't see agent1's state
 - **Hierarchical configuration** where context determines behavior
 - **Stateful workflows** that accumulate knowledge over time
 
-### Not Needed For:
+### Not Evaluationed For:
 - Simple one-shot LLM calls without state
 - Basic sequential operations without coordination
 - Stateless data transformations

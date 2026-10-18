@@ -46,11 +46,11 @@ export const PACKS_FILTER_EXPLAINERS = {
     summary:
       'Limit the ledger to your packs, network depository supply, settled commodity, payouts awaiting seller finalize, or keep the full window.',
     detail:
-      '“My DataPacks” is your ownership cut: reads you bought, deposits still unsettled in the depository, and deposits that have settled. “Needs payout review” is settled commodity still in escrow (pending-seller-review) until the seller finalizes BTD vs pay-asset split. Network Depository / Settled cuts show the public commodity ledger. “All DataPacks” restores the unscoped window.',
+      '“My DataPacks” is your ownership cut: reads you bought, deposits still unsettled in the depository, and deposits that have settled. “Evaluations payout review” is settled commodity still in escrow (pending-seller-review) until the seller finalizes BTD vs pay-asset split. Network Depository / Settled cuts show the public commodity ledger. “All DataPacks” restores the unscoped window.',
     points: [
       'My DataPacks = read (bought) + deposited (unsettled) + deposited (settled)',
       'My reads / My deposits subtypes narrow that ownership cut further',
-      'Needs payout review = settled rows still pending seller BTD/pay finalize',
+      'Evaluations payout review = settled rows still pending seller BTD/pay finalize',
       'Depository / Settled network cuts are market-wide commodity posture',
       'Does not replace settlement / compensation / delivery / repair facets',
     ],

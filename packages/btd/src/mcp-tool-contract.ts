@@ -438,11 +438,11 @@ export function buildBtdMcpToolContractInputs(): BtdMcpToolContractInput[] {
       toolId: 'bitcode://synthesize-asset-packs-for-reads',
       category: 'pipelines',
       summary:
-        'Synthesize Read AssetPack options from Need configuration and repository context.',
+        'Synthesize Read AssetPack options from Evaluation configuration and repository context.',
       description: [
-        'Synthesize Read AssetPack options from Need configuration and repository context.',
+        'Synthesize Read AssetPack options from Evaluation configuration and repository context.',
         'Product equivalent of website /reads Synthesize AssetPacks.',
-        'Requires Need.prompt. Returns source-safe run/admission metadata for Packs reread.',
+        'Requires Evaluation.prompt. Returns source-safe run/admission metadata for Packs reread.',
       ].join(' '),
       inputSchemaId: 'bitcode.mcp.synthesizeAssetPacksForReads.input.v1',
       outputSchemaId: 'bitcode.mcp.synthesizeAssetPacksForReads.output.v1',
@@ -453,7 +453,7 @@ export function buildBtdMcpToolContractInputs(): BtdMcpToolContractInput[] {
       proofRootFields: REQUIRED_PROOF_ROOT_FIELDS,
       requestRootFields: [
         'repository',
-        'need',
+        'evaluation',
         'streaming',
         'attachments',
         'connections',

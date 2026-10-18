@@ -5,7 +5,7 @@ import type { AssetPackSettlementRightsDeliveryBoundary } from '@bitcode/asset-p
 import type { ReadingInterfaceProductParity } from './reading-interface-product-parity';
 import type { ReadingOperationalTelemetryRepairReadback } from './reading-operational-telemetry-repair-readback';
 import type { ReadFitsFindingRuntime } from './read-fits-finding-runtime';
-import type { ReadNeedReviewResynthesisRuntime } from './read-need-review-resynthesis';
+import type { ReadEvaluationReviewResynthesisRuntime } from './read-evaluation-review-resynthesis';
 
 export const READING_LOCAL_STAGING_REHEARSAL_LANES = ['local', 'staging-testnet'] as const;
 
@@ -14,7 +14,7 @@ export type ReadingLocalStagingRehearsalLane =
 
 export const READING_LOCAL_STAGING_REHEARSAL_STAGE_IDS = [
   'request-read',
-  'review-synthesized-need',
+  'review-synthesized-evaluation',
   'request-finding-fits',
   'review-assetpack-preview',
   'buy-assetpack-settle',
@@ -27,7 +27,7 @@ export const READING_LOCAL_STAGING_REHEARSAL_ROW_IDS = [
   'lane:local-reading-rehearsal',
   'lane:staging-testnet-reading-rehearsal',
   'stage:request-read',
-  'stage:review-synthesized-need',
+  'stage:review-synthesized-evaluation',
   'stage:request-finding-fits',
   'stage:review-assetpack-preview',
   'stage:buy-assetpack-settle',
@@ -133,8 +133,8 @@ export interface ReadingLocalStagingRehearsal {
     stagingTestnetLaneCovered: true;
     stagingProjectRef: 'tkpyosihuouusyaxtbau';
     stagingRestHost: 'https://tkpyosihuouusyaxtbau.supabase.co/rest/v1/';
-    readNeedComprehensionCovered: boolean;
-    acceptedNeedCovered: boolean;
+    readEvaluationComprehensionCovered: boolean;
+    acceptedEvaluationCovered: boolean;
     readFitsFindingCovered: boolean;
     depositoryManyFitsCovered: boolean;
     sourceSafePreviewCovered: boolean;
@@ -155,7 +155,7 @@ export interface ReadingLocalStagingRehearsal {
   storageProjection: ReadingLocalStagingRehearsalStorageRecord[];
   sourceSafety: ReadingLocalStagingRehearsalSourceSafety;
   proofRoots: {
-    readNeedRuntimeRoot: string | null;
+    readEvaluationRuntimeRoot: string | null;
     readFitsRuntimeRoot: string | null;
     previewBoundaryRoot: string | null;
     settlementBoundaryRoot: string | null;
@@ -171,7 +171,7 @@ export interface ReadingLocalStagingRehearsal {
 
 export interface ReadingLocalStagingRehearsalInput {
   runId?: string | null;
-  readNeedRuntime?: ReadNeedReviewResynthesisRuntime | null;
+  readEvaluationRuntime?: ReadEvaluationReviewResynthesisRuntime | null;
   readFitsRuntime?: ReadFitsFindingRuntime | null;
   previewBoundary?: AssetPackPreviewBoundary | null;
   settlementBoundary?: AssetPackSettlementRightsDeliveryBoundary | null;
@@ -338,8 +338,8 @@ function hasAllOperationalEvents(readback: ReadingOperationalTelemetryRepairRead
 
 function stageReadback(input: ReadingLocalStagingRehearsalInput): Record<ReadingLocalStagingRehearsalStageId, ReadingLocalStagingRehearsalRowStatus> {
   return {
-    'request-read': rowStatus(Boolean(input.readNeedRuntime?.proofRoots.readRequestRoot)),
-    'review-synthesized-need': rowStatus(input.readNeedRuntime?.reviewState === 'accepted'),
+    'request-read': rowStatus(Boolean(input.readEvaluationRuntime?.proofRoots.readRequestRoot)),
+    'review-synthesized-evaluation': rowStatus(input.readEvaluationRuntime?.reviewState === 'accepted'),
     'request-finding-fits': rowStatus(Boolean(input.readFitsRuntime?.findingFitsAdmission.admitted)),
     'review-assetpack-preview': rowStatus(Boolean(input.previewBoundary?.proofRoots.previewRoot)),
     'buy-assetpack-settle': rowStatus(input.settlementBoundary?.state === 'settlement_delivered', Boolean(input.previewBoundary)),
@@ -356,7 +356,7 @@ export function buildReadingLocalStagingRehearsal(
   const settlementBoundary = input.settlementBoundary || null;
   const operationalReadback = input.operationalReadback || null;
   const interfaceParity = input.interfaceParity || null;
-  const readNeedRuntimeRoot = input.readNeedRuntime?.proofRoots.runtimeRoot || null;
+  const readEvaluationRuntimeRoot = input.readEvaluationRuntime?.proofRoots.runtimeRoot || null;
   const readFitsRuntimeRoot = readFitsRuntime?.proofRoots.runtimeRoot || null;
   const previewBoundaryRoot = previewBoundary?.proofRoots.boundaryRoot || null;
   const settlementBoundaryRoot = settlementBoundary?.proofRoots.boundaryRoot || null;
@@ -395,27 +395,27 @@ export function buildReadingLocalStagingRehearsal(
       laneId: 'local-and-staging-testnet',
       stageId: 'request-read',
       status: stages['request-read'],
-      purpose: 'Persist the source-safe Read request and route it into ReadNeedComprehensionSynthesis.',
-      evidence: ['read request persisted', 'read request root available', 'Need synthesis admitted'],
-      requiredRoots: [input.readNeedRuntime?.proofRoots.readRequestRoot, readNeedRuntimeRoot],
+      purpose: 'Persist the source-safe Read request and route it into ReadEvaluationComprehensionSynthesis.',
+      evidence: ['read request persisted', 'read request root available', 'Evaluation synthesis admitted'],
+      requiredRoots: [input.readEvaluationRuntime?.proofRoots.readRequestRoot, readEvaluationRuntimeRoot],
     }),
     row({
-      rowId: 'stage:review-synthesized-need',
+      rowId: 'stage:review-synthesized-evaluation',
       rowKind: 'stage',
       laneId: 'local-and-staging-testnet',
-      stageId: 'review-synthesized-need',
-      status: stages['review-synthesized-need'],
-      purpose: 'Persist and review the synthesized Need before Finding Fits can run.',
-      evidence: ['synthesized Need persisted', 'Need measurement persisted', 'accepted Need admission recorded'],
+      stageId: 'review-synthesized-evaluation',
+      status: stages['review-synthesized-evaluation'],
+      purpose: 'Persist and review the synthesized Evaluation before Finding Fits can run.',
+      evidence: ['synthesized Evaluation persisted', 'Evaluation measurement persisted', 'accepted Evaluation admission recorded'],
       requiredRoots: [
-        input.readNeedRuntime?.proofRoots.measurementRoot,
-        input.readNeedRuntime?.findingFitsAdmission.acceptedNeed?.review?.acceptanceRoot,
-        readNeedRuntimeRoot,
+        input.readEvaluationRuntime?.proofRoots.measurementRoot,
+        input.readEvaluationRuntime?.findingFitsAdmission.acceptedEvaluation?.review?.acceptanceRoot,
+        readEvaluationRuntimeRoot,
       ],
       blockers:
-        input.readNeedRuntime?.reviewState === 'accepted'
+        input.readEvaluationRuntime?.reviewState === 'accepted'
           ? []
-          : ['accepted_read_need_required_before_finding_fits'],
+          : ['accepted_read_evaluation_required_before_finding_fits'],
     }),
     row({
       rowId: 'stage:request-finding-fits',
@@ -423,7 +423,7 @@ export function buildReadingLocalStagingRehearsal(
       laneId: 'local-and-staging-testnet',
       stageId: 'request-finding-fits',
       status: stages['request-finding-fits'],
-      purpose: 'Run ReadFitsFindingSynthesis from an accepted Need and preserve selected fit provenance.',
+      purpose: 'Run ReadFitsFindingSynthesis from an accepted Evaluation and preserve selected fit provenance.',
       evidence: ['Finding Fits admission', 'query plan root', 'ranking root', 'selected fit provenance root'],
       requiredRoots: [
         readFitsRuntime?.proofRoots.queryPlanRoot,
@@ -555,8 +555,8 @@ export function buildReadingLocalStagingRehearsal(
     stagingTestnetLaneCovered: true as const,
     stagingProjectRef: STAGING_PROJECT_REF,
     stagingRestHost: STAGING_REST_HOST,
-    readNeedComprehensionCovered: Boolean(readNeedRuntimeRoot),
-    acceptedNeedCovered: input.readNeedRuntime?.reviewState === 'accepted',
+    readEvaluationComprehensionCovered: Boolean(readEvaluationRuntimeRoot),
+    acceptedEvaluationCovered: input.readEvaluationRuntime?.reviewState === 'accepted',
     readFitsFindingCovered: Boolean(readFitsRuntimeRoot),
     depositoryManyFitsCovered: selectedCandidateCount > 0 && fitDepositCount > 0,
     sourceSafePreviewCovered: Boolean(previewBoundaryRoot && previewBoundary?.sourceSafety.sourceSafeMetadataOnly),
@@ -590,7 +590,7 @@ export function buildReadingLocalStagingRehearsal(
     }),
     storageRecord('sourceSafety', 'source_safety', jsonSafe(SOURCE_SAFETY)),
     storageRecord('proofRoots', 'proof_roots', {
-      readNeedRuntimeRoot: shortRoot(readNeedRuntimeRoot),
+      readEvaluationRuntimeRoot: shortRoot(readEvaluationRuntimeRoot),
       readFitsRuntimeRoot: shortRoot(readFitsRuntimeRoot),
       previewBoundaryRoot: shortRoot(previewBoundaryRoot),
       settlementBoundaryRoot: shortRoot(settlementBoundaryRoot),
@@ -632,7 +632,7 @@ export function buildReadingLocalStagingRehearsal(
     ],
     sourceSafety: SOURCE_SAFETY,
     proofRoots: {
-      readNeedRuntimeRoot,
+      readEvaluationRuntimeRoot,
       readFitsRuntimeRoot,
       previewBoundaryRoot,
       settlementBoundaryRoot,

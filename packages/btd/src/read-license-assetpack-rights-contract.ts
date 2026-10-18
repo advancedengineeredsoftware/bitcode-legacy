@@ -41,7 +41,7 @@ export type BtdAssetPackRightsInterfaceDecision =
 
 export type BtdInterfaceRightsContractDenialCode =
   | 'READ_REQUEST_REQUIRED'
-  | 'REVIEWED_NEED_REQUIRED'
+  | 'REVIEWED_EVALUATION_REQUIRED'
   | 'FINDING_FITS_REQUIRED'
   | 'SOURCE_SAFE_PREVIEW_REQUIRED'
   | 'FEE_QUOTE_REQUIRED'
@@ -85,7 +85,7 @@ export interface BtdReadLicenseInterfaceContractInput {
   action: BtdOrganizationPermissionAction;
   fixturePath: string;
   readRequestRoot: string;
-  reviewedNeedRoot: string;
+  reviewedEvaluationRoot: string;
   findingFitsAdmissionRoot: string;
   sourceSafePreviewRoot: string;
   feeQuote?: BtdInterfaceFeeQuoteProjection | null;
@@ -103,7 +103,7 @@ export interface BtdReadLicenseInterfaceContract {
   decision: BtdReadLicenseInterfaceDecision;
   denialCodes: BtdInterfaceRightsContractDenialCode[];
   readRequestRoot: string;
-  reviewedNeedRoot: string;
+  reviewedEvaluationRoot: string;
   findingFitsAdmissionRoot: string;
   sourceSafePreviewRoot: string;
   feeQuoteRoot: string | null;
@@ -227,7 +227,7 @@ export function buildBtdReadLicenseInterfaceContract(
   const feeQuoteRoot = normalizeFeeQuote(input.feeQuote)?.quoteRoot ?? null;
   const roots = {
     readRequestRoot: assertSourceSafeString(input.readRequestRoot, 'readRequestRoot'),
-    reviewedNeedRoot: assertSourceSafeString(input.reviewedNeedRoot, 'reviewedNeedRoot'),
+    reviewedEvaluationRoot: assertSourceSafeString(input.reviewedEvaluationRoot, 'reviewedEvaluationRoot'),
     findingFitsAdmissionRoot: assertSourceSafeString(input.findingFitsAdmissionRoot, 'findingFitsAdmissionRoot'),
     sourceSafePreviewRoot: assertSourceSafeString(input.sourceSafePreviewRoot, 'sourceSafePreviewRoot'),
   };
@@ -441,7 +441,7 @@ function buildPreviewFixture(input: {
     assetPackId: ids.assetPackId,
     readId: ids.readId,
     readRequestId: ids.readRequestId,
-    acceptedNeedRoot: ids.reviewedNeedRoot,
+    acceptedEvaluationRoot: ids.reviewedEvaluationRoot,
     findingFitsResultRoot: ids.findingFitsAdmissionRoot,
     readerWalletId: ids.readerWalletId,
     depositorWalletId: ids.depositorWalletId,
@@ -479,7 +479,7 @@ function buildPreviewFixture(input: {
       action: input.action,
       fixturePath: input.fixturePath,
       readRequestRoot: ids.readRequestRoot,
-      reviewedNeedRoot: ids.reviewedNeedRoot,
+      reviewedEvaluationRoot: ids.reviewedEvaluationRoot,
       findingFitsAdmissionRoot: ids.findingFitsAdmissionRoot,
       sourceSafePreviewRoot: ids.sourceSafePreviewRoot,
       feeQuote: ids.feeQuote,
@@ -516,7 +516,7 @@ function buildUnpaidDeliveryFixture(
     assetPackId: ids.assetPackId,
     readId: ids.readId,
     readRequestId: ids.readRequestId,
-    acceptedNeedRoot: ids.reviewedNeedRoot,
+    acceptedEvaluationRoot: ids.reviewedEvaluationRoot,
     findingFitsResultRoot: ids.findingFitsAdmissionRoot,
     readerWalletId: ids.readerWalletId,
     depositorWalletId: ids.depositorWalletId,
@@ -557,7 +557,7 @@ function buildUnpaidDeliveryFixture(
       action: 'deliver_asset_pack',
       fixturePath: 'apps/chatgpt/src/__tests__/tools.test.ts',
       readRequestRoot: ids.readRequestRoot,
-      reviewedNeedRoot: ids.reviewedNeedRoot,
+      reviewedEvaluationRoot: ids.reviewedEvaluationRoot,
       findingFitsAdmissionRoot: ids.findingFitsAdmissionRoot,
       sourceSafePreviewRoot: ids.sourceSafePreviewRoot,
       feeQuote: ids.feeQuote,
@@ -597,7 +597,7 @@ function buildPaidDeliveryFixture(
     assetPackId: ids.assetPackId,
     readId: ids.readId,
     readRequestId: ids.readRequestId,
-    acceptedNeedRoot: ids.reviewedNeedRoot,
+    acceptedEvaluationRoot: ids.reviewedEvaluationRoot,
     findingFitsResultRoot: ids.findingFitsAdmissionRoot,
     readerWalletId: ids.readerWalletId,
     depositorWalletId: ids.depositorWalletId,
@@ -663,7 +663,7 @@ function buildPaidDeliveryFixture(
       action: 'deliver_asset_pack',
       fixturePath: 'apps/uapi/tests/productOrganizationAuthority.test.ts',
       readRequestRoot: ids.readRequestRoot,
-      reviewedNeedRoot: ids.reviewedNeedRoot,
+      reviewedEvaluationRoot: ids.reviewedEvaluationRoot,
       findingFitsAdmissionRoot: ids.findingFitsAdmissionRoot,
       sourceSafePreviewRoot: ids.sourceSafePreviewRoot,
       feeQuote: ids.feeQuote,
@@ -760,7 +760,7 @@ function fixtureIds(fixtureId: string) {
     readId: `read-${fixtureId}`,
     readRequestId: `read-request-${fixtureId}`,
     readRequestRoot: `read-request-root-${fixtureId}`,
-    reviewedNeedRoot: `reviewed-need-root-${fixtureId}`,
+    reviewedEvaluationRoot: `reviewed-evaluation-root-${fixtureId}`,
     findingFitsAdmissionRoot: `finding-fits-root-${fixtureId}`,
     sourceManifestRoot: `source-manifest-root-${fixtureId}`,
     sourceSafePreviewRoot: `source-safe-preview-root-${fixtureId}`,
@@ -788,7 +788,7 @@ function fixtureIds(fixtureId: string) {
 
 function readLicenseDenials(input: {
   readRequestRoot: string;
-  reviewedNeedRoot: string;
+  reviewedEvaluationRoot: string;
   findingFitsAdmissionRoot: string;
   sourceSafePreviewRoot: string;
   readReceipt: BtdReadReceipt;
@@ -796,7 +796,7 @@ function readLicenseDenials(input: {
 }): BtdInterfaceRightsContractDenialCode[] {
   const codes: BtdInterfaceRightsContractDenialCode[] = [];
   if (!input.readRequestRoot) codes.push('READ_REQUEST_REQUIRED');
-  if (!input.reviewedNeedRoot) codes.push('REVIEWED_NEED_REQUIRED');
+  if (!input.reviewedEvaluationRoot) codes.push('REVIEWED_EVALUATION_REQUIRED');
   if (!input.findingFitsAdmissionRoot) codes.push('FINDING_FITS_REQUIRED');
   if (!input.sourceSafePreviewRoot) codes.push('SOURCE_SAFE_PREVIEW_REQUIRED');
   if (input.authorizationPolicy.decision !== 'allowed') codes.push('INTERFACE_AUTHORIZATION_DENIED');

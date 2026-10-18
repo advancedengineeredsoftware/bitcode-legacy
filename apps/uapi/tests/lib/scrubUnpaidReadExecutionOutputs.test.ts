@@ -21,7 +21,7 @@ describe('scrubReadOutputPreserveFullOptions', () => {
           },
           measurements: {
             absolutes: [],
-            needinesses: [{ measurementKind: 'need-fit', volume: 0.5 }],
+            relatives: [{ measurementKind: 'evaluation-fit', volume: 0.5 }],
           },
         },
       ],

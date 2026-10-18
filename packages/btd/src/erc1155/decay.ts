@@ -1,5 +1,5 @@
 /**
- * Scarcity decay: Needinesses raw volume → BTD Volume V as residual 21M shrinks.
+ * Scarcity decay: Relatives raw volume → BTD Volume V as residual 21M shrinks.
  *
  * V0: linear decay = remainingMintable / BTD_MAX_SUPPLY
  * V = floor(rawV * decay)
@@ -8,7 +8,7 @@
 import { BTD_MAX_SUPPLY_BASE_UNITS } from './types';
 
 export interface DecayInput {
-  /** Needinesses-only base units before decay. */
+  /** Relatives-only base units before decay. */
   rawVolumeBaseUnits: bigint;
   /** Lifetime minted so far. */
   btdTotalMinted: bigint;

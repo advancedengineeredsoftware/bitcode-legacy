@@ -2,7 +2,7 @@
 
 /**
  * Hero product pillars: Deposit (purple) · Read (orange) · Settle (green).
- * Each card keeps its own chrome, metrics, and supply/need/settlement story.
+ * Each card keeps its own chrome, metrics, and supply/evaluation/settlement story.
  */
 
 import React from 'react';

@@ -44,7 +44,7 @@ export const PACKS_TYPE_OPTIONS: Array<{
   { value: "my-read-bought", label: "My reads (bought)" },
   { value: "my-deposited-unsettled", label: "My deposits (unsettled)" },
   { value: "my-deposited-settled", label: "My deposits (settled)" },
-  { value: "needs-payout-review", label: "Needs payout review" },
+  { value: "needs-payout-review", label: "Evaluations payout review" },
   { value: "depository-assetpack", label: "Depository DataPacks" },
   { value: "settled-assetpack", label: "Settled DataPacks" },
 ];

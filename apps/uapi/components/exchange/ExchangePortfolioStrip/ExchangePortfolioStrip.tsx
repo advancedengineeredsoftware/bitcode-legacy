@@ -88,7 +88,7 @@ export function ExchangePortfolioStrip({
                 type="button"
                 onClick={() =>
                   onWriteParams({
-                    q: signal.kind === "unfit-need" ? "unfit" : signal.kind,
+                    q: signal.kind === "unfit-evaluation" ? "unfit" : signal.kind,
                   })
                 }
                 className="w-full min-w-0 max-w-full border border-white/10 bg-black/20 px-2.5 py-1.5 text-left transition hover:border-emerald-300/35 phone:w-auto phone:max-w-[220px]"

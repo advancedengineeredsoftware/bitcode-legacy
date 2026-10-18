@@ -47,7 +47,7 @@ const STOP_WORDS = new Set([
   'would',
   'could',
   'must',
-  'need',
+  'evaluation',
   'needs',
   'read',
   'bitcode',

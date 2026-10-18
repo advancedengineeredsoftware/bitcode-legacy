@@ -10,7 +10,7 @@ export const whatIsBitcodeSections = [
     eyebrow: 'Plain model',
     title: 'Bitcode is a market for measured technical knowledge',
     summary:
-      'A DataPack is not a raw file upload, a tokenized repository, or a free-form AI answer. It is a measured, source-safe knowledge commodity that can satisfy a reviewed Need under auditable proof and settlement rules.',
+      'A DataPack is not a raw file upload, a tokenized repository, or a free-form AI answer. It is a measured, source-safe knowledge commodity that can satisfy a reviewed Evaluation under auditable proof and settlement rules.',
     detail:
       'Bitcode starts with permitted source: code, files, designs, data, notes, commits, and metadata. Product routes synthesize that source into DataPack supply, score needs-fits, hold protected IP behind obfuscation and measurement surfaces, then prove settlement on a fully open-source, decentralized, and auditable ledger. Buyers pay with Bitcoin; BTD records volume and rights — not a second payment currency.',
     reason:

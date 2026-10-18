@@ -99,7 +99,7 @@ export function buildReadRouteSession(input: ReadRouteSessionInput = {}): ReadRo
     repositoryFullName: normalizedText(input.repositoryFullName),
     sourceBranch: normalizedText(input.sourceBranch),
     sourceCommit: normalizedText(input.sourceCommit),
-    readNeedId: normalizedText(input.readNeedId),
+    readEvaluationId: normalizedText(input.readEvaluationId),
     assetPackPreviewId: normalizedText(input.assetPackPreviewId),
     settlementQuoteId: normalizedText(input.settlementQuoteId),
     steps: enterpriseState.steps.map((step) => ({
@@ -122,8 +122,8 @@ export function buildReadRouteSession(input: ReadRouteSessionInput = {}): ReadRo
     steps: enterpriseState.steps,
     readObjects: {
       readRequestRecorded: Boolean(input.hasReadMeasurement),
-      synthesizedNeedReviewed: Boolean(input.hasSynthesizedNeed),
-      acceptedNeedPresent: Boolean(input.hasAcceptedNeed),
+      synthesizedEvaluationReviewed: Boolean(input.hasSynthesizedEvaluation),
+      acceptedEvaluationPresent: Boolean(input.hasAcceptedEvaluation),
       findingFitsRequested: Boolean(input.findingFitsRunning || input.hasSourceSafePreview),
       sourceSafeAssetPackPreviewPresent: Boolean(input.hasSourceSafePreview),
       settlementQuotePresent: Boolean(input.hasSourceSafePreview || input.hasSettlementReadback),
@@ -136,14 +136,14 @@ export function buildReadRouteSession(input: ReadRouteSessionInput = {}): ReadRo
       repositoryFullName: normalizedText(input.repositoryFullName),
       sourceBranch: normalizedText(input.sourceBranch),
       sourceCommit: normalizedText(input.sourceCommit),
-      readNeedId: normalizedText(input.readNeedId),
+      readEvaluationId: normalizedText(input.readEvaluationId),
       assetPackPreviewId: normalizedText(input.assetPackPreviewId),
       settlementQuoteId: normalizedText(input.settlementQuoteId),
     },
     pipelineOwnership: {
-      readNeedPipeline: 'ReadNeedComprehensionSynthesis',
+      readEvaluationPipeline: 'ReadEvaluationComprehensionSynthesis',
       findingFitsPipeline: 'ReadFitsFindingSynthesis',
-      acceptedNeedRequiredBeforeFindingFits: true,
+      acceptedEvaluationRequiredBeforeFindingFits: true,
       previewSourceSafeBeforeSettlement: true,
       deliveryRequiresPaidReadRights: true,
       retainedPipelineDebugCompatible: true,
@@ -176,8 +176,8 @@ export function assertReadRouteSessionSourceSafe(session: ReadRouteSession) {
       routeReadingStage: session.routeState.readingStage,
       hasRepositorySource: Boolean(session.routeState.repositoryFullName),
       hasReadMeasurement: session.readObjects.readRequestRecorded,
-      hasSynthesizedNeed: session.readObjects.synthesizedNeedReviewed,
-      hasAcceptedNeed: session.readObjects.acceptedNeedPresent,
+      hasSynthesizedEvaluation: session.readObjects.synthesizedEvaluationReviewed,
+      hasAcceptedEvaluation: session.readObjects.acceptedEvaluationPresent,
       hasSourceSafePreview: session.readObjects.sourceSafeAssetPackPreviewPresent,
       hasSettlementReadback: session.readObjects.settlementQuotePresent,
       hasDeliveryReadback: session.readObjects.deliveryUnlocked,
@@ -221,7 +221,7 @@ export function assertReadRouteSessionSourceSafe(session: ReadRouteSession) {
     settlementReadback.guards.btcFinalityBeforeBtdRights === true &&
     settlementReadback.guards.btdRightsBeforeSourceDelivery === true &&
     settlementOrderingSafe &&
-    session.pipelineOwnership.acceptedNeedRequiredBeforeFindingFits === true &&
+    session.pipelineOwnership.acceptedEvaluationRequiredBeforeFindingFits === true &&
     session.pipelineOwnership.previewSourceSafeBeforeSettlement === true &&
     session.pipelineOwnership.deliveryRequiresPaidReadRights === true &&
     session.procurementGovernance.schema === 'bitcode.read.procurement-governance' &&

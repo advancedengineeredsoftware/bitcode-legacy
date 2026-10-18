@@ -1,7 +1,7 @@
 /**
  * Deposit Implementation purity + presentable law (agents 1/2 + 2/2).
  *
- * Construction is allowlist-only — no neediness scrub theater.
+ * Construction is allowlist-only — no relative scrub theater.
  * Pins: six-field patchfile, measurements { absolutes } only, salvage never presentable.
  */
 // @ts-nocheck
@@ -72,8 +72,8 @@ describe('allowlist projection (deposit patchfile)', () => {
   it('drops non-product keys from model candidates', () => {
     const projected = projectDepositPatchfileCandidate({
       ...MOCK_OPTIONS[0],
-      measurements: { absolutes: [{ volume: 0.9 }], needinesses: [] },
-      needinessSignal: { demand: 0.5 },
+      measurements: { absolutes: [{ volume: 0.9 }], relatives: [] },
+      relativeSignal: { demand: 0.5 },
       junk: true,
     });
     expect(projected).toEqual({
@@ -96,7 +96,7 @@ describe('allowlist projection (deposit patchfile)', () => {
       options: [
         {
           ...MOCK_OPTIONS[0],
-          measurements: { needinesses: [] },
+          measurements: { relatives: [] },
           extra: 1,
         },
       ],
@@ -206,7 +206,7 @@ describe('full Implementation: model path presentable', () => {
       expect(Object.keys(o.measurements)).toContain('absolutes');
       expect(Array.isArray(o.measurements.absolutes)).toBe(true);
       for (const k of Object.keys(o.measurements)) {
-        expect(['absolutes', 'materialIdentity', 'measureReport', 'needinesses']).toContain(k);
+        expect(['absolutes', 'materialIdentity', 'measureReport', 'relatives']).toContain(k);
       }
       expect(isDepositPresentablePack(o)).toBe(true);
     }

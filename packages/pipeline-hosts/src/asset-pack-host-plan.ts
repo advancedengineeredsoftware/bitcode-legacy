@@ -72,7 +72,7 @@ export function buildEphemeralSandboxName(
 export interface BuildAssetPackSandboxHostPlanOptions {
   mode?: PipelineHostMode;
   read: PipelineReadRequest;
-  readNeed?: unknown;
+  readEvaluation?: unknown;
   deposit: PipelineDepositReference;
   sourceRevision: PipelineSourceRevision;
   source?: PipelineSandboxSource;
@@ -169,8 +169,8 @@ export function buildAssetPackSandboxHostPlan(
   const manifest = buildAssetPackPipelineHostManifest({
     mode,
     read: options.read,
-    readNeed: options.readNeed,
-    requireAcceptedReadNeed: true,
+    readEvaluation: options.readEvaluation,
+    requireAcceptedReadEvaluation: true,
     deposit,
     sourceRevision: options.sourceRevision,
     sourceOverlay,

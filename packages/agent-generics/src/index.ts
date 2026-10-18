@@ -103,7 +103,7 @@ export {
 //   Tools                      → @bitcode/generic-tools-tool-measure-<kind>
 //   MeasureAgent base          → @bitcode/generic-agents-agent-measure
 //   AbsolutesMeasureAgent      → @bitcode/generic-agents-agent-measure-absolutes
-//   NeedinessesMeasureAgent    → @bitcode/generic-measurements-needinesses
+//   RelativesMeasureAgent    → @bitcode/generic-measurements-relatives
 //   Product synthesis          → @bitcode/generic-asset-packs-synthesis
 
 export {

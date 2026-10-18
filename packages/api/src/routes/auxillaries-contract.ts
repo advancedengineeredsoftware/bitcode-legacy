@@ -1146,7 +1146,7 @@ export function buildAuxillariesInterfaceAdmissions(input: {
   const terminalActions = [
     'read_transaction',
     'request_read',
-    'review_need',
+    'review_evaluation',
     'request_finding_fits',
     'review_asset_pack_preview',
     'pay_btc_fee',
@@ -1169,7 +1169,7 @@ export function buildAuxillariesInterfaceAdmissions(input: {
       ],
       supportedActions: terminalActions,
       admittedActions: profileIdentityReady
-        ? ['read_transaction', 'request_read', 'review_need', 'request_finding_fits', 'review_asset_pack_preview']
+        ? ['read_transaction', 'request_read', 'review_evaluation', 'request_finding_fits', 'review_asset_pack_preview']
         : ['read_transaction'],
       blockers: profileIdentityReady ? [] : ['profile.identity_required'],
     }),
@@ -1187,7 +1187,7 @@ export function buildAuxillariesInterfaceAdmissions(input: {
       supportedActions: [
         'read_support_state',
         'request_read',
-        'review_need',
+        'review_evaluation',
         'request_finding_fits',
         'deliver_asset_pack',
       ],
@@ -1231,8 +1231,8 @@ export function buildAuxillariesInterfaceAdmissions(input: {
         'organization_policy_required_for_delivery_writes',
         'protected_source_never_embedded_before_paid_unlock',
       ],
-      supportedActions: ['review_need', 'request_finding_fits', 'review_asset_pack_preview', 'deliver_asset_pack'],
-      admittedActions: profileIdentityReady ? ['review_need', 'review_asset_pack_preview'] : [],
+      supportedActions: ['review_evaluation', 'request_finding_fits', 'review_asset_pack_preview', 'deliver_asset_pack'],
+      admittedActions: profileIdentityReady ? ['review_evaluation', 'review_asset_pack_preview'] : [],
       blockers: [
         profileIdentityReady ? null : 'profile.identity_required',
         githubReady ? null : 'connects.github_provider_required',
@@ -1265,7 +1265,7 @@ export function buildAuxillariesInterfaceAdmissions(input: {
         'interface_admission_record_required',
         'protected_source_never_embedded_before_paid_unlock',
       ],
-      supportedActions: ['review_need', 'request_finding_fits', 'review_asset_pack_preview'],
+      supportedActions: ['review_evaluation', 'request_finding_fits', 'review_asset_pack_preview'],
       admittedActions: [],
       blockers: ['conversations.product_depth_deferred_to_future_version'],
       sourceSafetyClass: 'protected_source_redacted',

@@ -57,7 +57,7 @@
     "@bitcode/tools-generics": "workspace:*",
     "@bitcode/measurement-generics": "workspace:*",
     "@bitcode/generic-agents-agent-measure-absolutes": "workspace:*",
-    "@bitcode/generic-measurements-needinesses": "workspace:*",
+    "@bitcode/generic-measurements-relatives": "workspace:*",
     "@bitcode/asset-packs-generics": "workspace:*",
     "@bitcode/parsing": "workspace:*",
     "@bitcode/registry": "workspace:*",

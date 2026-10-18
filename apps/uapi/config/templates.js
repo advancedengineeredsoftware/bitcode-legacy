@@ -14,7 +14,7 @@ exports.templates = {
             text: `# Feature: __[FEATURE_NAME]__
 
 ## Definition of Read
-- [ ] Implemented __[CORE_FUNCTIONALITY]__ that solves __[BUSINESS_NEED]__
+- [ ] Implemented __[CORE_FUNCTIONALITY]__ that solves __[BUSINESS_EVALUATION]__
 - [ ] Added tests covering critical paths
 - [ ] Updated relevant documentation
 - [ ] Code follows project standards

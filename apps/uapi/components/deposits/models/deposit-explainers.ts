@@ -303,7 +303,7 @@ export const DEPOSIT_SECTION_EXPLAINERS = {
       'Proposals show the synthesized contents (file changes + a natural-language summary) and the provenant source paths that informed them, alongside tool-measured sizes and a correctness estimate. Select one to admit it permanently to the Depository, or archive it (re-depositable later; stale measurements resynthesize).',
     points: [
       'Compare measured options before committing to one',
-      'Check the neediness preview to see estimated future read demand',
+      'Check the relative preview to see estimated future read demand',
       'Approve is a permanent, confirmed admission — archive is reversible',
     ],
     references: {
@@ -322,9 +322,9 @@ export const DEPOSIT_SECTION_EXPLAINERS = {
     kicker: 'Earnings',
     title: 'All-repositories supply estimate',
     summary:
-      'An aggregate estimate of what your connected repositories could earn as Depository supply — likely reader demand, underserved (unfit-Need) opportunities, and an expected Bitcoin compensation range.',
+      'An aggregate estimate of what your connected repositories could earn as Depository supply — likely reader demand, underserved (unfit-Evaluation) opportunities, and an expected Bitcoin compensation range.',
     detail:
-      'This rolls up every connected repository, not just the one selected above, so you can see where supplying a new AssetPack is most likely to be needed before you spend synthesis effort on it. Supply recommendations flag which candidates are approve-ready versus needing repair.',
+      'This rolls up every connected repository, not just the one selected above, so you can see where supplying a new AssetPack is most likely to be needed before you spend synthesis effort on it. Supply recommendations flag which candidates are approve-ready versus evaluationing repair.',
     points: [
       'See which repositories are most likely to be read before depositing',
       'Gauge an expected Bitcoin compensation range across all supply',
@@ -337,7 +337,7 @@ export const DEPOSIT_SECTION_EXPLAINERS = {
       ],
       canon: [
         ...DEPOSIT_CANON_REFS,
-        '.qa/BITCODE_V48_QA.md § F24 — Neediness v0: deposit-side preview of read Need-fit (depository search during depositing)',
+        '.qa/BITCODE_V48_QA.md § F24 — Relative v0: deposit-side preview of read Evaluation-fit (depository search during depositing)',
       ],
     },
   }),

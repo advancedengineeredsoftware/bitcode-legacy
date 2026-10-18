@@ -92,7 +92,7 @@ export function ExecutionsClient() {
     }
   }, []);
 
-  const { state: persistedState, updateDefinitionOfNeed: updatePersistedDefinitionOfNeed, updateModelSelection: updatePersistedModel, updateVCS: updatePersistedVCS } = usePersistedState();
+  const { state: persistedState, updateDefinitionOfEvaluation: updatePersistedDefinitionOfEvaluation, updateModelSelection: updatePersistedModel, updateVCS: updatePersistedVCS } = usePersistedState();
 
   const {
     definitionOfRead,
@@ -109,23 +109,23 @@ export function ExecutionsClient() {
     runId: activeRunId,
     latestWorkUpdate,
     iterationUpdates,
-    setDefinitionOfNeed,
+    setDefinitionOfEvaluation,
     submitAssetPackPipeline,
     appendInstructionToLog,
     resetState,
   } = useExecutionState();
 
-  const [initialDefinitionOfNeed, setInitialDefinitionOfNeed] = useState(persistedState.definitionOfRead || definitionOfRead);
+  const [initialDefinitionOfEvaluation, setInitialDefinitionOfEvaluation] = useState(persistedState.definitionOfRead || definitionOfRead);
   useEffect(() => {
     if (persistedState.definitionOfRead && !definitionOfRead) {
-      setDefinitionOfNeed(persistedState.definitionOfRead);
+      setDefinitionOfEvaluation(persistedState.definitionOfRead);
     }
   }, []);
 
-  const handleSetDefinitionOfNeed = (value: string) => {
-    setDefinitionOfNeed(value);
-    setInitialDefinitionOfNeed(value);
-    updatePersistedDefinitionOfNeed(value);
+  const handleSetDefinitionOfEvaluation = (value: string) => {
+    setDefinitionOfEvaluation(value);
+    setInitialDefinitionOfEvaluation(value);
+    updatePersistedDefinitionOfEvaluation(value);
   };
 
   const [modelSelection, setModelSelection] = useState(persistedState.modelSelection || `${DEFAULT_PROVIDER}||${DEFAULT_MODEL_API}`);
@@ -503,7 +503,7 @@ export function ExecutionsClient() {
       <ExecutionsPageHeaderSettleDeliveryPostprocess
           renderDocInsideHeader={false}
           renderCardsInsideHeader={false}
-          onSelectDeliveryTemplateDefinitionOfNeed={handleSetDefinitionOfNeed}
+          onSelectDeliveryTemplateDefinitionOfEvaluation={handleSetDefinitionOfEvaluation}
           executionStatus={isProcessing ? 'executing' : (!isProcessing && (isStreamingComplete || (!!runId && !!historyAssetPackCompletion))) ? 'executed' : 'execute'}
           executionType={'agentic-execution:asset-pack'}
           postprocessed={headerPostprocessed || undefined}
@@ -517,7 +517,7 @@ export function ExecutionsClient() {
           onTemplateSelect={(templateId, templateCategory) => {
             const template = mergedTemplates[templateCategory].find((t) => t.id === templateId);
             if (template) {
-              handleSetDefinitionOfNeed(template.text);
+              handleSetDefinitionOfEvaluation(template.text);
             }
           }}
           settleDelivery={{

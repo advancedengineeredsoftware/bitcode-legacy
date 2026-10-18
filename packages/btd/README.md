@@ -9,7 +9,7 @@ Commercial **read settle** uses a single ERC1155 on Ethereum:
 
 | Token | ID | Kind | Cap / behavior |
 | --- | --- | --- | --- |
-| **BTD (Bitcode)** | `0` | Fungible | Max **21,000,000** whole tokens (18 decimals). **Minted on settle** to depositor earn slices (needinesses volume + supply decay). Freely transferable. **Never the pay asset.** |
+| **BTD (Bitcode)** | `0` | Fungible | Max **21,000,000** whole tokens (18 decimals). **Minted on settle** to depositor earn slices (relatives volume + supply decay). Freely transferable. **Never the pay asset.** |
 | **AssetPack** | `≥ 1` | NFT co-ownership | Add-only co-owners; depositor retains; burn forbidden. |
 
 **Pay rails:** ETH (on-chain), BTC / SOL (attested). Spot vs BTD (mock default on testnet).  
@@ -23,7 +23,7 @@ the other. **Edit both when settlement token behavior changes.**
 | Path | Language | Role | Why it exists |
 | --- | --- | --- | --- |
 | `packages/btd/contracts/src/BitcodeERC1155.sol` | Solidity | On-chain deployable (Foundry) | Cap 21M, escrow mint, ETH/BTC/SOL settle, AP co-own; see `contracts/DEPLOY.md` |
-| `packages/btd/src/erc1155/` | TypeScript | Executable mirror + needinesses mint math | Tests, projected settlement receipts, pipeline stages, JSON-safe artifacts without requiring solc |
+| `packages/btd/src/erc1155/` | TypeScript | Executable mirror + relatives mint math | Tests, projected settlement receipts, pipeline stages, JSON-safe artifacts without requiring solc |
 
 **Why dual is optimal for Bitcode today**
 
@@ -33,8 +33,8 @@ the other. **Edit both when settlement token behavior changes.**
 2. **Fail-closed product without deploy** — `/reads` settle, `/packs` projection,
    and unit tests must exercise mint/transfer/co-own law before any network
    deployment. The TS mirror is the product authority for receipts.
-3. **Needinesses math is off-chain** — BTD amount is
-   `needinesses-weighted scalar × 10^18`. Measurement weighting is not on-chain;
+3. **Relatives math is off-chain** — BTD amount is
+   `relatives-weighted scalar × 10^18`. Measurement weighting is not on-chain;
    Solidity only enforces supply and transfers. Keeping mint math in TS next to
    measurement packages avoids duplicating measurement catalogs in Solidity.
 4. **No silent codegen drift** — Auto-generating `.sol` from TS (or vice versa)
@@ -46,7 +46,7 @@ the other. **Edit both when settlement token behavior changes.**
 
 - Token id layout, max supply, mint destination, co-ownership add-only, and burn
   ban must match between `BitcodeERC1155.sol` and `src/erc1155/bitcode-erc1155.ts`.
-- Needinesses → amount formula lives only in `src/erc1155/settlement-btd-from-needinesses.ts`
+- Relatives → amount formula lives only in `src/erc1155/settlement-btd-from-relatives.ts`
   (and SPEC); Solidity accepts the resulting `amount`.
 - Do **not** treat `contracts/` as a build output of `src/erc1155/`. Commit both.
 

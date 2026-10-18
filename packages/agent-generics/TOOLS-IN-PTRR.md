@@ -96,7 +96,7 @@ the Tool; interpolation formats less prose.
 ```ts
 /**
  * @doc-code-tool
- * @purpose Search Depository for Need-fitting AssetPack evidence
+ * @purpose Search Depository for Evaluation-fitting AssetPack evidence
  * @capabilities lexical search, source-safe snippets, ranked candidates
  * @parameters query: string; limit?: number
  * @output { candidates: Array<{ id, score, summary }> }

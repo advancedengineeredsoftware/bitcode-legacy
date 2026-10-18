@@ -1,7 +1,7 @@
 /**
  * Pure read activity-ledger projections from workspace runs.
  *
- * Activity-ledger rows (Need anchors / repository anchors) are stored as
+ * Activity-ledger rows (Evaluation anchors / repository anchors) are stored as
  * execution-history rows but are NOT pipeline executions. They feed Load-anchor
  * UI and must be filtered out of the pipelines master table.
  */
@@ -10,13 +10,13 @@ import type { WorkspaceRun } from "@/components/bitcode/pipeline/models/pipeline
 
 /** Context sources that are activity-ledger anchors, not pipeline runs. */
 export const READ_ACTIVITY_LEDGER_SOURCES = new Set([
-  "read-need-anchor",
+  "read-evaluation-anchor",
   "terminal-repository-context-panel",
   // Legacy alias written by older repository-anchor drafts.
   "repository-context-panel",
 ]);
 
-export type ReadNeedAnchor = {
+export type ReadEvaluationAnchor = {
   id: string;
   name: string | null;
   text: string;
@@ -34,12 +34,12 @@ export function isReadActivityLedgerRun(
   if (run.contextSource && READ_ACTIVITY_LEDGER_SOURCES.has(run.contextSource)) {
     return true;
   }
-  if (run.needAnchorText) return true;
+  if (run.evaluationAnchorText) return true;
   if (run.summary && /recorded repository anchor/i.test(run.summary)) return true;
   if (run.summary && /anchored .+need/i.test(run.summary)) return true;
   if (
     run.proofStatus === "Repository anchor" ||
-    run.proofStatus === "Need anchor"
+    run.proofStatus === "Evaluation anchor"
   ) {
     return true;
   }
@@ -62,43 +62,43 @@ export function isReadActivityLedgerContextSource(
 }
 
 /**
- * Previously anchored Need configurations, newest first. Dedupe by
+ * Previously anchored Evaluation configurations, newest first. Dedupe by
  * name+text+path sets so differently named saves of the same body both remain
  * selectable.
  */
-export function deriveNeedAnchors(liveRuns: WorkspaceRun[]): ReadNeedAnchor[] {
+export function deriveEvaluationAnchors(liveRuns: WorkspaceRun[]): ReadEvaluationAnchor[] {
   const seen = new Set<string>();
-  const anchors: ReadNeedAnchor[] = [];
+  const anchors: ReadEvaluationAnchor[] = [];
   for (const run of [...liveRuns].sort(
     (a, b) =>
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   )) {
-    if (run.contextSource !== "read-need-anchor" || !run.needAnchorText) {
+    if (run.contextSource !== "read-evaluation-anchor" || !run.evaluationAnchorText) {
       continue;
     }
     const name =
-      typeof run.needAnchorName === "string" && run.needAnchorName.trim()
-        ? run.needAnchorName.trim()
+      typeof run.evaluationAnchorName === "string" && run.evaluationAnchorName.trim()
+        ? run.evaluationAnchorName.trim()
         : null;
-    const relevantPaths = Array.isArray(run.needAnchorRelevantPaths)
-      ? run.needAnchorRelevantPaths.filter(
+    const relevantPaths = Array.isArray(run.evaluationAnchorRelevantPaths)
+      ? run.evaluationAnchorRelevantPaths.filter(
           (path): path is string =>
             typeof path === "string" && path.trim().length > 0,
         )
       : [];
-    const irrelevantPaths = Array.isArray(run.needAnchorIrrelevantPaths)
-      ? run.needAnchorIrrelevantPaths.filter(
+    const irrelevantPaths = Array.isArray(run.evaluationAnchorIrrelevantPaths)
+      ? run.evaluationAnchorIrrelevantPaths.filter(
           (path): path is string =>
             typeof path === "string" && path.trim().length > 0,
         )
       : [];
-    const dedupeKey = `${name || ""}\u0000${run.needAnchorText}\u0000${relevantPaths.join(",")}\u0000${irrelevantPaths.join(",")}`;
+    const dedupeKey = `${name || ""}\u0000${run.evaluationAnchorText}\u0000${relevantPaths.join(",")}\u0000${irrelevantPaths.join(",")}`;
     if (seen.has(dedupeKey)) continue;
     seen.add(dedupeKey);
     anchors.push({
       id: run.id,
       name,
-      text: run.needAnchorText,
+      text: run.evaluationAnchorText,
       relevantPaths,
       irrelevantPaths,
       repositoryFullName: run.repository || null,

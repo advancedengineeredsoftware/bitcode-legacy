@@ -11,7 +11,7 @@ function baseProofInput(overrides: Record<string, unknown> = {}) {
   return {
     readId: 'read-source-to-shares-1',
     assetPackId: 'asset-pack-source-to-shares-1',
-    acceptedNeedRoot: 'accepted-need-root-1',
+    acceptedEvaluationRoot: 'accepted-evaluation-root-1',
     findingFitsResultRoot: 'finding-fits-root-1',
     fitDeposits: [
       {

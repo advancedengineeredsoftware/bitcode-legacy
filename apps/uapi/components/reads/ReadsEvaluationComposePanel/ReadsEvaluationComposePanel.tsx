@@ -1,11 +1,11 @@
 /**
- * Read Need compose + option synthesis/review (deposit Obfuscations twin).
- * Free-text Need + Relevant / Irrelevant path pickers + synthesize CTA.
+ * Read Evaluation compose + option synthesis/review (deposit Obfuscations twin).
+ * Free-text Evaluation + Relevant / Irrelevant path pickers + synthesize CTA.
  * Anchor controls mirror DepositObfuscationsAnchorControls (save/load/clear).
  * Options list and settle live in the parent detail grid (deposit parity).
  * Cancel lives only on ReadsPipelineTelemetry (header right) — not here.
  *
- * Run detail (non-new): hide synthesize and lock Need/paths — same law as
+ * Run detail (non-new): hide synthesize and lock Evaluation/paths — same law as
  * DepositObfuscationsPanel + isRunReviewLocked.
  */
 "use client";
@@ -16,13 +16,13 @@ import type {
 } from "@/components/reads/ReadPageClient/hooks/use-read-option-synthesis";
 import type { RepositoryContextState } from "@/components/bitcode/pipeline/models/repository-context";
 import { ProductSynthesizeDataPackOptionsButton } from "@/components/bitcode/routes/ProductSynthesizeDataPackOptionsButton/ProductSynthesizeDataPackOptionsButton";
-import { ReadsNeedPathPickers } from "@/components/reads/ReadsNeedPathPickers/ReadsNeedPathPickers";
-import { ReadsNeedAnchorControls } from "@/components/reads/ReadsNeedAnchorControls/ReadsNeedAnchorControls";
-import type { ReadNeedAnchor } from "@/components/reads/models/read-activity-ledger";
+import { ReadsEvaluationPathPickers } from "@/components/reads/ReadsEvaluationPathPickers/ReadsEvaluationPathPickers";
+import { ReadsEvaluationAnchorControls } from "@/components/reads/ReadsEvaluationAnchorControls/ReadsEvaluationAnchorControls";
+import type { ReadEvaluationAnchor } from "@/components/reads/models/read-activity-ledger";
 
-export function ReadsNeedComposePanel(props: {
-  need: string;
-  onNeedChange: (value: string) => void;
+export function ReadsEvaluationComposePanel(props: {
+  evaluation: string;
+  onEvaluationChange: (value: string) => void;
   relevantPaths: string[];
   onRelevantPathsChange: (paths: string[]) => void;
   irrelevantPaths: string[];
@@ -36,19 +36,19 @@ export function ReadsNeedComposePanel(props: {
   isConfigLocked?: boolean;
   /** Pipeline run detail (not fresh compose) — hide synthesize CTA. */
   isRunReviewLocked?: boolean;
-  needAnchors?: readonly ReadNeedAnchor[];
-  needAnchorName?: string;
-  onNeedAnchorNameChange?: (value: string) => void;
-  isNeedAnchorPopoverOpen?: boolean;
-  onNeedAnchorPopoverOpenChange?: (open: boolean) => void;
-  isAnchoringNeed?: boolean;
-  needAnchorMessage?: string | null;
-  onAnchorNeed?: () => void | Promise<void>;
-  onDeleteNeedAnchor?: (id: string) => void | Promise<void>;
+  evaluationAnchors?: readonly ReadEvaluationAnchor[];
+  evaluationAnchorName?: string;
+  onEvaluationAnchorNameChange?: (value: string) => void;
+  isEvaluationAnchorPopoverOpen?: boolean;
+  onEvaluationAnchorPopoverOpenChange?: (open: boolean) => void;
+  isAnchoringEvaluation?: boolean;
+  evaluationAnchorMessage?: string | null;
+  onAnchorEvaluation?: () => void | Promise<void>;
+  onDeleteEvaluationAnchor?: (id: string) => void | Promise<void>;
 }) {
   const {
-    need,
-    onNeedChange,
+    evaluation,
+    onEvaluationChange,
     relevantPaths,
     onRelevantPathsChange,
     irrelevantPaths,
@@ -61,27 +61,27 @@ export function ReadsNeedComposePanel(props: {
     canSynthesize,
     isConfigLocked = false,
     isRunReviewLocked = false,
-    needAnchors = [],
-    needAnchorName = "",
-    onNeedAnchorNameChange,
-    isNeedAnchorPopoverOpen = false,
-    onNeedAnchorPopoverOpenChange,
-    isAnchoringNeed = false,
-    needAnchorMessage = null,
-    onAnchorNeed,
-    onDeleteNeedAnchor,
+    evaluationAnchors = [],
+    evaluationAnchorName = "",
+    onEvaluationAnchorNameChange,
+    isEvaluationAnchorPopoverOpen = false,
+    onEvaluationAnchorPopoverOpenChange,
+    isAnchoringEvaluation = false,
+    evaluationAnchorMessage = null,
+    onAnchorEvaluation,
+    onDeleteEvaluationAnchor,
   } = props;
 
-  const anchorsEnabled = Boolean(onAnchorNeed && onNeedAnchorNameChange);
+  const anchorsEnabled = Boolean(onAnchorEvaluation && onEvaluationAnchorNameChange);
   const synthesisRunning = status === "running";
 
   return (
     <section
-      data-testid="reads-need-compose"
+      data-testid="reads-evaluation-compose"
       className={`border border-white/10 bg-white/[0.035] px-4 py-4 ${
         isConfigLocked ? "opacity-80" : ""
       }`}
-      aria-label="Read Need and path steering"
+      aria-label="Read Evaluations and path steering"
       aria-disabled={isConfigLocked ? true : undefined}
     >
       <div className="flex items-start justify-between gap-3">
@@ -89,36 +89,36 @@ export function ReadsNeedComposePanel(props: {
           <p className="text-[0.68rem] uppercase tracking-[0.22em] text-orange-200/80">
             Option synthesis
           </p>
-          <h2 className="mt-2 text-lg font-semibold text-white">Need</h2>
+          <h2 className="mt-2 text-lg font-semibold text-white">Evaluations</h2>
         </div>
         {anchorsEnabled ? (
-          <ReadsNeedAnchorControls
+          <ReadsEvaluationAnchorControls
             isConfigLocked={isConfigLocked}
-            need={need}
-            needAnchors={needAnchors}
-            needAnchorName={needAnchorName}
-            onNeedAnchorNameChange={onNeedAnchorNameChange!}
-            isNeedAnchorPopoverOpen={isNeedAnchorPopoverOpen}
-            onNeedAnchorPopoverOpenChange={(open) =>
-              onNeedAnchorPopoverOpenChange?.(open)
+            evaluation={evaluation}
+            evaluationAnchors={evaluationAnchors}
+            evaluationAnchorName={evaluationAnchorName}
+            onEvaluationAnchorNameChange={onEvaluationAnchorNameChange!}
+            isEvaluationAnchorPopoverOpen={isEvaluationAnchorPopoverOpen}
+            onEvaluationAnchorPopoverOpenChange={(open) =>
+              onEvaluationAnchorPopoverOpenChange?.(open)
             }
-            isAnchoringNeed={isAnchoringNeed}
-            onAnchorNeed={onAnchorNeed!}
-            onDeleteNeedAnchor={(id) => {
-              void onDeleteNeedAnchor?.(id);
+            isAnchoringEvaluation={isAnchoringEvaluation}
+            onAnchorEvaluation={onAnchorEvaluation!}
+            onDeleteEvaluationAnchor={(id) => {
+              void onDeleteEvaluationAnchor?.(id);
             }}
             onLoadAnchor={(anchor) => {
-              onNeedChange(anchor.text);
-              onNeedAnchorNameChange?.(anchor.name || "");
+              onEvaluationChange(anchor.text);
+              onEvaluationAnchorNameChange?.(anchor.name || "");
               onRelevantPathsChange(anchor.relevantPaths);
               onIrrelevantPathsChange(anchor.irrelevantPaths);
             }}
             onClear={() => {
-              onNeedChange("");
-              onNeedAnchorNameChange?.("");
+              onEvaluationChange("");
+              onEvaluationAnchorNameChange?.("");
               onRelevantPathsChange([]);
               onIrrelevantPathsChange([]);
-              onNeedAnchorPopoverOpenChange?.(false);
+              onEvaluationAnchorPopoverOpenChange?.(false);
             }}
             relevantPathsLength={relevantPaths.length}
             irrelevantPathsLength={irrelevantPaths.length}
@@ -127,36 +127,36 @@ export function ReadsNeedComposePanel(props: {
       </div>
       <p className="mt-2 text-sm leading-6 text-neutral-400">
         {isRunReviewLocked
-          ? "Need and path steering for this pipeline run — locked while reviewing run detail."
-          : "Select a repository and commit, describe the Need, optionally steer with Relevant and Irrelevant paths, then synthesize measured DataPack options."}
+          ? "Evaluations and path steering for this pipeline run — locked while reviewing run detail."
+          : "Select a repository and commit, describe how DataPacks should be evaluated, optionally steer with Relevant and Irrelevant paths, then synthesize options measured as Absolute and Relative measurements."}
       </p>
 
-      <label htmlFor="reads-need-input" className="mt-4 block text-xs text-neutral-300">
-        Need
+      <label htmlFor="reads-evaluation-input" className="mt-4 block text-xs text-neutral-300">
+        Evaluations
       </label>
       <textarea
-        id="reads-need-input"
-        data-testid="reads-need-input"
-        value={need}
-        onChange={(e) => onNeedChange(e.target.value)}
+        id="reads-evaluation-input"
+        data-testid="reads-evaluation-input"
+        value={evaluation}
+        onChange={(e) => onEvaluationChange(e.target.value)}
         rows={5}
         readOnly={isConfigLocked}
         disabled={isConfigLocked}
-        placeholder="Describe the Need this reading repository should satisfy…"
+        placeholder="Describe how candidate DataPacks should be evaluated against this repository…"
         className={`mt-2 w-full border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-neutral-600 disabled:cursor-not-allowed disabled:opacity-70 ${
           isConfigLocked ? 'resize-none overflow-hidden' : 'resize-y'
         }`}
       />
-      {needAnchorMessage ? (
+      {evaluationAnchorMessage ? (
         <p
-          data-testid="reads-need-anchor-message"
+          data-testid="reads-evaluation-anchor-message"
           className="mt-2 text-xs leading-5 text-neutral-400"
         >
-          {needAnchorMessage}
+          {evaluationAnchorMessage}
         </p>
       ) : null}
 
-      <ReadsNeedPathPickers
+      <ReadsEvaluationPathPickers
         isConfigLocked={isConfigLocked}
         relevantPaths={relevantPaths}
         onRelevantPathsChange={onRelevantPathsChange}
@@ -169,7 +169,7 @@ export function ReadsNeedComposePanel(props: {
         // Pipeline run detail (non-new): never offer synthesize. Fresh runs only
         // via compose (New / Back → configure → Synthesize).
         <p
-          data-testid="reads-need-run-loaded-note"
+          data-testid="reads-evaluation-run-loaded-note"
           className="mt-4 text-xs leading-5 text-neutral-500"
         >
           Run configuration is locked for this pipeline detail. Synthesis is only
@@ -180,7 +180,7 @@ export function ReadsNeedComposePanel(props: {
         <ProductSynthesizeDataPackOptionsButton
           data-testid="reads-synthesize-options"
           onClick={onSynthesize}
-          disabled={!canSynthesize || !need.trim() || isConfigLocked}
+          disabled={!canSynthesize || !evaluation.trim() || isConfigLocked}
           running={synthesisRunning}
         />
       )}

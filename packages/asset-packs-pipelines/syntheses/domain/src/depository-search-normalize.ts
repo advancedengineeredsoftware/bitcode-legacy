@@ -3,10 +3,10 @@
  * Coerces pipeline input into typed reads/assets and a default search provider.
  */
 import {
-  isAcceptedReadNeed,
-  readNeedToDepositorySearchRead,
-  resolveReadNeedFromPipelineInput,
-} from '../../read/src/read-need';
+  isAcceptedReadEvaluation,
+  readEvaluationToDepositorySearchRead,
+  resolveReadEvaluationFromPipelineInput,
+} from '../../read/src/read-evaluation';
 import {
   depositorySupplyAssetsFromIndex,
   type DepositorySupplyIndex,
@@ -61,9 +61,9 @@ export function createLexicalDepositorySearchProvider(): DepositorySearchProvide
 }
 
 export function normalizeDepositorySearchRead(input: unknown): DepositorySearchRead {
-  const acceptedNeed = resolveReadNeedFromPipelineInput(input);
-  if (isAcceptedReadNeed(acceptedNeed)) {
-    return readNeedToDepositorySearchRead(acceptedNeed);
+  const acceptedEvaluation = resolveReadEvaluationFromPipelineInput(input);
+  if (isAcceptedReadEvaluation(acceptedEvaluation)) {
+    return readEvaluationToDepositorySearchRead(acceptedEvaluation);
   }
 
   const record = recordValue(input) || {};

@@ -36,7 +36,7 @@ export type {
   DepositorEarningSupplyIntelligenceInput,
   DepositorSupplyRecommendation,
   DepositorSupplyRecommendationAction,
-  DepositorUnfitNeedOpportunity,
+  DepositorUnfitEvaluationOpportunity,
 } from './depositor-earning-supply-intelligence-types';
 
 export function buildDepositorEarningSupplyIntelligence(
@@ -46,7 +46,7 @@ export function buildDepositorEarningSupplyIntelligence(
   const demandUnestimatable = input.demandUnestimatable === true;
   const opportunities = demandUnestimatable
     ? []
-    : normalizedOpportunitySignals(input.unfitNeedOpportunitySignals);
+    : normalizedOpportunitySignals(input.unfitEvaluationOpportunitySignals);
   const optionDemandAverage = demandUnestimatable
     ? 0
     : input.policyReport.evaluations.length
@@ -72,7 +72,7 @@ export function buildDepositorEarningSupplyIntelligence(
   const opportunitiesAverage = opportunities.length
     ? opportunities.reduce((sum, opportunity) => sum + opportunity.weight, 0) / opportunities.length
     : optionDemandAverage;
-  const unfitNeedState: DepositorDemandOpportunityState = demandUnestimatable
+  const unfitEvaluationState: DepositorDemandOpportunityState = demandUnestimatable
     ? 'unestimatable-demand'
     : opportunityStateFor(Number(opportunitiesAverage.toFixed(2)));
 
@@ -156,7 +156,7 @@ export function buildDepositorEarningSupplyIntelligence(
     optionDemandAverage,
     strongestOptionId: strongestEvaluation?.optionId || null,
   });
-  const unfitNeedOpportunityRoot = root('deposit-unfit-need-opportunities', opportunities);
+  const unfitEvaluationOpportunityRoot = root('deposit-unfit-evaluation-opportunities', opportunities);
   const aggregateRoot = root('deposit-earning-supply-aggregate', {
     totalExpectedCompensationSats,
     eligibleCount: eligibleStatements.length,
@@ -171,7 +171,7 @@ export function buildDepositorEarningSupplyIntelligence(
   const intelligenceRoot = root('deposit-earning-supply-intelligence', {
     policyReportRoot: input.policyReport.roots.policyReportRoot,
     likelyDemandRoot,
-    unfitNeedOpportunityRoot,
+    unfitEvaluationOpportunityRoot,
     earningStatementRoots,
     supplyRecommendationRoots,
     aggregateRoot,
@@ -193,11 +193,11 @@ export function buildDepositorEarningSupplyIntelligence(
       ).length,
       demandRoot: likelyDemandRoot,
     },
-    unfitNeedOpportunities: {
-      state: unfitNeedState,
+    unfitEvaluationOpportunities: {
+      state: unfitEvaluationState,
       opportunityCount: opportunities.length,
       opportunities,
-      opportunityRoot: unfitNeedOpportunityRoot,
+      opportunityRoot: unfitEvaluationOpportunityRoot,
     },
     earningStatements,
     supplyRecommendations,
@@ -215,7 +215,7 @@ export function buildDepositorEarningSupplyIntelligence(
       sourceSafeSupplyRecommendationCount: supplyRecommendations.filter(
         (recommendation) => recommendation.action === 'approve-for-depository-review',
       ).length,
-      unfitNeedOpportunityCount: opportunities.length,
+      unfitEvaluationOpportunityCount: opportunities.length,
       aggregateRoot,
     },
     disclosure: {
@@ -234,7 +234,7 @@ export function buildDepositorEarningSupplyIntelligence(
       intelligenceRoot,
       policyReportRoot: input.policyReport.roots.policyReportRoot,
       likelyDemandRoot,
-      unfitNeedOpportunityRoot,
+      unfitEvaluationOpportunityRoot,
       earningStatementRoots,
       supplyRecommendationRoots,
       aggregateRoot,
@@ -261,7 +261,7 @@ export function assertDepositorEarningSupplyIntelligenceSourceSafe(
         statement.expectedCompensationRangeSats.rangeBasis ===
           'estimated-future-reader-settlement-share' &&
         statement.sourceToShares.allocationMethod === 'source-to-shares-largest-remainder' &&
-        statement.sourceToShares.proofState === 'not-created-until-accepted-need-fit-and-settlement',
+        statement.sourceToShares.proofState === 'not-created-until-accepted-evaluation-fit-and-settlement',
     ) &&
     intelligence.disclosure.sourceSafeMetadataOnly === true &&
     intelligence.disclosure.protectedSourceVisible === false &&

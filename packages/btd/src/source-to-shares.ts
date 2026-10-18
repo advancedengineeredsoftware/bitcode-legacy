@@ -67,7 +67,7 @@ export interface SourceToSharesProofInput {
   proofId?: string;
   readId: string;
   assetPackId: string;
-  acceptedNeedRoot: string;
+  acceptedEvaluationRoot: string;
   findingFitsResultRoot: string;
   fitDeposits: SourceToSharesFitDepositInput[];
   btdRange: SourceToSharesBtdRangeInput;
@@ -193,7 +193,7 @@ export interface SourceToSharesProof {
   proofId: string;
   readId: string;
   assetPackId: string;
-  acceptedNeedRoot: string;
+  acceptedEvaluationRoot: string;
   findingFitsResultRoot: string;
   proofArtifactPath: '.proofs/v30/settlement-source-to-shares-proof.json';
   sourceToSharesArtifactPath: '.proofs/_shared/source-to-shares.json';
@@ -273,7 +273,7 @@ export function buildSourceToSharesProof(input: SourceToSharesProofInput): Sourc
     proofId,
     readId,
     assetPackId,
-    input.acceptedNeedRoot,
+    input.acceptedEvaluationRoot,
     input.findingFitsResultRoot,
     feeQuote,
     paymentObservation,
@@ -291,7 +291,7 @@ export function buildSourceToSharesProof(input: SourceToSharesProofInput): Sourc
     proofId,
     readId,
     assetPackId,
-    acceptedNeedRoot: assertNonEmptyString(input.acceptedNeedRoot, 'acceptedNeedRoot'),
+    acceptedEvaluationRoot: assertNonEmptyString(input.acceptedEvaluationRoot, 'acceptedEvaluationRoot'),
     findingFitsResultRoot: assertNonEmptyString(
       input.findingFitsResultRoot,
       'findingFitsResultRoot',
@@ -321,7 +321,7 @@ export function assertSourceToSharesProof(proof: SourceToSharesProof): SourceToS
   assertNonEmptyString(proof.proofId, 'proofId');
   assertNonEmptyString(proof.readId, 'readId');
   assertNonEmptyString(proof.assetPackId, 'assetPackId');
-  assertNonEmptyString(proof.acceptedNeedRoot, 'acceptedNeedRoot');
+  assertNonEmptyString(proof.acceptedEvaluationRoot, 'acceptedEvaluationRoot');
   assertNonEmptyString(proof.findingFitsResultRoot, 'findingFitsResultRoot');
   assertNonEmptyString(proof.proofRoot, 'proofRoot');
   assertNonEmptyString(proof.issuedAt, 'issuedAt');

@@ -6,10 +6,10 @@
  *
  * - Deposit: the packs that best fit the depositor checkout (path hints +
  *   repository language) as `DepositSynthesisRawOption[]` (absolutes + patch +
- *   patchArtifact + commercial NL), `needinesses: []` per deposit law.
+ *   patchArtifact + commercial NL), `relatives: []` per deposit law.
  * - Read: Implementation `options` consumed by the read Finish agent, drawn
  *   from admitted Depository supply first (seller linkage for settle payout),
- *   with static `*-fit` needinesses measured against the Need and repository —
+ *   with static `*-fit` relatives measured against the Evaluation and repository —
  *   ranked so strong matches and clear non-matches are both visible.
  *
  * Covered source paths bind to the *real* request checkout catalog so option
@@ -18,9 +18,9 @@
 
 import { buildUnifiedDiffFromPatchFiles } from '@bitcode/generic-artifacts-patch-kind';
 import {
-  ASSET_PACK_NEEDINESSES_CATALOG,
-  computeNeedFitVolume,
-} from '@bitcode/generic-measurements-needinesses';
+  ASSET_PACK_RELATIVES_CATALOG,
+  computeEvaluationFitVolume,
+} from '@bitcode/generic-measurements-relatives';
 
 import { isPathImpermissible, isPathPermissible } from '../asset-packs-synthesis-inventory';
 import type { DepositSynthesisRawOption } from '../asset-packs-synthesis-types';
@@ -160,31 +160,31 @@ export function buildDemonstrationDepositRawOptions(input: {
   });
 }
 
-export interface DemonstrationNeedinessReading {
+export interface DemonstrationRelativeReading {
   measurementKind: string;
   label: string;
   weight: number;
   volume: number;
   unit: string;
-  category: 'neediness';
+  category: 'relative';
   status: 'measured' | 'estimated';
   descriptor: string;
 }
 
 /**
- * Static `*-fit` needinesses for a pack against the reader Need + repository.
+ * Static `*-fit` relatives for a pack against the reader Evaluation + repository.
  * - language-fit: measured — pack language vs. repository primary language.
- * - domain-fit: measured — Need vocabulary overlap with the pack's domain
+ * - domain-fit: measured — Evaluation vocabulary overlap with the pack's domain
  *   (no shared vocabulary ⇒ low fit, so non-matches read as non-matches).
  * - interface-fit: estimated — integration shape, scaled by domain relevance.
  */
-export function measureDemonstrationNeedinesses(
+export function measureDemonstrationRelatives(
   pack: DemonstrationDataPack,
-  input: { need: string; repositoryLanguage?: string | null },
-): DemonstrationNeedinessReading[] {
-  const need = input.need.toLowerCase();
-  const core = pack.needSignals.core.filter((signal) => need.includes(signal));
-  const context = pack.needSignals.context.filter((signal) => need.includes(signal));
+  input: { evaluation: string; repositoryLanguage?: string | null },
+): DemonstrationRelativeReading[] {
+  const evaluation = input.evaluation.toLowerCase();
+  const core = pack.evaluationSignals.core.filter((signal) => evaluation.includes(signal));
+  const context = pack.evaluationSignals.context.filter((signal) => evaluation.includes(signal));
   const matched = [...core, ...context];
   // Core signals carry fit; shared context alone is only a partial match.
   const domainFit =
@@ -196,7 +196,7 @@ export function measureDemonstrationNeedinesses(
   const languageFit = languageMatch === null ? 0.72 : languageMatch ? 0.94 : 0.48;
   const interfaceFit = pack.interfaceFit * (0.25 + 0.75 * matchStrength);
   const weightOf = (kind: string) =>
-    ASSET_PACK_NEEDINESSES_CATALOG.find((spec) => spec.measurementKind === kind)?.weight ?? 1;
+    ASSET_PACK_RELATIVES_CATALOG.find((spec) => spec.measurementKind === kind)?.weight ?? 1;
   const round = (value: number) => Math.round(value * 1000) / 1000;
   const packLanguage = pack.language === 'python' ? 'Python' : 'TypeScript';
   return [
@@ -206,7 +206,7 @@ export function measureDemonstrationNeedinesses(
       weight: weightOf('language-fit'),
       volume: round(languageFit),
       unit: 'estimate',
-      category: 'neediness',
+      category: 'relative',
       status: languageMatch === null ? 'estimated' : 'measured',
       descriptor:
         languageMatch === null
@@ -219,11 +219,11 @@ export function measureDemonstrationNeedinesses(
       weight: weightOf('domain-fit'),
       volume: round(domainFit),
       unit: 'estimate',
-      category: 'neediness',
+      category: 'relative',
       status: 'measured',
       descriptor: matched.length
-        ? `Need mentions ${matched.length} domain signal(s): ${matched.slice(0, 4).join(', ')}.`
-        : 'Need shares no domain vocabulary with this pack.',
+        ? `Evaluation mentions ${matched.length} domain signal(s): ${matched.slice(0, 4).join(', ')}.`
+        : 'Evaluation shares no domain vocabulary with this pack.',
     },
     {
       measurementKind: 'interface-fit',
@@ -231,11 +231,11 @@ export function measureDemonstrationNeedinesses(
       weight: weightOf('interface-fit'),
       volume: round(interfaceFit),
       unit: 'estimate',
-      category: 'neediness',
+      category: 'relative',
       status: 'estimated',
       descriptor: core.length
-        ? 'Dependency-free module surface that addresses the Need directly.'
-        : 'Dependency-free module surface, but it does not address this Need.',
+        ? 'Dependency-free module surface that addresses the Evaluation directly.'
+        : 'Dependency-free module surface, but it does not address this Evaluation.',
     },
   ];
 }
@@ -263,7 +263,7 @@ function selectReadPresentation<T>(ranked: T[], count: number): T[] {
  * supply is thinner than the presentation, unlinked catalog packs top it up.
  */
 export function buildDemonstrationReadImplementationOptions(input: {
-  need: string;
+  evaluation: string;
   catalogPaths: readonly string[];
   repositoryLanguage?: string | null;
   steering?: DemonstrationCheckoutSteering;
@@ -281,8 +281,8 @@ export function buildDemonstrationReadImplementationOptions(input: {
       : [...supplied, ...catalog.filter((pack) => !input.supplyByPackId?.[pack.id])];
   const ranked = pool
     .map((pack) => {
-      const needinesses = measureDemonstrationNeedinesses(pack, {
-        need: input.need,
+      const relatives = measureDemonstrationRelatives(pack, {
+        evaluation: input.evaluation,
         repositoryLanguage: input.repositoryLanguage,
       });
       return {
@@ -294,13 +294,13 @@ export function buildDemonstrationReadImplementationOptions(input: {
         patch: { fileChanges: patchFileChanges(pack), patchSummary: pack.patchSummary },
         measurements: {
           absolutes: measureDemonstrationDataPackAbsolutes(pack),
-          needinesses,
+          relatives,
         },
-        needFit: Math.round(computeNeedFitVolume(needinesses) * 1000) / 1000,
+        evaluationFit: Math.round(computeEvaluationFitVolume(relatives) * 1000) / 1000,
         measurementRationale: pack.measurementRationale,
         supplyProvenance: input.supplyByPackId?.[pack.id] ?? null,
       };
     })
-    .sort((a, b) => b.needFit - a.needFit);
+    .sort((a, b) => b.evaluationFit - a.evaluationFit);
   return selectReadPresentation(ranked, optionCount);
 }

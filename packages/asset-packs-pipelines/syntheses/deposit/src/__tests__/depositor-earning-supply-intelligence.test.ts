@@ -46,9 +46,9 @@ describe('Depositor earning supply intelligence', () => {
   it('builds source-safe earning statements and supply recommendations', () => {
     const intelligence = buildDepositorEarningSupplyIntelligence({
       policyReport: reviewablePolicyReport(),
-      unfitNeedOpportunitySignals: [
+      unfitEvaluationOpportunitySignals: [
         {
-          id: 'unfit-need-route-proof',
+          id: 'unfit-evaluation-route-proof',
           label: 'Unfit Reads need route proof and source-safe delivery evidence.',
           weight: 0.84,
         },
@@ -59,7 +59,7 @@ describe('Depositor earning supply intelligence', () => {
     expect(intelligence.intelligence).toBe('DepositorEarningSupplyIntelligence');
     expect(intelligence.route).toBe('/deposits');
     expect(intelligence.likelyDemand.state).toBe('strong-demand-opportunity');
-    expect(intelligence.unfitNeedOpportunities.opportunityCount).toBe(1);
+    expect(intelligence.unfitEvaluationOpportunities.opportunityCount).toBe(1);
     expect(intelligence.earningStatements).toHaveLength(3);
     expect(intelligence.earningStatements[0]).toMatchObject({
       schema: 'bitcode.deposit.depositor-earning-statement',
@@ -70,7 +70,7 @@ describe('Depositor earning supply intelligence', () => {
       },
       sourceToShares: {
         allocationMethod: 'source-to-shares-largest-remainder',
-        proofState: 'not-created-until-accepted-need-fit-and-settlement',
+        proofState: 'not-created-until-accepted-evaluation-fit-and-settlement',
       },
     });
     expect(intelligence.aggregate.eligibleEarningStatementCount).toBeGreaterThan(0);
@@ -113,7 +113,7 @@ describe('Depositor earning supply intelligence', () => {
       demandUnestimatable: true,
       demandUnestimatableRationale:
         'Unestimatable: the Depository has no settled AssetPacks to search for comparable demand.',
-      unfitNeedOpportunitySignals: [
+      unfitEvaluationOpportunitySignals: [
         {
           id: 'should-be-ignored',
           label: 'Must not surface when demand is unestimatable.',
@@ -124,8 +124,8 @@ describe('Depositor earning supply intelligence', () => {
 
     expect(intelligence.likelyDemand.state).toBe('unestimatable-demand');
     expect(intelligence.likelyDemand.averageConfidence).toBe(0);
-    expect(intelligence.unfitNeedOpportunities.state).toBe('unestimatable-demand');
-    expect(intelligence.unfitNeedOpportunities.opportunityCount).toBe(0);
+    expect(intelligence.unfitEvaluationOpportunities.state).toBe('unestimatable-demand');
+    expect(intelligence.unfitEvaluationOpportunities.opportunityCount).toBe(0);
     expect(
       intelligence.earningStatements.every((statement) => statement.state === 'unestimatable-demand'),
     ).toBe(true);

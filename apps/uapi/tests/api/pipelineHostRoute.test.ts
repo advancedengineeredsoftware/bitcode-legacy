@@ -98,7 +98,7 @@ jest.mock('@bitcode/pipeline-hosts', () => ({
                   quoteId: 'quote-route-test',
                   deterministic: true,
                   formula: 'sum(measurement.weight * measurement.volume * admitted_fit_quality)',
-                  needId: 'need-route-test',
+                  evaluationId: 'evaluation-route-test',
                   admittedFitQuality: 0.91,
                   weightedRequestedVolume: 3,
                   weightedAdmittedVolume: 2.73,
@@ -403,12 +403,12 @@ function validHostBody(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function acceptedReadNeed() {
+function acceptedReadEvaluation() {
   return {
     schema: 'bitcode.read.need',
-    needId: 'need-route-test',
+    evaluationId: 'evaluation-route-test',
     reviewState: 'accepted',
-    measurementRoot: 'sha256:need-measurement-root',
+    measurementRoot: 'sha256:evaluation-measurement-root',
     read: {
       id: 'read-activity',
       prompt: 'Find a source-bound product AssetPack fit.',
@@ -814,17 +814,17 @@ describe('POST /api/pipeline-host/asset-pack', () => {
     });
   });
 
-  it('forwards accepted Read-Need into the sandbox host plan', async () => {
+  it('forwards accepted Read-Evaluation into the sandbox host plan', async () => {
     process.env.BITCODE_PIPELINE_HOST_REQUIRE_REAL_INFERENCE = '1';
     process.env.BITCODE_ASSET_PACK_REAL_INFERENCE = '1';
     process.env.BITCODE_ASSET_PACK_REAL_INFERENCE_PROFILE = 'bounded';
-    const readNeed = acceptedReadNeed();
+    const readEvaluation = acceptedReadEvaluation();
 
     const events: Array<{ event: string; data: any }> = [];
     await runAssetPackHostRoute(
       validHostBody({
-        acceptedReadNeed: readNeed,
-        requireAcceptedReadNeed: true,
+        acceptedReadEvaluation: readEvaluation,
+        requireAcceptedReadEvaluation: true,
       }),
       'user-local-route',
       (event, data) => events.push({ event, data }),
@@ -843,13 +843,13 @@ describe('POST /api/pipeline-host/asset-pack', () => {
     expect(events[0]).toMatchObject({
       event: 'host-started',
       data: {
-        readNeedId: 'need-route-test',
-        requireAcceptedReadNeed: true,
+        readEvaluationId: 'evaluation-route-test',
+        requireAcceptedReadEvaluation: true,
       },
     });
     expect(mockBuildAssetPackSandboxHost).toHaveBeenCalledWith(
       expect.objectContaining({
-        readNeed,
+        readEvaluation,
       }),
     );
   });

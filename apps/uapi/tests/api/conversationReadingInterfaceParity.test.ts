@@ -20,14 +20,14 @@ describe('Conversation Reading interface parity', () => {
       sameAuthorityAsProduct: true,
       parallelAuthorityCreated: false,
       stageContract: {
-        acceptedNeedRequired: true,
+        acceptedEvaluationRequired: true,
         sourceSafePreviewOnlyBeforeSettlement: true,
         settlementUnlockRequiredForSource: true,
         btdRightsRequiredForDelivery: true,
         sourceBearingDeliveryAllowedBeforeSettlement: false,
       },
       noBypassReadback: {
-        acceptedNeedGate: 'denied_without_accepted_need',
+        acceptedEvaluationGate: 'denied_without_accepted_evaluation',
         deliveryBoundary: 'source_bearing_delivery_locked_until_settlement_and_rights',
       },
     });

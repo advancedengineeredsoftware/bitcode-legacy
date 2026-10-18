@@ -33,7 +33,7 @@ pnpm --filter bitcode-uapi exec jest --config jest.config.cjs \
 ```
 
 Expect: all suites green. Spine `failMode` covers
-`reject-admission`, `empty-needinesses-quote`, `empty-search-corpus`.
+`reject-admission`, `empty-relatives-quote`, `empty-search-corpus`.
 
 ### L1 inventory (route contracts)
 
@@ -87,7 +87,7 @@ stubs). Use `full` only when validating depository-anchor quality.
 
 - Deposit finishes without host timeout; options include commercial NL + honesty
   status on absolutes (no volume-0 “estimated” as measured).
-- Read path carries Need → needinesses `*-fit`; validation store is Need-first.
+- Read path carries Evaluation → relatives `*-fit`; validation store is Evaluation-first.
 - No unpaid/protected source bodies in journaled activity projections.
 
 ## 3. L3 live Supabase (opt-in)

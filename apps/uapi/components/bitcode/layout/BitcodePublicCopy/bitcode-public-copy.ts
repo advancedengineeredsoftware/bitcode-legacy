@@ -204,7 +204,7 @@ export const BITCODE_PUBLIC_COPY = {
       {
         label: 'Measurement is the moat',
         detail:
-          "No one else prices code by measured need-fit. That's what makes this a market, not a listing.",
+          "No one else prices code by measured evaluation-fit. That's what makes this a market, not a listing.",
       },
     ],
   },
@@ -222,9 +222,9 @@ export const BITCODE_PUBLIC_COPY = {
           "Sellers never set a price. Bitcode measures the data's quality and quantity into one scalar: $BTD.",
       },
       {
-        label: 'Need-relative',
+        label: 'Evaluation-relative',
         detail:
-          "A pack's $BTD is how well it fits a buyer's stated Need — the knowledge volume of that data under that demand.",
+          "A pack's $BTD is how well it fits a buyer's stated Evaluation — the knowledge volume of that data under that demand.",
       },
       {
         label: 'Minted after payment',
@@ -286,10 +286,10 @@ export const BITCODE_PUBLIC_COPY = {
    */
   valueFlow: {
     eyebrow: 'How a trade closes',
-    title: 'Need → fit → settle → mint',
+    title: 'Evaluation → fit → settle → mint',
     steps: [
-      { label: 'State a Need', detail: 'Buyer names what the data must do' },
-      { label: 'Score the fit', detail: 'Packs ranked by measured need-fit' },
+      { label: 'State an Evaluation', detail: 'Buyer names what the data must do' },
+      { label: 'Score the fit', detail: 'Packs ranked by measured evaluation-fit' },
       { label: 'Pay the rails', detail: 'ETH · BTC · SOL — fail-closed' },
       { label: 'Mint & hold', detail: '$BTD volume + DataPack co-ownership' },
     ],
@@ -301,12 +301,12 @@ export const BITCODE_PUBLIC_COPY = {
     pain:
       'License it and wait nine months for a deal that often collapses. Scrape it and inherit a lawsuit — one AI lab paid billions. Or buy the whole company for tens of billions. And the open web runs dry by the end of the decade.',
     bullets: [
-      'See the fit before you pay — every pack scored against your exact Need.',
+      'See the fit before you pay — every pack scored against your exact Evaluation.',
       'Rights-clean, audit-ready — no scraping risk; legal signs off.',
       'Own what you buy — settle in ETH, BTC, or SOL. Minutes, not months.',
     ],
     inPractice:
-      'A lab needs rare, high-assurance firmware patterns. It states the Need, Bitcode assembles the best-fitting DataPacks with measured scores, and one click buys them — clean, fast, no sourcing team.',
+      'A lab needs rare, high-assurance firmware patterns. It states the Evaluation, Bitcode assembles the best-fitting DataPacks with measured scores, and one click buys them — clean, fast, no sourcing team.',
     cta: {
       href: '/reads',
       label: 'Buy DataPacks',
@@ -319,7 +319,7 @@ export const BITCODE_PUBLIC_COPY = {
       'Your best work sits idle — too small for a licensing deal, too niche for a marketplace, or trapped in a project that died. Dead code sells for ~5% of its value, if it ever sells at all.',
     bullets: [
       'Deposit it, hide the secrets — it becomes a measured, tradeable DataPack.',
-      'Earn on every Need it fits — no negotiation, no minimum, no NDA.',
+      'Earn on every Evaluation it fits — no negotiation, no minimum, no NDA.',
       'Keep ownership — sell knowledge without selling the company.',
     ],
     inPractice:

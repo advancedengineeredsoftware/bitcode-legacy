@@ -19,7 +19,7 @@ asset-packs-pipelines/
 | `domain/` | `@bitcode/asset-packs-pipelines-domain` | **All 3** pipelines: commodity, disclosure, settlement-rights library, BTD quote helpers, org-policy wallet authority |
 | `syntheses/domain/` | `@bitcode/asset-packs-pipelines-syntheses-domain` | **Both synths**: SDIVF agents/phases/tools, preprocess/postprocess, depository search, synthesis helpers |
 | `syntheses/deposit/` | `@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-deposits-asset-packs` | Deposit product + co-located deposit options/admission/policy/agents |
-| `syntheses/read/` | `@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs` | Read product + co-located Need/fits-finding/reading contracts/agents |
+| `syntheses/read/` | `@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs` | Read product + co-located Evaluation/fits-finding/reading contracts/agents |
 | `settle/` | `@bitcode/asset-packs-pipelines-execution-pipeline-simple-settle-asset-pack` | Settle Simple product factory only |
 
 **Rules**

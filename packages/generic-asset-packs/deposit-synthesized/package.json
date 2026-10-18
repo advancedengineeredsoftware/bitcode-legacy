@@ -2,7 +2,7 @@
   "name": "@bitcode/generic-asset-packs-deposit-synthesized",
   "version": "0.1.0",
   "private": true,
-  "description": "DepositSynthesizedAssetPack: shared synthesis base + deposit-only fields (never obfuscations, needinesses always [])",
+  "description": "DepositSynthesizedAssetPack: shared synthesis base + deposit-only fields (never obfuscations, relatives always [])",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "exports": {

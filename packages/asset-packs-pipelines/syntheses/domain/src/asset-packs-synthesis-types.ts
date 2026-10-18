@@ -24,7 +24,7 @@ export interface AssetPackMeasurementSpec {
 
 /**
  * Absolute measurements are INTRINSIC properties of digital material (the
- * synthesized AssetPack patch), independent of any reader/Need/market.
+ * synthesized AssetPack patch), independent of any reader/Evaluation/market.
  */
 export type AbsolutePropertyClass = 'quantity' | 'quality';
 
@@ -103,10 +103,10 @@ export interface AssetPackCandidateMeasurement {
   /** Normalized 0..1 — the value the weighted composite uses. */
   volume: number;
   /**
-   * Absolutes form the weighted composite; needinesses are reader-relative
+   * Absolutes form the weighted composite; relatives are reader-relative
    * previews and are NEVER in the absolute composite. Optional residual field only when required by an existing parse path.
    */
-  category?: 'absolute' | 'neediness';
+  category?: 'absolute' | 'relative';
   /** Raw count/quantity for size measurements (functions/types/files). */
   magnitude?: number;
   /** The reading's unit: functions | types | files | estimate | normalized. */
@@ -130,10 +130,10 @@ export interface AssetPackCandidateMeasurement {
 }
 
 /**
- * Deposit demand estimate (not a measurements.needinesses row).
+ * Deposit demand estimate (not a measurements.relatives row).
  * Source-safe: scalars + topic-level rationale only.
  */
-export type AssetPackNeediness = DepositDemandEstimate;
+export type AssetPackRelative = DepositDemandEstimate;
 
 /** Source-safe patch descriptor (protocol primitive; never raw source). */
 export type { AssetPackPatchDescriptor };
@@ -170,7 +170,7 @@ export interface AssetPackCandidate {
   materialIdentity?: Record<string, unknown> | null;
   measureReport?: Record<string, unknown> | null;
   /** Deposit lens only: the read-demand preview (v0). */
-  neediness?: AssetPackNeediness;
+  relative?: AssetPackRelative;
 }
 
 export interface AssetPacksSynthesisInferenceAccounting {
@@ -196,13 +196,13 @@ export interface DepositSynthesisRawOption {
   coveredSourcePaths: string[];
   /**
    * Legacy scalar map or nested product shape
-   * `{ absolutes: [...], needinesses: [...] }` from Finish selectionEnvelope.
+   * `{ absolutes: [...], relatives: [...] }` from Finish selectionEnvelope.
    */
   measurements?:
     | Record<string, number>
     | {
         absolutes?: AssetPackCandidateMeasurement[] | null;
-        needinesses?: unknown;
+        relatives?: unknown;
       }
     | null;
   measurementRationale?: string;
@@ -233,5 +233,5 @@ export interface DepositSynthesisRawOption {
   commercialDescription?: string | null;
   materialIdentity?: Record<string, unknown> | null;
   measureReport?: Record<string, unknown> | null;
-  needinessSignal?: { demand?: number; saturation?: number; rationale?: string } | null;
+  relativeSignal?: { demand?: number; saturation?: number; rationale?: string } | null;
 }

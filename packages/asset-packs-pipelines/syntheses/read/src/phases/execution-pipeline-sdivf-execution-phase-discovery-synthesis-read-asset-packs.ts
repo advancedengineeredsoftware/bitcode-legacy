@@ -9,7 +9,7 @@
  * This file is one SDIVF phase role specializations for the read synthesis product.
  *
  * Discovery budget (read): product default is **full** three-agent Discovery.
- * Need-fits depository search is critical path — unlike deposit, there is no
+ * Evaluation-fits depository search is critical path — unlike deposit, there is no
  * `BITCODE_DEPOSIT_DISCOVERY_PROFILE`-style bounded skip of search. Only
  * progressive QA (`BITCODE_DEBUG_STOP_AGENT_FILTER`) may stub earlier agents.
  * See domain `phases/discovery.ts` header for deposit vs read budget law.
@@ -22,7 +22,7 @@ import type { AssetPackInput } from '@bitcode/asset-packs-pipelines-syntheses-do
 import {
   DISCOVERY_COMPREHEND_CODEBASE,
   DISCOVERY_INHERENT_REGURGITATION,
-  DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_NEED_FITS,
+  DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_EVALUATION_FITS,
 } from '@bitcode/asset-packs-pipelines-syntheses-domain/phases/discovery';
 import { storeCrossPhaseArtifact } from '@bitcode/asset-packs-pipelines-syntheses-domain/synthesize-asset-packs';
 
@@ -31,7 +31,7 @@ type DiscoveryOutput = AssetPackInput;
 
 /**
  * ExecutionPipelineSDIVFExecutionPhase Discovery specialization for read synthesis.
- * Wave 1: comprehend-codebase ∥ inherent-regurgitation → wave 2: Need-fits search.
+ * Wave 1: comprehend-codebase ∥ inherent-regurgitation → wave 2: Evaluation-fits search.
  * Pattern-aligned with deposit Discovery (serial + progressive agent skip).
  */
 export const executionPipelineSDIVFExecutionPhaseDiscoverySynthesisReadAssetPacks: ExecutionPipelineSDIVFExecutionPhaseDelegator<
@@ -59,8 +59,8 @@ export const executionPipelineSDIVFExecutionPhaseDiscoverySynthesisReadAssetPack
   const targetsSearch =
     stopFilter.includes('depository') ||
     stopFilter.includes('search-depository') ||
-    stopFilter.includes('need-fits') ||
-    stopFilter.includes('needfits');
+    stopFilter.includes('evaluation-fits') ||
+    stopFilter.includes('evaluationfits');
 
   if (stopFilter && !targetsCodebase) {
     (execution as any).agents?.registerAgent?.(
@@ -85,7 +85,7 @@ export const executionPipelineSDIVFExecutionPhaseDiscoverySynthesisReadAssetPack
         storeCrossPhaseArtifact(exec, 'discovery', 'inherentRegurgitation', {
           schema: 'bitcode.debug.fast-discovery.regurgitation',
           summary:
-            'Fast Discovery: InherentRegurgitation skipped for Need-fits progressive QA.',
+            'Fast Discovery: InherentRegurgitation skipped for Evaluation-fits progressive QA.',
           relevantKnowledge: [],
           patterns: [],
           references: [],
@@ -115,7 +115,7 @@ export const executionPipelineSDIVFExecutionPhaseDiscoverySynthesisReadAssetPack
       );
   const exec: Executor<any, any> = sequential(
     wave1,
-    createAgentExecutor(DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_NEED_FITS),
+    createAgentExecutor(DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_EVALUATION_FITS),
   );
   return await exec(input, execution);
 }) as unknown as ExecutionPipelineSDIVFExecutionPhaseDelegator<

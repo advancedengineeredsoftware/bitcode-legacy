@@ -41,8 +41,8 @@ function registerExecutionPipelineSDIVFExecutionPhaseSetupSynthesisReadAssetPack
       ),
   );
   agentRegistry.registerAgent(
-    'setup:comprehend-needs',
-    () => import('../agents/setup/read-need-comprehension-agent').then((m) => m.default),
+    'setup:comprehend-evaluations',
+    () => import('../agents/setup/read-evaluation-comprehension-agent').then((m) => m.default),
   );
   agentRegistry.registerAgent(
     'setup:danger-wall',
@@ -52,7 +52,7 @@ function registerExecutionPipelineSDIVFExecutionPhaseSetupSynthesisReadAssetPack
 
 /**
  * ExecutionPipelineSDIVFExecutionPhase Setup specialization for read synthesis.
- * Roster: clone → parallel {LSP, MCP, comprehend-needs} → danger-wall.
+ * Roster: clone → parallel {LSP, MCP, comprehend-evaluations} → danger-wall.
  */
 export const executionPipelineSDIVFExecutionPhaseSetupSynthesisReadAssetPacks: ExecutionPipelineSDIVFExecutionPhaseDelegator<
   AssetPackInput,
@@ -70,13 +70,13 @@ export const executionPipelineSDIVFExecutionPhaseSetupSynthesisReadAssetPacks: E
   const wave1 = serialSetup
     ? sequential(
         createAgentExecutor('setup:initialize-mcps-tools'),
-        createAgentExecutor('setup:comprehend-needs'),
+        createAgentExecutor('setup:comprehend-evaluations'),
         createAgentExecutor('setup:initialize-lsp'),
       )
     : parallel(
         createAgentExecutor('setup:initialize-lsp'),
         createAgentExecutor('setup:initialize-mcps-tools'),
-        createAgentExecutor('setup:comprehend-needs'),
+        createAgentExecutor('setup:comprehend-evaluations'),
       );
 
   const exec: Executor<any, any> = sequential(

@@ -14,7 +14,7 @@ pragma solidity ^0.8.20;
  * ECONOMICS (product law)
  * - You NEVER pay in BTD. Buyers pay ETH (on-chain) or BTC/SOL (attested external rails).
  * - You ALWAYS earn BTD only via mint on settle (depositors who elect the BTD payout slice).
- * - BTD Volume V is derived OFF-CHAIN from needinesses fits only (absolutes never mint),
+ * - BTD Volume V is derived OFF-CHAIN from relatives fits only (absolutes never mint),
  *   then decayed for residual 21M scarcity; V is signed into the Quote.
  * - Depositor shares split each settle: btdBps (mint, 0 fee) + coinBps (external coin, fee).
  * - Unminted BTD (coin-chosen slice of V) is NOT issued — scarcity.
@@ -53,7 +53,7 @@ contract BitcodeERC1155 {
     /// @notice EIP-712 typehash for Quote (field order must match off-chain signer).
     bytes32 public constant QUOTE_TYPEHASH = keccak256(
         "Quote(bytes32 assetPackKey,address buyer,uint8 payAsset,uint256 btdVolume,"
-        "uint256 payAmount,uint256 rateMicro,uint256 needFitMicro,uint256 decayMicro,"
+        "uint256 payAmount,uint256 rateMicro,uint256 evaluationFitMicro,uint256 decayMicro,"
         "bytes32 sharesHash,string metadataRoot,uint256 deadline,bytes32 quoteId)"
     );
 
@@ -93,10 +93,10 @@ contract BitcodeERC1155 {
      * @param assetPackKey Product identity key (bytes32) for the read AssetPack.
      * @param buyer Must equal msg.sender on ETH path; must match proof on external path.
      * @param payAsset ETH | BTC | SOL.
-     * @param btdVolume V after needinesses + decay (max mintable notional this settle).
+     * @param btdVolume V after relatives + decay (max mintable notional this settle).
      * @param payAmount Exact units buyer must pay (wei / sats / lamports per asset).
      * @param rateMicro Spot payAsset per BTD audit field (1e6 micro scale).
-     * @param needFitMicro needFitVolume * 1e6 audit (not used for math on-chain).
+     * @param evaluationFitMicro evaluationFitVolume * 1e6 audit (not used for math on-chain).
      * @param decayMicro decay * 1e6 audit.
      * @param shares Depositor splits; validated on-chain.
      * @param metadataRoot Source-safe metadata root string (never protected source body).
@@ -110,7 +110,7 @@ contract BitcodeERC1155 {
         uint256 btdVolume;
         uint256 payAmount;
         uint256 rateMicro;
-        uint256 needFitMicro;
+        uint256 evaluationFitMicro;
         uint256 decayMicro;
         SharePayout[] shares;
         string metadataRoot;
@@ -203,7 +203,7 @@ contract BitcodeERC1155 {
         address indexed depositor,
         uint256 amount,
         bytes32 indexed assetPackKey,
-        uint256 needFitMicro,
+        uint256 evaluationFitMicro,
         uint256 settlementSequence
     );
 
@@ -541,7 +541,7 @@ contract BitcodeERC1155 {
                 totalMinted += mint_i;
                 _balances[s.depositor][BTD_TOKEN_ID] += mint_i;
                 emit TransferSingle(msg.sender, address(0), s.depositor, BTD_TOKEN_ID, mint_i);
-                emit BtdEarned(s.depositor, mint_i, quote.assetPackKey, quote.needFitMicro, seq);
+                emit BtdEarned(s.depositor, mint_i, quote.assetPackKey, quote.evaluationFitMicro, seq);
             }
 
             if (coinWeightBps > 0) {
@@ -653,7 +653,7 @@ contract BitcodeERC1155 {
                 quote.btdVolume,
                 quote.payAmount,
                 quote.rateMicro,
-                quote.needFitMicro,
+                quote.evaluationFitMicro,
                 quote.decayMicro,
                 sharesHash,
                 keccak256(bytes(quote.metadataRoot)),

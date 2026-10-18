@@ -81,7 +81,7 @@ export const BitcodeExternalEvidenceQualitySchema = z.object({
 }).describe('BitcodeExternalEvidenceQuality');
 
 export const BitcodeExternalEvidenceResearchPlanSchema = z.object({
-  normalizedNeed: z.string(),
+  normalizedEvaluation: z.string(),
   normalizedQuery: z.string(),
   preferredSourceClasses: z.array(BitcodeExternalEvidenceSourceClassSchema),
   sourceSelectionRationale: z.array(z.string()),

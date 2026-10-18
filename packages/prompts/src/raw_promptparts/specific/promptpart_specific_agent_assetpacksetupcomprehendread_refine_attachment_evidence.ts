@@ -7,7 +7,7 @@ import { PromptPart } from '../../parts/PromptPart';
  * current_version: "0.50.0"
  * versions: []
  * benchmarks: [
- *   { "name": "need_evidence_fit", "test": "Refines attachments as Read and AssetPack evidence rather than generic document parsing", "score": 0.95 }
+ *   { "name": "evaluation_evidence_fit", "test": "Refines attachments as Read and AssetPack evidence rather than generic document parsing", "score": 0.95 }
  * ]
  */
 export const PROMPTPART_SPECIFIC_AGENT_ASSETPACKSETUPCOMPREHENDREAD_REFINE_ATTACHMENT_EVIDENCE: PromptPart =

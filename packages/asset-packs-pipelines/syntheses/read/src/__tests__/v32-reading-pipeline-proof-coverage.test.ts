@@ -1,6 +1,6 @@
 import {
   READ_FITS_FINDING_SYNTHESIS_CONTRACT,
-  READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT,
+  READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT,
   READING_PIPELINE_CONTRACTS,
 } from '../reading-pipeline-contract';
 
@@ -91,10 +91,10 @@ describe('V32 Reading pipeline proof coverage', () => {
   });
 
   it('keeps source-safe preview before paid settlement and pull-request delivery', () => {
-    const reviewAgent = READ_NEED_COMPREHENSION_SYNTHESIS_CONTRACT.phases
-      .find((phase) => phase.phaseId === 'ReadNeedComprehensionSynthesis.review')!
+    const reviewAgent = READ_EVALUATION_COMPREHENSION_SYNTHESIS_CONTRACT.phases
+      .find((phase) => phase.phaseId === 'ReadEvaluationComprehensionSynthesis.review')!
       .agents[0];
-    expect(reviewAgent.returnType).toBe('ReadNeedReviewState');
+    expect(reviewAgent.returnType).toBe('ReadEvaluationReviewState');
     // Step outputs validate against STEP schemas: plan returns the canonical
     // plan shape; try/refine/retry return the agent output type.
     expect(
@@ -102,7 +102,7 @@ describe('V32 Reading pipeline proof coverage', () => {
         step.outputType ===
         (step.ptrrStepName === 'plan'
           ? 'PlanStepOutput'
-          : 'AcceptedReadNeed | RejectedReadNeed | ResynthesisRequestedReadNeed'),
+          : 'AcceptedReadEvaluation | RejectedReadEvaluation | ResynthesisRequestedReadEvaluation'),
       ),
     ).toBe(true);
 
@@ -110,7 +110,7 @@ describe('V32 Reading pipeline proof coverage', () => {
       .find((phase) => phase.phaseId === 'ReadFitsFindingSynthesis.admit')!
       .agents[0]
       .ptrrSteps.find((step) => step.ptrrStepName === 'try')!;
-    expect(admitTry.inputType).toBe('AcceptedReadNeed');
+    expect(admitTry.inputType).toBe('AcceptedReadEvaluation');
 
     const previewTry = READ_FITS_FINDING_SYNTHESIS_CONTRACT.phases
       .find((phase) => phase.phaseId === 'ReadFitsFindingSynthesis.preview')!

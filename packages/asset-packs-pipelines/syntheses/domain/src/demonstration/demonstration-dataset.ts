@@ -2,7 +2,7 @@
  * Demonstration dataset isolation.
  *
  * In demonstration mode only the account's wallet and GitHub connections are
- * real; all pack data (pipeline runs, Need anchors, admissions, settles,
+ * real; all pack data (pipeline runs, Evaluation anchors, admissions, settles,
  * Exchange activity, Depository supply/demand, holdings) is demonstration
  * data. Every execution row written in demonstration mode carries
  * `context.dataset = 'demonstration'`:

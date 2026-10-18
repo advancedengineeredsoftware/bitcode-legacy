@@ -42,7 +42,7 @@ function emptySignals() {
     depositoryDemandSignals: [],
     readingDemandSignals: [],
     existingDepositorySignals: [],
-    unfitNeedOpportunitySignals: [],
+    unfitEvaluationOpportunitySignals: [],
   };
 }
 
@@ -57,7 +57,7 @@ describe('GET /api/deposit/demand-estimate (MVP-E2E L1-D3)', () => {
         ],
         readingDemandSignals: [],
         existingDepositorySignals: [],
-        unfitNeedOpportunitySignals: [],
+        unfitEvaluationOpportunitySignals: [],
       };
     });
   });
@@ -85,7 +85,7 @@ describe('GET /api/deposit/demand-estimate (MVP-E2E L1-D3)', () => {
       state: 'unestimatable-demand',
       demand: null,
       saturation: null,
-      needinessVolume: null,
+      relativeVolume: null,
       settledPackCount: 0,
       matchedPackCount: 0,
       rationale:
@@ -104,7 +104,7 @@ describe('GET /api/deposit/demand-estimate (MVP-E2E L1-D3)', () => {
         estimatable: false,
         state: 'unestimatable-demand',
         demand: null,
-        needinessVolume: null,
+        relativeVolume: null,
         settledPackCount: 0,
       }),
     );
@@ -120,7 +120,7 @@ describe('GET /api/deposit/demand-estimate (MVP-E2E L1-D3)', () => {
       state: 'unestimatable-demand',
       demand: null,
       saturation: null,
-      needinessVolume: null,
+      relativeVolume: null,
       settledPackCount: 1,
       matchedPackCount: 0,
       rationale: 'Unestimatable: only 1 settled AssetPack(s) available; need at least 3 for a defensible estimate.',
@@ -153,7 +153,7 @@ describe('GET /api/deposit/demand-estimate (MVP-E2E L1-D3)', () => {
       state: 'moderate-likely-demand',
       demand: 0.42,
       saturation: 0.3,
-      needinessVolume: 0.35,
+      relativeVolume: 0.35,
       settledPackCount: 4,
       matchedPackCount: 2,
       rationale: 'Estimated from 2 of 4 settled Depository AssetPacks.',
@@ -170,7 +170,7 @@ describe('GET /api/deposit/demand-estimate (MVP-E2E L1-D3)', () => {
       existingDepositorySignals: [
         { id: 'settled-depository-supply-saturation', label: 'sat', weight: 0.3 },
       ],
-      unfitNeedOpportunitySignals: [],
+      unfitEvaluationOpportunitySignals: [],
     });
 
     const response = await GET(requestFor('title=Auth'));
@@ -182,7 +182,7 @@ describe('GET /api/deposit/demand-estimate (MVP-E2E L1-D3)', () => {
         estimatable: true,
         demand: 0.42,
         saturation: 0.3,
-        needinessVolume: 0.35,
+        relativeVolume: 0.35,
         settledPackCount: 4,
         matchedPackIds: ['pack-a', 'pack-b'],
       }),

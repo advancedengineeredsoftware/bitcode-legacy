@@ -17,7 +17,7 @@ export type BtdInterfaceAuthoritySurface =
 export type BtdOrganizationPermissionAction =
   | 'read_transaction'
   | 'request_read'
-  | 'review_need'
+  | 'review_evaluation'
   | 'request_finding_fits'
   | 'review_asset_pack_preview'
   | 'pay_btc_fee'
@@ -251,9 +251,9 @@ const ACTION_REQUIREMENTS: Record<
     requiresRepairApproval: false,
     sourceVisibilityWhenAllowed: 'source_safe_preview',
   },
-  review_need: {
+  review_evaluation: {
     minimumRole: 'member',
-    permissionGrants: ['reading:review_need'],
+    permissionGrants: ['reading:review_evaluation'],
     requiresWalletBinding: false,
     requiresRegistryReadAccess: false,
     requiresSettledPayment: false,
@@ -370,7 +370,7 @@ const SURFACE_ACTIONS: Record<
   product: [
     'read_transaction',
     'request_read',
-    'review_need',
+    'review_evaluation',
     'request_finding_fits',
     'review_asset_pack_preview',
     'pay_btc_fee',
@@ -385,7 +385,7 @@ const SURFACE_ACTIONS: Record<
   api: [
     'read_transaction',
     'request_read',
-    'review_need',
+    'review_evaluation',
     'request_finding_fits',
     'review_asset_pack_preview',
     'pay_btc_fee',
@@ -400,7 +400,7 @@ const SURFACE_ACTIONS: Record<
   mcp: [
     'read_transaction',
     'request_read',
-    'review_need',
+    'review_evaluation',
     'request_finding_fits',
     'review_asset_pack_preview',
     'pay_btc_fee',

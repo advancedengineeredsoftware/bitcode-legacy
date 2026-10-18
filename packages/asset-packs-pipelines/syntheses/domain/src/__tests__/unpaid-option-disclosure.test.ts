@@ -19,7 +19,7 @@ const FULL_OPTION = {
   summary: 'Adds reconcile in src/ledger/reconcile.ts for cash',
   coveredSourcePaths: ['src/ledger/reconcile.ts', 'src/ledger/index.ts'],
   confidence: 0.82,
-  needFit: 0.71,
+  evaluationFit: 0.71,
   patch: {
     patchSummary: 'wire reconcile',
     fileChanges: [{ op: 'modify', path: 'src/ledger/reconcile.ts' }],
@@ -32,7 +32,7 @@ const FULL_OPTION = {
         rationale: 'Touches packages/app/foo.ts heavily',
       },
     ],
-    needinesses: [{ label: 'need-fit', volume: 0.71 }],
+    relatives: [{ label: 'evaluation-fit', volume: 0.71 }],
   },
 };
 
@@ -72,7 +72,7 @@ describe('unpaid-option-disclosure', () => {
   it('builds dual envelope with fullOptions retained', () => {
     const { selectionEnvelope, unpaidOptions, fullOptions } = buildUnpaidReadSelectionEnvelope({
       options: [FULL_OPTION],
-      need: 'cash reconcile',
+      evaluation: 'cash reconcile',
       catalogSourcePathCount: 10,
     });
     expect(fullOptions).toHaveLength(1);

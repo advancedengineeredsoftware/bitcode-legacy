@@ -226,7 +226,7 @@ interface DeliveryTemplateSets {
 
 interface ExecutionPageHeaderProps {
   executionStatus: "execute" | "executing" | "executed";
-  onSelectDeliveryTemplateDefinitionOfNeed: (definitionOfRead: string) => void;
+  onSelectDeliveryTemplateDefinitionOfEvaluation: (definitionOfRead: string) => void;
   /** If false, suppresses rendering of the summary/TL;DR doc area inside the header */
   renderDocInsideHeader?: boolean;
   /** If false, suppresses rendering of the cards panel inside the header */
@@ -342,7 +342,7 @@ export default function ExecutionsPageHeader({
   settleDelivery,
   processingStats,
   repoSnapshot,
-  onSelectDeliveryTemplateDefinitionOfNeed,
+  onSelectDeliveryTemplateDefinitionOfEvaluation,
   renderDocInsideHeader,
   renderCardsInsideHeader,
   showSourceEdu,
@@ -786,8 +786,8 @@ export default function ExecutionsPageHeader({
                     <DeliveryTemplateText
                       text="pull request"
                       templates={templates?.pullRequests}
-                      defaultNeed="an opened pull request for:"
-                      onSelect={onSelectDeliveryTemplateDefinitionOfNeed}
+                      defaultEvaluation="an opened pull request for:"
+                      onSelect={onSelectDeliveryTemplateDefinitionOfEvaluation}
                       onTemplateSelect={(templateId) => onTemplateSelect?.(templateId, 'pullRequests')}
                       onMouseEnter={handlePullRequestHover}
                       duration={3.2}

@@ -1045,9 +1045,9 @@ async function settleAssetPackLedger(pipelineResultState) {
       sourceSafePreview: output?.sourceSafePreview || output?.assetPackDisclosureReview || null,
       protectedSourceVisible: false,
     });
-    const acceptedNeedRoot =
-      manifest.readNeed?.measurementRoot ||
-      manifest.readNeed?.needRoot ||
+    const acceptedEvaluationRoot =
+      manifest.readEvaluation?.measurementRoot ||
+      manifest.readEvaluation?.evaluationRoot ||
       rootOf({ read: manifest.read, sourceRevision: manifest.sourceRevision });
     const settlementConservationRoot = rootOf({
       assetPackId,
@@ -1099,7 +1099,7 @@ async function settleAssetPackLedger(pipelineResultState) {
       assetPackId,
       readId: manifest.read?.id || runId,
       readRequestId: manifest.read?.requestId || manifest.read?.id || runId,
-      acceptedNeedRoot,
+      acceptedEvaluationRoot,
       findingFitsResultRoot: fitReceiptRoot,
       readerWalletId,
       depositorWalletId,
@@ -1559,13 +1559,13 @@ try {
     persistAssetPackSettlementRightsDeliveryBoundary,
   } = all3DomainExports;
   const {
-    acceptReadNeed,
+    acceptReadEvaluation,
     buildAssetPackSourceSafePreview,
     buildReadingPipelineObservabilityInventory,
-    isAcceptedReadNeed,
+    isAcceptedReadEvaluation,
     resolveReadingPipelineTelemetryProjection,
     summarizeReadingPipelineObservabilityCoverage,
-    synthesizeReadNeedForPipelineInput,
+    synthesizeReadEvaluationForPipelineInput,
   } = readPipelineExports;
   // Current hierarchy names + legacy factory aliases from pre-rename images.
   const factoryExecutionPipelineSDIVFSynthesizeReadAssetPacks =
@@ -1633,12 +1633,12 @@ try {
     record({ type: 'artifact-streaming-enabled', stage: 'telemetry-readback' });
   }
 
-  // Read-mode needs an accepted ReadNeed; deposit synthesis is depositor-driven.
-  let readNeed = null;
+  // Read-mode needs an accepted ReadEvaluation; deposit synthesis is depositor-driven.
+  let readEvaluation = null;
   if (!isDepositMode) {
-    readNeed = isAcceptedReadNeed(manifest.readNeed)
-      ? manifest.readNeed
-      : acceptReadNeed(synthesizeReadNeedForPipelineInput({
+    readEvaluation = isAcceptedReadEvaluation(manifest.readEvaluation)
+      ? manifest.readEvaluation
+      : acceptReadEvaluation(synthesizeReadEvaluationForPipelineInput({
           read: manifest.read,
           readRequest: manifest.read,
           sourceRevision: manifest.sourceRevision,
@@ -1648,18 +1648,18 @@ try {
             commit: manifest.sourceRevision.commit,
           },
         }));
-    execution.store('read/need', 'accepted', readNeed);
-    execution.store('read/need', 'needId', readNeed.needId);
-    execution.store('read/need', 'measurementRoot', readNeed.measurementRoot);
-    execution.store('read/need', 'reviewState', readNeed.reviewState);
+    execution.store('read/evaluation', 'accepted', readEvaluation);
+    execution.store('read/evaluation', 'evaluationId', readEvaluation.evaluationId);
+    execution.store('read/evaluation', 'measurementRoot', readEvaluation.measurementRoot);
+    execution.store('read/evaluation', 'reviewState', readEvaluation.reviewState);
   }
 
   const input = {
     read: manifest.read?.prompt || (isDepositMode ? 'Deposit measured AssetPack options.' : ''),
     definitionOfRead: manifest.read?.prompt || null,
-    readNeed,
-    acceptedReadNeed: readNeed,
-    requireAcceptedReadNeed: isDepositMode ? false : manifest.requireAcceptedReadNeed !== false,
+    readEvaluation,
+    acceptedReadEvaluation: readEvaluation,
+    requireAcceptedReadEvaluation: isDepositMode ? false : manifest.requireAcceptedReadEvaluation !== false,
     repository: {
       fullName: manifest.sourceRevision.repositoryFullName,
       branch: manifest.sourceRevision.branch,
@@ -1847,7 +1847,7 @@ try {
   const fitResult = output?.fitResult || output?.fit || null;
   const depositorySearch = output?.depositorySearch || null;
   const sourceSafePreview = buildAssetPackSourceSafePreview({
-    need: readNeed,
+    need: readEvaluation,
     fitResult,
     assetPackId: output?.assetPack?.assetPackId || output?.assetPackId || null,
     proofRoot: output?.assetPack?.proofRoot || output?.proofRoot || null,
@@ -1862,7 +1862,7 @@ try {
   let assetPackPreviewBoundary = output?.assetPackPreviewBoundary || null;
   if (!assetPackPreviewBoundary || assetPackPreviewBoundary.schema !== 'bitcode.asset-pack.preview-boundary') {
     assetPackPreviewBoundary = buildAssetPackPreviewBoundary({
-      need: readNeed,
+      need: readEvaluation,
       fitResult,
       sourceSafePreview,
       pullRequestTarget: pullRequestUrl || null,

@@ -22,7 +22,7 @@ import {
   type ObjectStorageArtifactFact,
 } from '@bitcode/btd/reconciliation';
 import type { AssetPackPreviewBoundary } from '../../syntheses/domain/src/asset-pack-preview-boundary';
-import type { AssetPackSourceSafePreview } from '../../syntheses/read/src/read-need';
+import type { AssetPackSourceSafePreview } from '../../syntheses/read/src/read-evaluation';
 
 export type AssetPackSettlementRightsDeliveryState =
   | 'settlement_delivered'
@@ -415,7 +415,7 @@ function fitDepositsFor(
     findingFitsResultRoot,
     measurementRoot:
       candidate.measurementRoot ||
-      previewBoundary.sourceSafePreview.need.measurementRoot ||
+      previewBoundary.sourceSafePreview.evaluation.measurementRoot ||
       rootOf({ measurement: candidate.assetId }),
     normalizedMeasurementUnits: Math.max(1, Math.round(candidate.finalScore * 1000)),
     fitQualityBps: Math.max(1, Math.min(10_000, Math.round(candidate.finalScore * 10_000))),
@@ -885,7 +885,7 @@ export function buildAssetPackSettlementRightsDeliveryBoundary(
   const finalityConfirmed = finality.finalityState === 'confirmed';
   const paymentMatchesAcceptedQuote = paymentMatchesQuote({ previewBoundary, payment });
   const range = rangeFor(preview);
-  const readId = firstString(input.readId, preview.need.needId, preview.need.acceptanceRoot) || `read-${sha256(preview.assetPackId).slice(0, 16)}`;
+  const readId = firstString(input.readId, preview.evaluation.evaluationId, preview.evaluation.acceptanceRoot) || `read-${sha256(preview.assetPackId).slice(0, 16)}`;
   const orderId = firstString(input.orderId, `order-${sha256(`${preview.assetPackId}:${payment.paymentReceiptRoot}`).slice(0, 16)}`)!;
   const readLicenseId = firstString(input.readLicenseId, `read-license-${sha256(`${readId}:${preview.assetPackId}`).slice(0, 16)}`)!;
   const ledgerAnchorId = firstString(input.ledgerAnchorId, `ledger-anchor-${sha256(payment.paymentReceiptRoot).slice(0, 16)}`)!;
@@ -908,7 +908,7 @@ export function buildAssetPackSettlementRightsDeliveryBoundary(
     sourceToSharesProof = buildSourceToSharesProof({
       readId,
       assetPackId: preview.assetPackId,
-      acceptedNeedRoot: preview.need.acceptanceRoot || preview.need.measurementRoot,
+      acceptedEvaluationRoot: preview.evaluation.acceptanceRoot || preview.evaluation.measurementRoot,
       findingFitsResultRoot,
       fitDeposits,
       btdRange: {
@@ -917,7 +917,7 @@ export function buildAssetPackSettlementRightsDeliveryBoundary(
         rangeEndExclusive: range.rangeEndExclusive,
         tokenCount: range.tokenCount,
         rangeRoot: preview.rangeProjection.projectionRoot,
-        measureMintReceiptRoot: preview.need.measurementRoot,
+        measureMintReceiptRoot: preview.evaluation.measurementRoot,
       },
       feeQuote: {
         quoteId: previewBoundary.quoteReceipt.quoteId,
@@ -995,8 +995,8 @@ export function buildAssetPackSettlementRightsDeliveryBoundary(
       const readReceipt = buildBtdReadReceipt({
         assetPackId: preview.assetPackId,
         readId,
-        readRequestId: preview.need.needId,
-        acceptedNeedRoot: preview.need.acceptanceRoot || preview.need.measurementRoot,
+        readRequestId: preview.evaluation.evaluationId,
+        acceptedEvaluationRoot: preview.evaluation.acceptanceRoot || preview.evaluation.measurementRoot,
         findingFitsResultRoot,
         readerWalletId: payment.payerWalletId,
         depositorWalletId,

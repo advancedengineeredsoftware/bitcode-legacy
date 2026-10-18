@@ -85,7 +85,7 @@ export const MOCK_USER_TEMPLATES_SCENARIO =
   process.env.NEXT_PUBLIC_MOCK_USER_TEMPLATES_SCENARIO || 'default';
 
 // Product feature toggles — default false (not mock-related)
-export const ENABLE_ENHANCE_NEED_DEFINITION = envTrue(
-  'NEXT_PUBLIC_ENABLE_ENHANCE_NEED_DEFINITION',
+export const ENABLE_ENHANCE_EVALUATION_DEFINITION = envTrue(
+  'NEXT_PUBLIC_ENABLE_ENHANCE_EVALUATION_DEFINITION',
 );
 export const ENABLE_MEASURE = envTrue('NEXT_PUBLIC_ENABLE_MEASURE');

@@ -189,27 +189,27 @@ describe('demonstration deposit options', () => {
 });
 
 describe('demonstration read options', () => {
-  it('measure static *-fit needinesses against the Need and rank by need-fit', () => {
+  it('measure static *-fit relatives against the Evaluation and rank by evaluation-fit', () => {
     const options = buildDemonstrationReadImplementationOptions({
-      need: 'Our webhook handler double-processes Stripe events; verify the HMAC signature and dedupe retries.',
+      evaluation: 'Our webhook handler double-processes Stripe events; verify the HMAC signature and dedupe retries.',
       catalogPaths: CHECKOUT_PATHS,
       repositoryLanguage: 'TypeScript',
     });
     expect(options[0].title).toBe(findDemonstrationDataPackByTitle(options[0].title)!.title);
     expect(options[0].title).toMatch(/webhook/i);
     for (const option of options) {
-      expect(option.measurements.needinesses.every((n) => n.measurementKind.endsWith('-fit'))).toBe(true);
+      expect(option.measurements.relatives.every((n) => n.measurementKind.endsWith('-fit'))).toBe(true);
       expect(option.patch.fileChanges.every((c) => c.op === 'create' && c.content.length > 0)).toBe(true);
     }
-    const needFits = options.map((o) => o.needFit);
-    expect([...needFits].sort((a, b) => b - a)).toEqual(needFits);
-    expect(needFits[0]).toBeGreaterThan(0.75);
+    const evaluationFits = options.map((o) => o.evaluationFit);
+    expect([...evaluationFits].sort((a, b) => b - a)).toEqual(evaluationFits);
+    expect(evaluationFits[0]).toBeGreaterThan(0.75);
   });
 
   it('attaches Depository supply provenance by catalog id', () => {
     const [first] = DEMONSTRATION_DATA_PACK_CATALOG;
     const options = buildDemonstrationReadImplementationOptions({
-      need: 'retry flaky http calls',
+      evaluation: 'retry flaky http calls',
       catalogPaths: CHECKOUT_PATHS,
       supplyByPackId: {
         [first.id]: {
@@ -225,22 +225,22 @@ describe('demonstration read options', () => {
     expect(options.filter((o) => o.supplyProvenance === null)).toHaveLength(DEMONSTRATION_READ_OPTION_COUNT - 1);
   });
 
-  it('shows a strong match, a partial match, and a clear non-match for one Need', () => {
+  it('shows a strong match, a partial match, and a clear non-match for one Evaluation', () => {
     const options = buildDemonstrationReadImplementationOptions({
-      need: 'PostgreSQL query generation evaluations improvements.',
+      evaluation: 'PostgreSQL query generation evaluations improvements.',
       catalogPaths: CHECKOUT_PATHS,
       repositoryLanguage: 'TypeScript',
     });
     expect(options).toHaveLength(DEMONSTRATION_READ_OPTION_COUNT);
-    const fit = (pattern: RegExp) => options.find((o) => pattern.test(o.title))?.needFit ?? null;
+    const fit = (pattern: RegExp) => options.find((o) => pattern.test(o.title))?.evaluationFit ?? null;
     // Strong: the SQL evaluation harness (core signals: generation, eval).
     expect(options[0].title).toMatch(/SQL generation evaluation/i);
     expect(fit(/SQL generation evaluation/i)!).toBeGreaterThan(0.7);
-    // Partial: shares Postgres context but not the Need's purpose.
+    // Partial: shares Postgres context but not the Evaluation's purpose.
     expect(fit(/migration safety/i)!).toBeGreaterThan(0.45);
     expect(fit(/migration safety/i)!).toBeLessThan(0.6);
     // Contrast non-match (wrong domain + wrong language) is always presented.
-    expect(options[options.length - 1].needFit).toBeLessThan(0.35);
+    expect(options[options.length - 1].evaluationFit).toBeLessThan(0.35);
   });
 
   it('draws read candidates from admitted supply first', () => {
@@ -251,7 +251,7 @@ describe('demonstration read options', () => {
       ]),
     );
     const options = buildDemonstrationReadImplementationOptions({
-      need: 'PostgreSQL query generation evaluations improvements.',
+      evaluation: 'PostgreSQL query generation evaluations improvements.',
       catalogPaths: CHECKOUT_PATHS,
       supplyByPackId,
     });
@@ -304,6 +304,6 @@ describe('demonstration SDIVF telemetry script', () => {
     const nodeIds = steps.map((s) => s.artifact.executionPath.join('/'));
     expect(new Set(nodeIds).size).toBe(nodeIds.length);
     const agents = new Set(steps.map((s) => s.artifact.executionState.agent).filter(Boolean));
-    expect(agents.has(lens === 'deposit' ? 'comprehend-obfuscations' : 'comprehend-needs')).toBe(true);
+    expect(agents.has(lens === 'deposit' ? 'comprehend-obfuscations' : 'comprehend-evaluations')).toBe(true);
   });
 });

@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import {
   READ_FITS_FINDING_SYNTHESIS,
-  READ_NEED_COMPREHENSION_SYNTHESIS,
+  READ_EVALUATION_COMPREHENSION_SYNTHESIS,
   READING_PIPELINE_CONTRACTS,
   type ReadingPipelineContract,
   type ReadingPipelinePtrrStepContract,
@@ -54,7 +54,7 @@ type ReadingPipelineProofCoverageArtifact = {
     settlementSteps: number;
   };
   expectedCounts: {
-    readNeed: {
+    readEvaluation: {
       phases: number;
       ptrrAgents: number;
       ptrrSteps: number;
@@ -287,12 +287,12 @@ export function buildV32ReadingPipelineProofCoverage(): ReadingPipelineProofCove
   const implementationStep = findStep('ReadFitsFindingSynthesis.implementation.asset-pack.try');
   const previewStep = findStep('ReadFitsFindingSynthesis.preview.source-safe-preview.try');
   const settleStep = findStep('ReadFitsFindingSynthesis.settle.ship-asset-pack-patch-pr.try');
-  const admissionStep = findStep('ReadFitsFindingSynthesis.admit.accepted-need-gate.try');
+  const admissionStep = findStep('ReadFitsFindingSynthesis.admit.accepted-evaluation-gate.try');
 
   const boundaryCoverage = [
     {
-      assertionId: 'accepted-need-gates-finding-fits',
-      passed: admissionStep?.step.inputType === 'AcceptedReadNeed',
+      assertionId: 'accepted-evaluation-gates-finding-fits',
+      passed: admissionStep?.step.inputType === 'AcceptedReadEvaluation',
       evidence: admissionStep?.step.inputType || 'missing',
     },
     {
@@ -341,7 +341,7 @@ export function buildV32ReadingPipelineProofCoverage(): ReadingPipelineProofCove
     sourceCommit: 'draft-gate-4-source-derived',
     generatedAt: GENERATED_AT,
     sourceSafetyVerdict: 'source-safe-contract-metadata',
-    pipelineNames: [READ_NEED_COMPREHENSION_SYNTHESIS, READ_FITS_FINDING_SYNTHESIS],
+    pipelineNames: [READ_EVALUATION_COMPREHENSION_SYNTHESIS, READ_FITS_FINDING_SYNTHESIS],
     uxStepIds: [...new Set(READING_PIPELINE_CONTRACTS.flatMap((contract) => contract.uxStepIds))],
     totals: {
       ...observabilityInventory.totals,
@@ -352,7 +352,7 @@ export function buildV32ReadingPipelineProofCoverage(): ReadingPipelineProofCove
       settlementSteps: coverageByKind('settlement'),
     },
     expectedCounts: {
-      readNeed: {
+      readEvaluation: {
         phases: 4,
         ptrrAgents: 4,
         ptrrSteps: 16,
@@ -392,7 +392,7 @@ function validateV32ReadingPipelineProofCoverage(artifact: ReadingPipelineProofC
   const failures: string[] = [];
   const content = stableStringify(artifact);
   if (SECRET_PATTERN.test(content)) failures.push('artifact must not contain secret-like material');
-  if (artifact.pipelineNames.join(',') !== `${READ_NEED_COMPREHENSION_SYNTHESIS},${READ_FITS_FINDING_SYNTHESIS}`) {
+  if (artifact.pipelineNames.join(',') !== `${READ_EVALUATION_COMPREHENSION_SYNTHESIS},${READ_FITS_FINDING_SYNTHESIS}`) {
     failures.push('artifact must name both Reading pipelines in order');
   }
   if (artifact.totals.pipelines !== 2) failures.push('expected exactly two Reading pipelines');

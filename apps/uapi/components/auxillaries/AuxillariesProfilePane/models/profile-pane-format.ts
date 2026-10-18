@@ -215,7 +215,7 @@ export function indexOfProfileAvatar(avatarUrl: string | null | undefined): numb
 export function readProfileReadinessLabel(state: AuxillariesProfileState | null | undefined) {
   if (!state) return 'Loading account state';
   if (state.accountReadiness === 'ready') return 'Ready';
-  if (state.accountReadiness === 'degraded') return 'Needs repair';
+  if (state.accountReadiness === 'degraded') return 'Evaluations repair';
   if (state.accountReadiness === 'blocked') return 'Blocked';
   return 'Unknown';
 }

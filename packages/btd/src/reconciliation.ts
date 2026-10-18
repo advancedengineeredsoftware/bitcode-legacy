@@ -118,7 +118,7 @@ export interface SupabaseStagingTestnetProjectionReadback {
 
 export type MetaphysicalCanonicalFactKind =
   | 'private_source_metadata'
-  | 'need_fit_context'
+  | 'evaluation_fit_context'
   | 'access_policy_document'
   | 'encrypted_storage_pointer'
   | 'dispute_record'

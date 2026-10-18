@@ -8,13 +8,13 @@ import {
   summarizeAssetPackSettlementRightsDeliveryBoundary,
 } from '../asset-pack-settlement-rights-delivery';
 import {
-  acceptReadNeed,
-  synthesizeReadNeedForPipelineInput,
-} from '../../../syntheses/read/src/read-need';
+  acceptReadEvaluation,
+  synthesizeReadEvaluationForPipelineInput,
+} from '../../../syntheses/read/src/read-evaluation';
 
-function acceptedNeed() {
-  return acceptReadNeed(
-    synthesizeReadNeedForPipelineInput({
+function acceptedEvaluation() {
+  return acceptReadEvaluation(
+    synthesizeReadEvaluationForPipelineInput({
       read: {
         id: 'read-gate7',
         prompt: 'Find deposited source evidence, synthesize a source-safe AssetPack preview, settle it, and deliver a source-bearing pull request.',
@@ -144,7 +144,7 @@ function fitResult(finalScore = 0.92): any {
 
 function previewBoundary() {
   return buildAssetPackPreviewBoundary({
-    need: acceptedNeed(),
+    evaluation: acceptedEvaluation(),
     fitResult: fitResult(),
     pullRequestTarget: 'https://github.com/octocat/Spoon-Knife/pull/397',
     createdAt: '2026-05-22T00:00:00.000Z',

@@ -20,7 +20,7 @@ export function prepareDepositoryAssetsForSearch(raw: unknown): DepositoryAsset[
 
 /**
  * Append absolute kind tokens to the query plan when packs in the corpus carry them,
- * so lexical/vector channels can match measurement language (not only Need prose).
+ * so lexical/vector channels can match measurement language (not only Evaluation prose).
  */
 export function absoluteKindQueryHints(assets: DepositoryAsset[], max = 8): string[] {
   const known = new Set(DATA_PACK_ABSOLUTE_KINDS);

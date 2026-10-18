@@ -71,7 +71,7 @@ export const useExecutionState = () => {
   };
   const dlog = (...args: any[]) => { if (isDebug()) { try { console.debug('[AssetPackPipeline][stream]', ...args); } catch {} } };
 
-  const setDefinitionOfNeed = (definitionOfRead: string) => {
+  const setDefinitionOfEvaluation = (definitionOfRead: string) => {
     setState(prev => ({ ...prev, definitionOfRead }));
   };
 
@@ -328,7 +328,7 @@ export const useExecutionState = () => {
 
   return {
     ...state,
-    setDefinitionOfNeed,
+    setDefinitionOfEvaluation,
     submitAssetPackPipeline,
     appendInstructionToLog,
     resetState

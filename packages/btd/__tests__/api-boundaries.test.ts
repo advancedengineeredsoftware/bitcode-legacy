@@ -17,7 +17,7 @@ describe('BTD API boundaries', () => {
     const draft = buildBtdMintDraft({
       assetPackId: 'asset-pack-boundary-1',
       readId: 'read-boundary-1',
-      acceptedNeed: true,
+      acceptedEvaluation: true,
       acceptedFit: true,
       sourceManifestRoot: 'source-root-boundary',
       fitReceiptRoot: 'fit-root-boundary',
@@ -144,7 +144,7 @@ describe('BTD API boundaries', () => {
       assetPackId: 'asset-pack-boundary-1',
       readId: 'read-boundary-1',
       readRequestId: 'read-request-boundary-1',
-      acceptedNeedRoot: 'accepted-need-root-boundary',
+      acceptedEvaluationRoot: 'accepted-evaluation-root-boundary',
       findingFitsResultRoot: 'finding-fits-root-boundary',
       readerWalletId: 'wallet-reader-boundary',
       depositorWalletId: 'wallet-depositor-boundary',

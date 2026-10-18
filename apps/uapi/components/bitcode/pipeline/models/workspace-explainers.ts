@@ -82,7 +82,7 @@ export const PRODUCT_SURFACE_EXPLAINERS = {
     references: {
       source: [
         ...PRODUCT_SOURCE_REFS,
-        'apps/uapi/components/reads/ReadsNeedComposePanel/ReadsNeedComposePanel.tsx',
+        'apps/uapi/components/reads/ReadsEvaluationComposePanel/ReadsEvaluationComposePanel.tsx',
         'apps/uapi/components/reads/models/read-scenarios.ts',
       ],
       canon: PRODUCT_CANON_REFS,
@@ -440,7 +440,7 @@ export const PRODUCT_INLINE_EXPLAINERS = {
     references: {
       source: [
         'apps/uapi/components/bitcode/pipeline/',
-        'apps/uapi/components/reads/ReadsNeedComposePanel/ReadsNeedComposePanel.tsx',
+        'apps/uapi/components/reads/ReadsEvaluationComposePanel/ReadsEvaluationComposePanel.tsx',
       ],
       canon: PRODUCT_CANON_REFS,
     },
@@ -600,7 +600,7 @@ export const PRODUCT_INLINE_EXPLAINERS = {
       canon: PRODUCT_CANON_REFS,
     },
   }),
-  activeNeed: buildExplainer({
+  activeEvaluation: buildExplainer({
     kicker: 'Read measurement',
     title: 'Record active read',
     summary:
@@ -613,7 +613,7 @@ export const PRODUCT_INLINE_EXPLAINERS = {
     ],
     references: {
       source: [
-        'apps/uapi/components/reads/ReadsNeedComposePanel/ReadsNeedComposePanel.tsx',
+        'apps/uapi/components/reads/ReadsEvaluationComposePanel/ReadsEvaluationComposePanel.tsx',
         'apps/uapi/components/bitcode/pipeline/models/pipeline-activity-history.ts',
       ],
       canon: PRODUCT_CANON_REFS,

@@ -30,7 +30,7 @@ active SPEC under `.specifications/`.
 ### BTD Volume
 
 ```
-rawV = floor(needFitVolume × 10^18)     // needinesses *-fit only
+rawV = floor(evaluationFitVolume × 10^18)     // relatives *-fit only
 V    = floor(rawV × decay)              // residual 21M supply decay
 // Absolutes never set V
 ```
@@ -43,14 +43,14 @@ Unchosen BTD is **not minted**.
 | Path | Language | Role |
 | --- | --- | --- |
 | `packages/btd/contracts/src/BitcodeERC1155.sol` | Solidity | Deployable (Foundry); see `contracts/DEPLOY.md` |
-| `packages/btd/src/erc1155/` | TypeScript | Mirror + needinesses + decay + spot math |
+| `packages/btd/src/erc1155/` | TypeScript | Mirror + relatives + decay + spot math |
 
 **Package export:** `@bitcode/btd` / `@bitcode/btd/erc1155`
 
 | TS module | Role |
 | --- | --- |
 | `bitcode-erc1155.ts` | `finalizeSettle`, co-own, BTD transfer |
-| `settlement-btd-from-needinesses.ts` | rawV from needinesses |
+| `settlement-btd-from-relatives.ts` | rawV from relatives |
 | `decay.ts` | residual supply decay |
 | `spot-quote.ts` | ETH/BTC/SOL pay amounts (mock default) |
 | `types.ts` | Quote, SharePayout, PayAsset |
@@ -99,7 +99,7 @@ See plan section “Spot / FX quoting” and `spot-quote.ts` header for full env
 ## 5. Maintenance checklist
 
 1. Update **both** `BitcodeERC1155.sol` and `src/erc1155/*`.  
-2. Needinesses → rawV only in TS; decay + spot off-chain; Solidity enforces signed quote + cap.  
+2. Relatives → rawV only in TS; decay + spot off-chain; Solidity enforces signed quote + cap.
 3. Extend unit tests (`bitcode-erc1155.test.ts`) and settle pipeline tests.  
 4. Revisit settle consumers and API serializers.  
 5. Keep Auxillaries Wallet Ethereum-first.

@@ -134,7 +134,7 @@ export function smokeCheckAssetPacks(
       issues.push(`AssetPack ${label} has a missing or out-of-range confidence (expected 0..1).`);
     }
 
-    // Deposit measurements: absolutes only. Neediness is a Read-pipeline concept.
+    // Deposit measurements: absolutes only. Relative is a Read-pipeline concept.
     const nested = pack?.measurements;
     const absolutes = Array.isArray(nested?.absolutes)
       ? nested.absolutes
@@ -180,7 +180,7 @@ export function smokeCheckAssetPacks(
       !Array.isArray((nested as any).absolutes)
     ) {
       for (const [key, value] of Object.entries(nested)) {
-        if (key === 'absolutes' || key === 'needinesses') continue;
+        if (key === 'absolutes' || key === 'relatives') continue;
         if (!isNum01(value)) {
           issues.push(`AssetPack ${label} measurement "${key}" is not an honest 0..1 volume.`);
         }

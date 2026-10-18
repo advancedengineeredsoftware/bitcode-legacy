@@ -1,7 +1,7 @@
 /**
  * Depository settled-AssetPack demand estimation public entry (V48 Gate 3).
  *
- * Demand estimates for deposit earnings / option neediness must be grounded in
+ * Demand estimates for deposit earnings / option relative must be grounded in
  * the Depository's *settled* (or admitted-and-settlement-ready) AssetPack corpus.
  * Hardcoded placeholder weights are forbidden. When the settled corpus is too
  * thin to support a defensible estimate, return estimatable=false and let UI
@@ -20,7 +20,7 @@ import {
   focusTokens,
   isSettledLifecycle,
   jaccard,
-  needinessRootFor,
+  relativeRootFor,
   normalizeText,
   packTokens,
   stateForDemand,
@@ -53,7 +53,7 @@ export function estimateDepositorySettledDemand(
       state: 'unestimatable-demand',
       demand: null,
       saturation: null,
-      needinessVolume: null,
+      relativeVolume: null,
       settledPackCount,
       matchedPackCount: 0,
       rationale:
@@ -106,7 +106,7 @@ export function estimateDepositorySettledDemand(
       state: 'unestimatable-demand',
       demand: null,
       saturation: null,
-      needinessVolume: null,
+      relativeVolume: null,
       settledPackCount,
       matchedPackCount: 0,
       rationale:
@@ -125,7 +125,7 @@ export function estimateDepositorySettledDemand(
   const demand = clamp01(meanTop * (0.55 + 0.45 * (1 - coverage * 0.85)));
   // Saturation: how much of the settled corpus already covers this topic.
   const saturation = clamp01(0.15 + coverage * 0.75);
-  const needinessVolume = clamp01(demand * (0.5 + 0.5 * (1 - saturation)));
+  const relativeVolume = clamp01(demand * (0.5 + 0.5 * (1 - saturation)));
 
   return {
     schema: 'bitcode.depository.settled-demand-estimate',
@@ -133,7 +133,7 @@ export function estimateDepositorySettledDemand(
     state: stateForDemand(demand),
     demand,
     saturation,
-    needinessVolume,
+    relativeVolume,
     settledPackCount,
     matchedPackCount,
     rationale: hasFocus
@@ -148,14 +148,14 @@ export function settledDemandEstimateToSignals(estimate: DepositorySettledDemand
   depositoryDemandSignals: Array<{ id: string; label: string; weight: number }>;
   readingDemandSignals: Array<{ id: string; label: string; weight: number }>;
   existingDepositorySignals: Array<{ id: string; label: string; weight: number }>;
-  unfitNeedOpportunitySignals: Array<{ id: string; label: string; weight: number }>;
+  unfitEvaluationOpportunitySignals: Array<{ id: string; label: string; weight: number }>;
 } {
   if (!estimate.estimatable || estimate.demand == null) {
     return {
       depositoryDemandSignals: [],
       readingDemandSignals: [],
       existingDepositorySignals: [],
-      unfitNeedOpportunitySignals: [],
+      unfitEvaluationOpportunitySignals: [],
     };
   }
   const demand = estimate.demand;
@@ -183,11 +183,11 @@ export function settledDemandEstimateToSignals(estimate: DepositorySettledDemand
         weight: saturation,
       },
     ],
-    unfitNeedOpportunitySignals:
+    unfitEvaluationOpportunitySignals:
       scarcity >= 0.35
         ? [
             {
-              id: 'settled-unfit-need-scarcity',
+              id: 'settled-unfit-evaluation-scarcity',
               label: `Settled corpus shows under-served topic space (scarcity ${scarcity.toFixed(2)}).`,
               weight: clamp01(demand * scarcity),
             },
@@ -197,10 +197,10 @@ export function settledDemandEstimateToSignals(estimate: DepositorySettledDemand
 }
 
 /**
- * Map a settled demand estimate into deposit option neediness (or unestimatable
- * sentinel). Prefer this over LLM-invented needinessSignal scalars.
+ * Map a settled demand estimate into deposit option relative (or unestimatable
+ * sentinel). Prefer this over LLM-invented relativeSignal scalars.
  */
-export function settledDemandEstimateToNeediness(estimate: DepositorySettledDemandEstimate): {
+export function settledDemandEstimateToRelative(estimate: DepositorySettledDemandEstimate): {
   estimatable: boolean;
   volume: number | null;
   demand: number | null;
@@ -211,7 +211,7 @@ export function settledDemandEstimateToNeediness(estimate: DepositorySettledDema
     !estimate.estimatable ||
     estimate.demand == null ||
     estimate.saturation == null ||
-    estimate.needinessVolume == null
+    estimate.relativeVolume == null
   ) {
     return {
       estimatable: false,
@@ -225,7 +225,7 @@ export function settledDemandEstimateToNeediness(estimate: DepositorySettledDema
   }
   return {
     estimatable: true,
-    volume: estimate.needinessVolume,
+    volume: estimate.relativeVolume,
     demand: estimate.demand,
     saturation: estimate.saturation,
     rationale: estimate.rationale,
@@ -233,16 +233,16 @@ export function settledDemandEstimateToNeediness(estimate: DepositorySettledDema
 }
 
 /**
- * Ground each deposit option's neediness from settled Depository AssetPacks.
- * Replaces LLM-invented neediness when a settled corpus is available to search;
- * marks neediness unestimatable (zeroed + "Unestimatable:" rationale) when thin.
+ * Ground each deposit option's relative from settled Depository AssetPacks.
+ * Replaces LLM-invented relative when a settled corpus is available to search;
+ * marks relative unestimatable (zeroed + "Unestimatable:" rationale) when thin.
  */
-export function groundOptionNeedinessFromSettledDepository<
+export function groundOptionRelativeFromSettledDepository<
   T extends {
     title?: string | null;
     summary?: string | null;
     kind?: string | null;
-    neediness?: {
+    relative?: {
       volume: number;
       demand: number;
       saturation: number;
@@ -250,7 +250,7 @@ export function groundOptionNeedinessFromSettledDepository<
     } | null;
     contents?: { provenantSourcePaths?: string[] | null } | null;
     sourceBinding?: { repositoryFullName?: string | null } | null;
-    roots?: { needinessRoot?: string | null } | null;
+    roots?: { relativeRoot?: string | null } | null;
   },
 >(options: T[], settledPacks: SettledDepositoryPackSummary[], minSettledPacks?: number): T[] {
   return options.map((option) => {
@@ -265,8 +265,8 @@ export function groundOptionNeedinessFromSettledDepository<
         coveredSourcePaths: option.contents?.provenantSourcePaths || null,
       },
     });
-    const grounded = settledDemandEstimateToNeediness(estimate);
-    const neediness = grounded.estimatable
+    const grounded = settledDemandEstimateToRelative(estimate);
+    const relative = grounded.estimatable
       ? {
           volume: grounded.volume as number,
           demand: grounded.demand as number,
@@ -281,12 +281,12 @@ export function groundOptionNeedinessFromSettledDepository<
         };
     return {
       ...option,
-      neediness,
+      relative,
       ...(option.roots
         ? {
             roots: {
               ...option.roots,
-              needinessRoot: needinessRootFor(neediness),
+              relativeRoot: relativeRootFor(relative),
             },
           }
         : {}),

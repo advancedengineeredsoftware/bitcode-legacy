@@ -10,5 +10,5 @@ import type { PromptPart } from '../../parts/PromptPart';
 import { createPromptPart } from '../../parts/PromptPart';
 
 export const PROMPTPART_SPECIFIC_PHASE_SYNTHESIZEREADS_DISCOVERY_ROSTER_DETAILCONTENT: PromptPart = createPromptPart(
-  'Read Discovery roster (typical): parallel {comprehend-codebase, inherent-regurgitation} → search-depository-for-read-need-fits.',
+  'Read Discovery roster (typical): parallel {comprehend-codebase, inherent-regurgitation} → search-depository-for-read-evaluation-fits.',
 );

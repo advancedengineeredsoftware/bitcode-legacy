@@ -83,7 +83,7 @@ export const BitcodeReadRiskAdmissionTrySchema = z.object({
   riskResults: z.array(z.object({
     admitted: z.boolean(),
     flags: z.object({
-      illegalNeed: z.boolean(),
+      illegalEvaluation: z.boolean(),
       unsafeMutation: z.boolean(),
       secretOrPrivateDataExposure: z.boolean(),
       proofOrEvidenceGap: z.boolean(),

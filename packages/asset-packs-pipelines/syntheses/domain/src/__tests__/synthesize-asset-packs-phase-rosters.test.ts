@@ -19,7 +19,7 @@ import {
   DISCOVERY_COMPREHEND_CODEBASE,
   DISCOVERY_INHERENT_REGURGITATION,
   DISCOVERY_SEARCH_DEPOSITORY_FOR_DEPOSIT_RELEVANTS,
-  DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_NEED_FITS,
+  DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_EVALUATION_FITS,
 } from '../phases/discovery';
 import { registerImplementationAgents } from '../phases/implementation';
 import { registerValidationAgentsForType } from '../phases/validation';
@@ -39,7 +39,7 @@ import {
 
 import depositCodebaseComprehensionAgent from '../../../deposit/src/agents/discovery/deposit-codebase-comprehension-agent';
 import depositDepositorySearchAgent from '../../../deposit/src/agents/discovery/deposit-depository-search-agent';
-import readDepositorySearchForNeedFitsAgent from '../../../read/src/agents/discovery/read-depository-search-for-need-fits-agent';
+import readDepositorySearchForEvaluationFitsAgent from '../../../read/src/agents/discovery/read-depository-search-for-evaluation-fits-agent';
 import depositInherentRegurgitationAgent from '../../../deposit/src/agents/discovery/deposit-inherent-regurgitation-agent';
 import depositImplementationAgentAssetPacksPatchPlan from '../../../deposit/src/agents/implementation/deposit-implementation-agent-asset-packs-patch-plan';
 import depositImplementationAgentAssetPacksPatchfile from '../../../deposit/src/agents/implementation/deposit-implementation-agent-asset-packs-patchfile';
@@ -99,18 +99,18 @@ describe('per-mode agent rosters (conditional runtime registries)', () => {
     );
   });
 
-  it('read discovery registers wave-1 agents + read-need-fits search', async () => {
+  it('read discovery registers wave-1 agents + read-evaluation-fits search', async () => {
     const registry = fakeRegistry();
     registerDiscoveryAgents(registry, 'read');
 
     expect(Array.from(registry.entries.keys())).toEqual([
       DISCOVERY_COMPREHEND_CODEBASE,
       DISCOVERY_INHERENT_REGURGITATION,
-      DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_NEED_FITS,
+      DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_EVALUATION_FITS,
     ]);
     expect(
-      await resolveEntry(registry.entries.get(DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_NEED_FITS)),
-    ).toBe(readDepositorySearchForNeedFitsAgent);
+      await resolveEntry(registry.entries.get(DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_EVALUATION_FITS)),
+    ).toBe(readDepositorySearchForEvaluationFitsAgent);
   });
 
   it('default (non-read) discovery registers deposit-relevants search', () => {
@@ -120,7 +120,7 @@ describe('per-mode agent rosters (conditional runtime registries)', () => {
       DISCOVERY_SEARCH_DEPOSITORY_FOR_DEPOSIT_RELEVANTS,
     );
     expect(Array.from(registry.entries.keys())).not.toContain(
-      DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_NEED_FITS,
+      DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_EVALUATION_FITS,
     );
   });
 
@@ -296,7 +296,7 @@ const DEPOSIT_DISCOVERY_KEYS = [
 const READ_DISCOVERY_KEYS = [
   DISCOVERY_COMPREHEND_CODEBASE,
   DISCOVERY_INHERENT_REGURGITATION,
-  DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_NEED_FITS,
+  DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_EVALUATION_FITS,
 ];
 const DEPOSIT_IMPLEMENTATION_KEYS = [
   'implementation:deposit-implementation-agent-asset-packs-patch-plan',
@@ -339,7 +339,7 @@ describe('product phase delegators execute the roster (execution-tree walk)', ()
     expect(calls[2]).toBe(DISCOVERY_SEARCH_DEPOSITORY_FOR_DEPOSIT_RELEVANTS);
   });
 
-  it('read discovery: parallel(comprehend, regurgitation) then read-need-fits search', async () => {
+  it('read discovery: parallel(comprehend, regurgitation) then read-evaluation-fits search', async () => {
     const { calls, root } = harness(READ_DISCOVERY_KEYS);
 
     await executionPipelineSDIVFExecutionPhaseDiscoverySynthesisReadAssetPacks({ seed: true }, root.child('seq-2'));
@@ -348,7 +348,7 @@ describe('product phase delegators execute the roster (execution-tree walk)', ()
     expect(new Set(calls.slice(0, 2))).toEqual(
       new Set([DISCOVERY_COMPREHEND_CODEBASE, DISCOVERY_INHERENT_REGURGITATION]),
     );
-    expect(calls[2]).toBe(DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_NEED_FITS);
+    expect(calls[2]).toBe(DISCOVERY_SEARCH_DEPOSITORY_FOR_READ_EVALUATION_FITS);
   });
 
   it('deposit implementation runs patch-plan → patchfile → measurements → commercial-nl sequentially', async () => {
