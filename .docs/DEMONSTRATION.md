@@ -125,9 +125,10 @@ The chip refreshes right after settle and after a payout finalize.
    (refreshed automatically).
 3. **Wallets**: the reader's Ethereum wallet funded with Sepolia ETH plus gas.
    Demonstration mode prices BTD at a testnet demo spot
-   (`BITCODE_DEMONSTRATION_BTD_USD`, default $0.30), so every read DataPack
-   settles for **< 0.00009 ETH** (≈ 0.00006–0.00008 typical); BTC testnet4
-   is ≈ 200–300 sats per pack. The seller's bound profile wallet
+   (`BITCODE_DEMONSTRATION_BTD_USD`, default $0.03), so every read DataPack
+   settles for **< 0.000009 ETH** (≈ 0.000006–0.000008 typical). At this spot
+   BTC testnet4 amounts (≈ 20–30 sats) are below the dust limit — demo the ETH
+   rail, or raise the spot for BTC. The seller's bound profile wallet
    (`user_profiles` wallet binding) becomes the payout `sellerAccount`.
 4. Two browser profiles (seller, reader) make roles obvious; one account playing
    both roles also works (it is then both buyer and seller of the settle row).
