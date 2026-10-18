@@ -179,6 +179,7 @@ module.exports = {
     '<rootDir>/tests/assetPackInstructionsRoute.test.ts',
     '<rootDir>/tests/RunDetailsView.mapping.test.tsx',
     '<rootDir>/tests/synthesisPipelinePreference.test.tsx',
+    '<rootDir>/tests/settlementViewers.test.tsx',
     '<rootDir>/tests/usePipelineExecution.test.tsx',
     // BTD and auxillaries coverage
     '<rootDir>/tests/userDataRoute.test.ts',

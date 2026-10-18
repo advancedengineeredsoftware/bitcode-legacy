@@ -108,7 +108,7 @@
     }
   ],
   "sourceRoots": {
-    "spec": ".specifications/BITCODE_SPEC_V49.md:70e42ad460249fd97e1a0f0f",
+    "spec": ".specifications/BITCODE_SPEC_V49.md:99a2f4bcecefed0e29bfa674",
     "quickPackage": "packages/asset-packs-pipelines/syntheses/quick/package.json:86537e75c7ee228f6a1a483f",
     "quickSchema": "packages/asset-packs-pipelines/syntheses/quick/src/quick-synthesis-schema.ts:200dfd93965a36f835774c6e",
     "quickPrompts": "packages/asset-packs-pipelines/syntheses/quick/src/quick-synthesis-prompts.ts:f58f9551ea459be6af52a7a5",
@@ -131,15 +131,15 @@
     "preference": "apps/uapi/components/bitcode/pipeline/models/synthesis-pipeline-preference.ts:c3a5d0871dfa50424c5eb54f",
     "preferenceTest": "apps/uapi/tests/synthesisPipelinePreference.test.tsx:8d4d84a86bb5bcb56a5030ff",
     "synthesizeButton": "apps/uapi/components/bitcode/routes/ProductSynthesizeDataPackOptionsButton/ProductSynthesizeDataPackOptionsButton.tsx:8fdff0a2e233d04c9e14fc36",
-    "localCi": "scripts/run-bitcode-local-ci.mjs:db8199fcfa2a40d8c43942ab",
-    "packageJson": "package.json:51f31c071416a346eabb14cd",
-    "protocolIndex": "scripts/specifying/src/index.js:6a0f51697b352996084df592",
-    "protocolTypes": "scripts/specifying/src/index.d.ts:f06e3c371b31ed424354ca10",
+    "localCi": "scripts/run-bitcode-local-ci.mjs:e0c36a58729456ff3dd5a0e6",
+    "packageJson": "package.json:3732cc7fb9aae19c536916ee",
+    "protocolIndex": "scripts/specifying/src/index.js:a3ebc425588a0c133644c531",
+    "protocolTypes": "scripts/specifying/src/index.d.ts:3c731516d8edc524148465fd",
     "generator": "scripts/generate-v49-quick-synthesis.mjs:7738da67dd94577f2c616f55",
     "checker": "scripts/check-v49-gate3-quick-synthesis.mjs:dabce58aed464d17a2d61c17",
     "protocolTest": "scripts/specifying/test/v49-quick-synthesis.test.js:235f33d135ebf95eb62ffdbd"
   },
-  "artifactRoot": "v49-quick-synthesis:dd152a127a522ee39ff1fc98",
+  "artifactRoot": "v49-quick-synthesis:fa4fc356b96f3c84f8680b97",
   "coverage": {
     "requiredPredicateCount": 18,
     "passedPredicateCount": 18,

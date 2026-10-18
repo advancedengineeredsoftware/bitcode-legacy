@@ -191,7 +191,14 @@ describe('POST /api/read/settle — testnet payment + seller linkage', () => {
       }),
     );
     const pipelineInput = mockPipeline.mock.calls[0][0];
-    expect(pipelineInput.depositorEthereumAddress).toBe(SELLER_WALLET);
+    // V49 S-1/S-3: the seller wallet arrives only through the server-resolved
+    // contribution set (demonstration provenance → one 10000-bps contributor).
+    expect(pipelineInput.depositorEthereumAddress).toBeUndefined();
+    expect(pipelineInput.sourceContributions).toEqual([
+      expect.objectContaining({ sellerUserId: 'seller-1', admissionRunId: 'admit-1', sellerAccount: SELLER_WALLET, weightBps: 10_000 }),
+    ]);
+    expect(pipelineInput.protocolCoinFeeBps).toBe(500);
+    expect(inserted.context).toEqual(expect.objectContaining({ contributorUserIds: ['seller-1'], compensationMode: 'contributors' }));
     expect(pipelineInput.repository).toEqual(
       expect.objectContaining({ fullName: 'acme/payments', branch: 'main', commit: 'a'.repeat(40) }),
     );

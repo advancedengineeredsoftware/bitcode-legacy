@@ -278,8 +278,87 @@ describe('POST /api/packs/payout/finalize — linked seller authority (V48 G4-5)
   });
 });
 
+describe('POST /api/packs/payout/finalize — per-contributor slices (V49 S-4)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  const { buildContributorCompensation } = jest.requireActual('@bitcode/btd/erc1155');
+  function statementRow() {
+    return {
+      id: 'run-multi',
+      user_id: 'buyer-1',
+      status: 'completed',
+      output: {
+        compensationStatement: buildContributorCompensation({
+          readId: 'read-1',
+          assetPackId: 'ap-1',
+          payAsset: 'ETH',
+          grossPay: 10_000n,
+          btdVolume: 10_000n,
+          protocolCoinFeeBps: 0,
+          contributions: [
+            { depositoryAssetPackId: 'dp-a', admissionRunId: 'adm-a', sellerUserId: 'seller-a', sellerAccount: '0xa', weightBps: 7_000 },
+            { depositoryAssetPackId: 'dp-b', admissionRunId: 'adm-b', sellerUserId: 'seller-b', sellerAccount: '0xb', weightBps: 3_000 },
+          ],
+        }),
+      },
+      context: { settlementState: 'settled', sellerUserId: 'seller-a' },
+    };
+  }
+
+  it('finalizes only the calling contributor slice', async () => {
+    sessionUser('seller-b');
+    const update = jest.fn(() => ({ eq: async () => ({ error: null }) }));
+    let calls = 0;
+    mockFrom.mockImplementation(() => {
+      calls += 1;
+      return calls === 1 ? mockSelectRow(statementRow()) : { update };
+    });
+    const response = await POST(postFor({ settleRunId: 'run-multi', sellerBtdBps: 0 }));
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.payoutState).toBe('partially-finalized');
+    expect(payload.slice).toEqual(
+      expect.objectContaining({ sellerUserId: 'seller-b', status: 'finalized', weightBps: 3_000 }),
+    );
+    expect(payload.slice.finalizedSplit).toEqual(expect.objectContaining({ sellerBtd: '0', sellerPay: '3000' }));
+    const persisted = (update.mock.calls[0] as unknown[])[0] as { output: { compensationStatement: { contributors: Array<{ status: string }> } } };
+    expect(persisted.output.compensationStatement.contributors.map((row) => row.status)).toEqual(['awaiting-split', 'finalized']);
+  });
+
+  it('refuses a non-contributor (403) and a repeat finalize (409)', async () => {
+    sessionUser('buyer-1');
+    mockFrom.mockImplementation(() => mockSelectRow(statementRow()));
+    const stranger = await POST(postFor({ settleRunId: 'run-multi', sellerBtdBps: 0 }));
+    expect(stranger.status).toBe(403);
+    expect((await stranger.json()).code).toBe('not_a_contributor');
+
+    const { finalizeContributorSlice } = jest.requireActual('@bitcode/btd/erc1155');
+    const row = statementRow();
+    row.output.compensationStatement = finalizeContributorSlice(row.output.compensationStatement, {
+      sellerUserId: 'seller-a',
+      sellerBtdBps: 5_000,
+    }).statement;
+    sessionUser('seller-a');
+    mockFrom.mockImplementation(() => mockSelectRow(row));
+    const repeat = await POST(postFor({ settleRunId: 'run-multi', sellerBtdBps: 0 }));
+    expect(repeat.status).toBe(409);
+    expect((await repeat.json()).code).toBe('slice_already_finalized');
+  });
+});
+
 describe('GET /api/packs/payout/finalize (preview)', () => {
+  it('requires a session (V49 S-4)', async () => {
+    mockCreateClient.mockResolvedValue({
+      auth: { getUser: async () => ({ data: { user: null }, error: null }) },
+    });
+    const response = await GET(new Request('http://localhost/api/packs/payout/finalize?btdVolume=1&payAmount=1'));
+    expect(response.status).toBe(401);
+  });
+
   it('returns split preview without writing', async () => {
+    sessionUser();
     const response = await GET(
       new Request(
         'http://localhost/api/packs/payout/finalize?btdVolume=1000&payAmount=100&sellerBtdBps=5000&payAsset=ETH',

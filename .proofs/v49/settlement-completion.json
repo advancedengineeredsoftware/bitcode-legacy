@@ -1,0 +1,160 @@
+{
+  "artifactId": "v49-settlement-completion",
+  "schemaId": "bitcode.v49.settlementCompletion.v1",
+  "version": "V49",
+  "currentTarget": "V48",
+  "artifactPath": ".proofs/v49/settlement-completion.json",
+  "sourceSafetyVerdict": "source-safe-settlement-completion",
+  "defaultProtocolCoinFeeBps": 500,
+  "clientPayoutIdentityFields": [
+    "depositorEthereumAddress",
+    "masterEthereumAddress",
+    "depositorWalletId",
+    "sellerAccount",
+    "sourceContributions"
+  ],
+  "conservationLaw": "protocolFee + sum(slicePay) = grossPay; sum(sliceBtd) = btdVolume",
+  "predicateResults": [
+    {
+      "id": "fee-and-slices-conserve",
+      "sourcePath": "packages/btd/src/erc1155/contributor-compensation.ts",
+      "passed": true
+    },
+    {
+      "id": "per-contributor-finalize-authority",
+      "sourcePath": "apps/uapi/app/api/packs/payout/finalize/route.ts",
+      "passed": true
+    },
+    {
+      "id": "contributions-validated-server-side",
+      "sourcePath": "packages/asset-packs-pipelines/syntheses/domain/src/source-contributions.ts",
+      "passed": true
+    },
+    {
+      "id": "rich-and-quick-attribute-sources",
+      "sourcePath": "packages/asset-packs-pipelines/syntheses/read/src/read-source-attribution.ts",
+      "passed": true
+    },
+    {
+      "id": "settle-builds-compensation-statement",
+      "sourcePath": "packages/asset-packs-pipelines/settle/src/index.ts",
+      "passed": true
+    },
+    {
+      "id": "payout-identities-server-only",
+      "sourcePath": "apps/uapi/app/api/read/settle/route.ts",
+      "passed": true
+    },
+    {
+      "id": "payment-required-by-default",
+      "sourcePath": "apps/uapi/lib/read-settlement-checkout.ts",
+      "passed": true
+    },
+    {
+      "id": "real-decay-basis",
+      "sourcePath": "apps/uapi/lib/read-settlement-checkout.ts",
+      "passed": true
+    },
+    {
+      "id": "holdings-credit-finalized-slices",
+      "sourcePath": "packages/btd/src/erc1155/projected-holdings.ts",
+      "passed": true
+    },
+    {
+      "id": "viewer-projection-hides-other-sellers",
+      "sourcePath": "apps/uapi/app/api/packs/activity/route.ts",
+      "passed": true
+    },
+    {
+      "id": "owned-and-sold-viewers",
+      "sourcePath": "apps/uapi/components/reads/ReadsOwnedDataPacks/ReadsOwnedDataPacks.tsx",
+      "passed": true
+    },
+    {
+      "id": "redelivery-buyer-only-idempotent",
+      "sourcePath": "apps/uapi/app/api/read/settle/redeliver/route.ts",
+      "passed": true
+    },
+    {
+      "id": "pr-body-names-compensation",
+      "sourcePath": "packages/asset-packs-pipelines/settle/src/index.ts",
+      "passed": true
+    },
+    {
+      "id": "living-ci-runs-settlement-tests",
+      "sourcePath": "scripts/run-bitcode-local-ci.mjs",
+      "passed": true
+    },
+    {
+      "id": "spec-carries-settlement-law",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49.md",
+      "passed": true
+    },
+    {
+      "id": "package-json-exposes-gate4",
+      "sourcePath": "package.json",
+      "passed": true
+    },
+    {
+      "id": "package-exports-gate4",
+      "sourcePath": "scripts/specifying/src/index.js",
+      "passed": true
+    },
+    {
+      "id": "generator-checker-test-exist",
+      "sourcePath": "scripts/generate-v49-settlement-completion.mjs",
+      "passed": true
+    }
+  ],
+  "sourceRoots": {
+    "spec": ".specifications/BITCODE_SPEC_V49.md:99a2f4bcecefed0e29bfa674",
+    "compensation": "packages/btd/src/erc1155/contributor-compensation.ts:cf027794a8c45bb3c4f6e25b",
+    "compensationTest": "packages/btd/__tests__/contributor-compensation.test.ts:608ed0a9f2ecedb7ffd89aad",
+    "holdings": "packages/btd/src/erc1155/projected-holdings.ts:cc318897a24ea9c6d42f7c15",
+    "holdingsTest": "packages/btd/__tests__/projected-holdings.test.ts:816fe814425227d3dcd80ca1",
+    "contributions": "packages/asset-packs-pipelines/syntheses/domain/src/source-contributions.ts:f325f66b542e791928839f4f",
+    "contributionsTest": "packages/asset-packs-pipelines/syntheses/domain/src/__tests__/source-contributions.test.ts:5e30455a19c62f48364e08b3",
+    "richAttribution": "packages/asset-packs-pipelines/syntheses/read/src/read-source-attribution.ts:59d89b710a05695e3ad12914",
+    "richAttributionTest": "packages/asset-packs-pipelines/syntheses/read/src/__tests__/read-source-attribution.test.ts:d5c2122c8708cdea46d659a3",
+    "readMeasurements": "packages/asset-packs-pipelines/syntheses/read/src/agents/implementation/read-implementation-agent-asset-packs-measurements-synthesis.ts:0fe9390a4b61a5f373eee7cd",
+    "readFinish": "packages/asset-packs-pipelines/syntheses/read/src/agents/finish/read-finish-synthesize-run-agent.ts:e77efcc76ca1a6547ba1f03b",
+    "settlePipeline": "packages/asset-packs-pipelines/settle/src/index.ts:c3299abfd09f6e1e0feda10d",
+    "settlePipelineTest": "packages/asset-packs-pipelines/settle/src/__tests__/settle-asset-pack-pipeline.test.ts:d3fcc58ffa945b8c76a238b9",
+    "sellerResolution": "apps/uapi/lib/source-contribution-sellers.ts:bfa9f40e8c9e35df7c2b3240",
+    "checkout": "apps/uapi/lib/read-settlement-checkout.ts:81675beb61b7a648d6536427",
+    "settleRoute": "apps/uapi/app/api/read/settle/route.ts:4fd8858b43e2a8a7bdcfd136",
+    "settleRouteTest": "apps/uapi/tests/api/readSettleRoute.test.ts:b97233fdf25458da30f57367",
+    "settlePaymentTest": "apps/uapi/tests/api/readSettlePaymentRoute.test.ts:293a410ab47aeb7bd043cce1",
+    "quoteRoute": "apps/uapi/app/api/read/settle/quote/route.ts:39dbe965130d847df18da076",
+    "finalizeRoute": "apps/uapi/app/api/packs/payout/finalize/route.ts:9e9f1704b38edef17fc74726",
+    "finalizeTest": "apps/uapi/tests/api/packsPayoutFinalizeRoute.test.ts:d4e69d770adef58def14e6d9",
+    "redeliverRoute": "apps/uapi/app/api/read/settle/redeliver/route.ts:025dd72ef02c0ff9b1d3737e",
+    "redeliverTest": "apps/uapi/tests/api/readSettleRedeliverRoute.test.ts:de90e04f49fa589962937d1e",
+    "activityRoute": "apps/uapi/app/api/packs/activity/route.ts:0f5a48de3abf3d7f7a968bb0",
+    "entitlementTest": "apps/uapi/tests/api/packsActivityEntitlementRoute.test.ts:214660ae75488a21a055d2c8",
+    "soldViewer": "apps/uapi/components/deposits/DepositSoldDataPacks/hooks/use-deposit-sold-data-packs.ts:2e009debb01e44e1a58ad71a",
+    "ownedViewer": "apps/uapi/components/reads/ReadsOwnedDataPacks/ReadsOwnedDataPacks.tsx:a4745a4129ba9ef2bd84514e",
+    "viewerTest": "apps/uapi/tests/settlementViewers.test.tsx:f4c4fd968bf31885245b1daf",
+    "exchangeDetail": "apps/uapi/components/exchange/ExchangeActivityDetail/ExchangeActivityDetail.tsx:f3b374149c2c9c3f65de0e3d",
+    "localCi": "scripts/run-bitcode-local-ci.mjs:e0c36a58729456ff3dd5a0e6",
+    "packageJson": "package.json:3732cc7fb9aae19c536916ee",
+    "protocolIndex": "scripts/specifying/src/index.js:a3ebc425588a0c133644c531",
+    "protocolTypes": "scripts/specifying/src/index.d.ts:3c731516d8edc524148465fd",
+    "generator": "scripts/generate-v49-settlement-completion.mjs:8b6e3743d6f4dc22696737e7",
+    "checker": "scripts/check-v49-gate4-settlement-completion.mjs:fc30e185c3566b87ead748d6",
+    "protocolTest": "scripts/specifying/test/v49-settlement-completion.test.js:d7f500b2c5cdd853d2b493e6"
+  },
+  "artifactRoot": "v49-settlement-completion:4ec4a94828c937c862b450b5",
+  "coverage": {
+    "requiredPredicateCount": 18,
+    "passedPredicateCount": 18,
+    "failedPredicateIds": [],
+    "onChainSellerTransfers": false,
+    "sourceSafeMetadataOnly": true,
+    "protectedSourceVisible": false,
+    "walletPrivateMaterialVisible": false,
+    "settlementPrivatePayloadVisible": false,
+    "valueBearingMainnetEnabled": false
+  },
+  "passed": true
+}

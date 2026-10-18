@@ -73,3 +73,35 @@ describe('projectAccountHoldingsFromSettlements', () => {
     expect(projectAccountHoldingsFromSettlements([admission, admission], 'seller').assetPacks).toHaveLength(1);
   });
 });
+
+describe('projected holdings — V49 contributor slices', () => {
+  const { buildContributorCompensation, finalizeContributorSlice } = jest.requireActual(
+    '../src/erc1155/contributor-compensation',
+  );
+  const statement = buildContributorCompensation({
+    readId: 'read-1',
+    assetPackId: 'ap-1',
+    payAsset: 'ETH',
+    grossPay: 1_000n,
+    btdVolume: 10n ** 18n,
+    protocolCoinFeeBps: 0,
+    contributions: [
+      { depositoryAssetPackId: 'dp-a', admissionRunId: 'adm-a', sellerUserId: 'seller-a', sellerAccount: '0xa', weightBps: 6_000 },
+      { depositoryAssetPackId: 'dp-b', admissionRunId: 'adm-b', sellerUserId: 'seller-b', sellerAccount: '0xb', weightBps: 4_000 },
+    ],
+  });
+  const finalizedA = finalizeContributorSlice(statement, { sellerUserId: 'seller-a', sellerBtdBps: 10_000 }).statement;
+  const row = {
+    id: 'settle-multi',
+    user_id: 'buyer',
+    status: 'completed',
+    context: { source: 'read-settle-asset-pack', sellerUserId: 'seller-a', contributorUserIds: ['seller-a', 'seller-b'] },
+    compensationStatement: finalizedA,
+  };
+
+  it('credits each contributor only with their own finalized slice', () => {
+    expect(projectAccountHoldingsFromSettlements([row], 'seller-a').btdBaseUnits).toBe(6n * 10n ** 17n);
+    expect(projectAccountHoldingsFromSettlements([row], 'seller-b').btdBaseUnits).toBe(0n);
+    expect(projectAccountHoldingsFromSettlements([row], 'buyer').btdBaseUnits).toBe(0n);
+  });
+});

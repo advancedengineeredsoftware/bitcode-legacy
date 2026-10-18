@@ -132,6 +132,32 @@ export default async function runReadImplementationAgentAssetPacksMeasurementsSy
     (option as any).evaluationFit = evaluationFit;
   }
 
+  // V49 S-1: attribute options to admitted Depository supply (one call; fail-soft).
+  const supplyAssets = findValue(execution, 'depository', 'settledAssets');
+  const hitIds = new Set(
+    (Array.isArray(findValue(execution, 'implementation', 'depositoryHits'))
+      ? findValue(execution, 'implementation', 'depositoryHits')
+      : []
+    ).map((hit: any) => String(hit?.assetId || '')),
+  );
+  const supply = (Array.isArray(supplyAssets) ? supplyAssets : [])
+    .filter((asset: any) => typeof asset?.assetId === 'string' && (hitIds.size === 0 || hitIds.has(asset.assetId)))
+    .map((asset: any) => ({
+      depositoryAssetPackId: asset.assetId as string,
+      title: String(asset.title ?? ''),
+      summary: String(asset.summary ?? '').slice(0, 400),
+    }));
+  const { attributeReadOptionSources } = await import('../../read-source-attribution');
+  const attributions = await attributeReadOptionSources({
+    options,
+    supply,
+    evaluation: String(evaluationSummary || ''),
+    execution,
+  });
+  options.forEach((option: any, index: number) => {
+    if (option && typeof option === 'object') option.sourceAttributions = attributions[index] ?? [];
+  });
+
   const summary = `Measured ${options.length} read DataPack(s) (absolutes + *-fit relatives + evaluationFit).`;
   storeCrossPhaseArtifact(execution, 'implementation', 'options', options);
   storeCrossPhaseArtifact(execution, 'implementation', 'assetPacks', options);

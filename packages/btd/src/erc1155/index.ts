@@ -13,3 +13,4 @@ export * from './payout-split';
 export * from './bitcode-erc1155';
 export * from './pay-rail-verification';
 export * from './projected-holdings';
+export * from './contributor-compensation';

@@ -33,6 +33,7 @@ import {
   isBitcodeDemonstrationModeEnabled,
   isExecutionInActiveDataset,
   readDemonstrationBtdUsd,
+  scopeExecutionsQueryToActiveDataset,
 } from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
 
 const ETH_ADDRESS = /^0x[a-fA-F0-9]{40}$/;
@@ -61,6 +62,8 @@ export interface RehydratedReadSelection {
     index: number;
     option: SettleAssetPackOption;
     supplyProvenance: ReadOptionSupplyProvenance | null;
+    /** Raw rehydrated option (server-only: sourceAttributions for S-1). */
+    raw: Record<string, unknown>;
   }>;
 }
 
@@ -147,7 +150,7 @@ export async function rehydrateReadSynthesisSelection(input: {
     if (rawObj.patch != null) {
       parsed.patch = rawObj.patch as SettleAssetPackOption['patch'];
     }
-    options.push({ index, option: parsed, supplyProvenance: readSupplyProvenance(rawObj) });
+    options.push({ index, option: parsed, supplyProvenance: readSupplyProvenance(rawObj), raw: rawObj });
   }
   return {
     ok: true,
@@ -213,6 +216,8 @@ export function resolveSettlementSpotBoard(env: NodeJS.ProcessEnv = process.env)
 export function quoteReadSettlementSelection(
   options: ReadonlyArray<{ index: number; option: SettleAssetPackOption }>,
   board: UsdSpotBoard = resolveSettlementSpotBoard(),
+  /** Projected BTD minted so far (residual-supply decay basis). */
+  btdTotalMinted: bigint = 0n,
 ): ReadSettlementQuote {
   const perOption: ReadSettlementOptionQuote[] = options.map(({ index, option }) => {
     const raw = assertPositiveSettlementBtd(
@@ -220,7 +225,7 @@ export function quoteReadSettlementSelection(
         option.measurements as Parameters<typeof computeSettlementBtdFromRelatives>[0],
       ),
     );
-    const decayed = applyBtdSupplyDecay({ rawVolumeBaseUnits: raw.amountBaseUnits, btdTotalMinted: 0n });
+    const decayed = applyBtdSupplyDecay({ rawVolumeBaseUnits: raw.amountBaseUnits, btdTotalMinted });
     const multi = buildMultiRailSpotQuote(decayed.btdVolume, board);
     return {
       index,
@@ -297,12 +302,37 @@ export function resolveSettlementPayTo(env: NodeJS.ProcessEnv = process.env): Se
 }
 
 /**
- * Whether settle must observe a verified on-chain payment. Required in
- * demonstration mode (the demo pays real testnet funds) or when an operator
- * sets BITCODE_SETTLEMENT_REQUIRE_PAYMENT=1; otherwise projected settle stays.
+ * Whether settle must observe a verified on-chain payment (V49 S-3: required by
+ * default on testnet rails). `BITCODE_SETTLEMENT_REQUIRE_PAYMENT=0` opts out for
+ * local development only; demonstration mode always requires payment.
  */
 export function isSettlementPaymentRequired(env: NodeJS.ProcessEnv = process.env): boolean {
-  return env.BITCODE_SETTLEMENT_REQUIRE_PAYMENT === '1' || isBitcodeDemonstrationModeEnabled(env);
+  return env.BITCODE_SETTLEMENT_REQUIRE_PAYMENT !== '0' || isBitcodeDemonstrationModeEnabled(env);
+}
+
+/**
+ * Projected BTD minted across completed settles (residual-supply decay basis,
+ * replacing the V48 constant zero). Fail-soft: 0 on read errors.
+ */
+export async function loadProjectedBtdTotalMinted(admin: typeof supabaseAdmin = supabaseAdmin): Promise<bigint> {
+  try {
+    const { data } = await scopeExecutionsQueryToActiveDataset(
+      admin
+        .from('executions')
+        .select('output')
+        .eq('context->>source', 'read-settle-asset-pack')
+        .eq('status', 'completed'),
+    ).limit(5_000);
+    let total = 0n;
+    for (const row of data || []) {
+      const amount = (row as { output?: { mintBtd?: { receipt?: { amountBaseUnits?: unknown } } } }).output?.mintBtd?.receipt
+        ?.amountBaseUnits;
+      if (typeof amount === 'string' && /^\d+$/.test(amount)) total += BigInt(amount);
+    }
+    return total;
+  } catch {
+    return 0n;
+  }
 }
 
 /** Verify a buyer payment for the selection total on the chosen rail. */

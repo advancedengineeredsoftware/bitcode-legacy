@@ -647,6 +647,18 @@ export function buildLocalCiSteps(repoRoot, mode) {
       '--forceExit',
     ]),
   );
+  add('gate-test-settlement-completion', () =>
+    runPnpm(repoRoot, 'Gate test: settlement completion (fee, contributor slices)', [
+      '--filter',
+      '@bitcode/btd',
+      'exec',
+      'jest',
+      '__tests__/contributor-compensation.test.ts',
+      '__tests__/projected-holdings.test.ts',
+      '--runInBand',
+      '--forceExit',
+    ]),
+  );
   add('gate-test-reading-telemetry', () =>
     runPnpm(repoRoot, 'Gate test: reading operational telemetry', [
       '--filter',

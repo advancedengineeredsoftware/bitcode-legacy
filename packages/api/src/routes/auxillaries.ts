@@ -211,7 +211,8 @@ async function listRecentBtdAssetPacksForProfile(
 }
 
 /** Source-safe columns only — never the full settle output (entitled bodies). */
-const PROJECTED_HOLDINGS_COLUMNS = 'id, user_id, created_at, status, context, pendingPayout:output->pendingPayout';
+const PROJECTED_HOLDINGS_COLUMNS =
+  'id, user_id, created_at, status, context, pendingPayout:output->pendingPayout, compensationStatement:output->compensationStatement';
 
 /**
  * Projected BitcodeERC1155 holdings for the account (V48 G4-5): admitted
@@ -223,7 +224,7 @@ async function readProjectedAccountHoldings(userId: string): Promise<ProjectedAc
   try {
     const admin = supabaseAdmin as any;
     // Holdings follow the active dataset (demonstration vs live).
-    const [owned, sold] = await Promise.all([
+    const [owned, sold, contributed] = await Promise.all([
       scopeExecutionsQueryToActiveDataset(
         admin
           .from('executions')
@@ -240,10 +241,19 @@ async function readProjectedAccountHoldings(userId: string): Promise<ProjectedAc
           .eq('context->>sellerUserId', userId)
           .eq('status', 'completed'),
       ).limit(200),
+      // V49 S-4: every settle this account contributed to (multi-seller).
+      scopeExecutionsQueryToActiveDataset(
+        admin
+          .from('executions')
+          .select(PROJECTED_HOLDINGS_COLUMNS)
+          .filter('context->contributorUserIds', 'cs', JSON.stringify([userId]))
+          .eq('status', 'completed'),
+      ).limit(200),
     ]);
     const rows = scopeExecutionRowsToActiveDataset([
       ...(Array.isArray(owned?.data) ? owned.data : []),
       ...(Array.isArray(sold?.data) ? sold.data : []),
+      ...(Array.isArray(contributed?.data) ? contributed.data : []),
     ] as ProjectedHoldingsExecutionRow[]);
     return projectAccountHoldingsFromSettlements(rows, userId);
   } catch {

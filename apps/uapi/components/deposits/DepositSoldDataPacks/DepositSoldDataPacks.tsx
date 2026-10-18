@@ -65,7 +65,12 @@ export function DepositSoldDataPacks() {
                 >
                   <span className="text-xs font-medium text-white">{pack.title}</span>
                   <span className="text-[0.66rem] text-neutral-400">
-                    {[formatBtd(pack.btdVolume), pack.payAsset ? `paid in ${pack.payAsset}` : null]
+                    {[
+                      pack.weightBps != null ? `Your share ${(pack.weightBps / 100).toFixed(2).replace(/\.?0+$/, "")}%` : null,
+                      formatBtd(pack.btdVolume),
+                      pack.payAsset ? `paid in ${pack.payAsset}` : null,
+                      pack.protocolCoinFeeBps != null ? `after ${pack.protocolCoinFeeBps / 100}% protocol fee` : null,
+                    ]
                       .filter(Boolean)
                       .join(" · ")}
                   </span>

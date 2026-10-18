@@ -3,6 +3,7 @@
  * settlement artifacts. No `unknown` on settle/contract surfaces.
  */
 
+import type { CompensationStatement, SettleContributionInput } from '@bitcode/btd/erc1155';
 import type {
   AssetPackMeasurementsForSettlement,
   BitcodeErc1155State,
@@ -363,6 +364,15 @@ export interface SettleAssetPackInput {
   spotBoard?: UsdSpotBoard | null;
   evaluation?: string | null;
   synthesisRunId?: string | null;
+  /**
+   * V49 S-1/S-2: validated source contribution set (server-resolved sellers,
+   * Σ weightBps = 10000). Empty / omitted ⇒ treasury-only compensation.
+   */
+  sourceContributions?: SettleContributionInput[] | null;
+  /** Protocol coin fee (bps) taken off the coin leg before contributor slices. */
+  protocolCoinFeeBps?: number | null;
+  /** Populated by finalize-settle: fee + per-contributor slices (S-2). */
+  compensationStatement?: CompensationStatement | null;
   assetPackSettlementRightsDeliveryBoundary?: SettleValidationBoundary | null;
   /** Populated as stages complete (threaded through Simple pipeline). */
   mintBtd?: MintBtdArtifact;

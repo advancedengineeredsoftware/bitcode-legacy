@@ -11,9 +11,13 @@
  *
  * Payment: when the buyer supplies a txId it is verified on-chain against the
  * server-priced selection total and the rail's settlement recipient (fail
- * closed), and may back only one checkout. Demonstration mode (or
- * BITCODE_SETTLEMENT_REQUIRE_PAYMENT=1) requires a verified payment; otherwise
- * settle may still record a projected payment observation.
+ * closed), and may back only one checkout. A verified payment is required by
+ * default (V49 S-3); BITCODE_SETTLEMENT_REQUIRE_PAYMENT=0 opts out locally.
+ *
+ * Compensation (V49 S-1/S-2): each option's source contribution set is resolved
+ * server-side (model attributions → admitted sellers; demonstration provenance;
+ * else treasury-only). The pipeline takes the protocol coin fee and splits by
+ * source-to-shares. Payout identities are never client-settable.
  */
 
 import { randomUUID } from 'crypto';
@@ -29,13 +33,19 @@ import {
   type SettleBtcPaymentObservationInput,
   type SettleRepositoryRef,
 } from '@bitcode/asset-packs-pipelines-execution-pipeline-simple-settle-asset-pack';
-import type { PayAsset, UsdSpotBoard } from '@bitcode/btd/erc1155';
+import {
+  readProtocolCoinFeeBps,
+  type PayAsset,
+  type SettleContributionInput,
+  type UsdSpotBoard,
+} from '@bitcode/btd/erc1155';
 import { storeCrossPhaseArtifact } from '@bitcode/asset-packs-pipelines-syntheses-domain';
 import { withDemonstrationDataset } from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
 import { assessSelectedOptionsForSettle } from '@/components/reads/models/read-buyer-measurement-projection';
 import {
   isSettlementPaymentAlreadyUsed,
   isSettlementPaymentRequired,
+  loadProjectedBtdTotalMinted,
   quoteReadSettlementSelection,
   rehydrateReadSynthesisSelection,
   resolveSellerEthereumAddress,
@@ -49,6 +59,16 @@ import {
   resolveGitHubAccessTokenForUser,
   resolveGitHubCommitSha,
 } from '@/lib/github-repository-rest';
+import { resolveReadOptionContributions } from '@/lib/source-contribution-sellers';
+
+/** Body fields that would name payout identities — rejected (V49 S-3). */
+const CLIENT_PAYOUT_IDENTITY_FIELDS = [
+  'depositorEthereumAddress',
+  'masterEthereumAddress',
+  'depositorWalletId',
+  'sellerAccount',
+  'sourceContributions',
+] as const;
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -122,12 +142,13 @@ interface RunOneSettleInput {
   paymentObservation: SettleBtcPaymentObservationInput;
   githubAccessToken: string | null;
   readerWalletId: string | null;
-  depositorWalletId: string | null;
   buyerEthereumAddress: string | null;
-  depositorEthereumAddress: string | null;
+  /** Server-resolved treasury account (settlement recipient env). */
   masterEthereumAddress: string | null;
   /** Admitted Depository supply this option came from (seller linkage). */
   supplyProvenance: ReadOptionSupplyProvenance | null;
+  /** Server-resolved contribution set (S-1); empty ⇒ treasury-only. */
+  sourceContributions: SettleContributionInput[];
   /** Spot board the buyer was quoted and paid with. */
   spotBoard: UsdSpotBoard;
 }
@@ -144,9 +165,15 @@ async function runOneSettle(input: RunOneSettleInput) {
     paymentTxId,
     paymentExplorerUrl: input.paymentObservation.explorerUrl ?? null,
     payAsset: input.paymentObservation.payAsset ?? null,
-    sellerUserId: input.supplyProvenance?.sellerUserId ?? null,
-    supplyAdmissionRunId: input.supplyProvenance?.admissionRunId ?? null,
-    depositoryAssetPackId: input.supplyProvenance?.depositoryAssetPackId ?? null,
+    // First contributor kept for single-seller lenses; contributorUserIds is
+    // the V49 multi-seller authority (sold viewer, per-slice finalize).
+    sellerUserId: input.sourceContributions[0]?.sellerUserId ?? input.supplyProvenance?.sellerUserId ?? null,
+    contributorUserIds: input.sourceContributions.map((row) => row.sellerUserId),
+    compensationMode: input.sourceContributions.length ? 'contributors' : 'treasury-only',
+    supplyAdmissionRunId:
+      input.sourceContributions[0]?.admissionRunId ?? input.supplyProvenance?.admissionRunId ?? null,
+    depositoryAssetPackId:
+      input.sourceContributions[0]?.depositoryAssetPackId ?? input.supplyProvenance?.depositoryAssetPackId ?? null,
   };
 
   await input.admin.from('executions').insert({
@@ -195,10 +222,10 @@ async function runOneSettle(input: RunOneSettleInput) {
     githubAccessToken: input.githubAccessToken,
     userId: input.userId,
     readerWalletId: input.readerWalletId,
-    depositorWalletId: input.depositorWalletId,
     buyerEthereumAddress: input.buyerEthereumAddress,
-    depositorEthereumAddress: input.depositorEthereumAddress,
     masterEthereumAddress: input.masterEthereumAddress,
+    sourceContributions: input.sourceContributions,
+    protocolCoinFeeBps: readProtocolCoinFeeBps(),
     evaluation: input.evaluation,
     synthesisRunId: input.synthesisRunId,
     spotBoard: input.spotBoard,
@@ -215,6 +242,7 @@ async function runOneSettle(input: RunOneSettleInput) {
     const pendingPayout = result.pendingPayout
       ? { ...result.pendingPayout, sellerUserId: linkageContext.sellerUserId }
       : null;
+    const compensationStatement = result.compensationStatement ?? null;
     const summary = result.summary;
     const deliveryState = packActivity.deliveryState || shippable.status || 'projected';
     const rightsState = 'btd-rights-transferred' as const;
@@ -263,6 +291,7 @@ async function runOneSettle(input: RunOneSettleInput) {
           settleBtd,
           settleAssetPack,
           pendingPayout,
+          compensationStatement,
           entitledPatch,
           paymentVerification: input.paymentObservation.verification ?? null,
           paymentExplorerUrl: linkageContext.paymentExplorerUrl,
@@ -313,6 +342,7 @@ async function runOneSettle(input: RunOneSettleInput) {
       settleRunId,
       packActivity,
       pendingPayout,
+      compensationStatement,
       optionTitle,
       shippable: {
         prUrl,
@@ -377,6 +407,17 @@ export async function POST(request: Request) {
     body = parsed;
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  const clientPayoutFields = CLIENT_PAYOUT_IDENTITY_FIELDS.filter((field) => body[field] !== undefined);
+  if (clientPayoutFields.length > 0) {
+    return NextResponse.json(
+      {
+        error: `Payout identities are resolved server-side; remove ${clientPayoutFields.join(', ')}.`,
+        code: 'payout_address_not_client_settable',
+      },
+      { status: 400 },
+    );
   }
 
   const synthesisRunId =
@@ -471,7 +512,7 @@ export async function POST(request: Request) {
   const spotBoard = resolveSettlementSpotBoard();
   let quote: ReadSettlementQuote;
   try {
-    quote = quoteReadSettlementSelection(selection.options, spotBoard);
+    quote = quoteReadSettlementSelection(selection.options, spotBoard, await loadProjectedBtdTotalMinted(admin));
   } catch (err) {
     return NextResponse.json(
       {
@@ -543,16 +584,29 @@ export async function POST(request: Request) {
     });
   }
 
+  // Treasury account is the server's settlement recipient (never the client).
+  const masterEthereumAddress =
+    resolveSettlementPayTo().find((rail) => rail.payAsset === 'ETH')?.address ?? null;
   const results = [];
   for (const [position, entry] of selection.options.entries()) {
     const optionQuote = quote.perOption[position];
     const allocated = optionQuote.rails.find((rail) => rail.payAsset === payAsset)?.payAmount ?? null;
-    const sellerUserId = entry.supplyProvenance?.sellerUserId ?? null;
     // Sequential 1:1 runs so each ERC1155 projected state is independent.
     // eslint-disable-next-line no-await-in-loop
-    const depositorEthereumAddress =
-      (typeof body.depositorEthereumAddress === 'string' && body.depositorEthereumAddress) ||
-      (sellerUserId ? await resolveSellerEthereumAddress(sellerUserId, admin) : null);
+    const contributions = await resolveReadOptionContributions(entry.raw, entry.supplyProvenance, admin);
+    const sourceContributions: SettleContributionInput[] = [];
+    for (const row of contributions.sources) {
+      // eslint-disable-next-line no-await-in-loop
+      const wallet = await resolveSellerEthereumAddress(row.sellerUserId, admin);
+      sourceContributions.push({
+        depositoryAssetPackId: row.depositoryAssetPackId,
+        admissionRunId: row.admissionRunId,
+        sellerUserId: row.sellerUserId,
+        sellerAccount: wallet || `user:${row.sellerUserId}`,
+        weightBps: row.weightBps,
+        rationale: row.rationale,
+      });
+    }
     // eslint-disable-next-line no-await-in-loop
     const one = await runOneSettle({
       admin,
@@ -569,14 +623,11 @@ export async function POST(request: Request) {
       },
       githubAccessToken,
       readerWalletId: typeof body.readerWalletId === 'string' ? body.readerWalletId : null,
-      depositorWalletId:
-        typeof body.depositorWalletId === 'string' ? body.depositorWalletId : null,
       buyerEthereumAddress:
         typeof body.buyerEthereumAddress === 'string' ? body.buyerEthereumAddress : null,
-      depositorEthereumAddress,
-      masterEthereumAddress:
-        typeof body.masterEthereumAddress === 'string' ? body.masterEthereumAddress : null,
+      masterEthereumAddress,
       supplyProvenance: entry.supplyProvenance,
+      sourceContributions,
       spotBoard,
     });
     results.push(one);

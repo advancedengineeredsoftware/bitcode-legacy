@@ -15,6 +15,7 @@ import {
 import type { ReadRouteSession } from "@/components/reads/models/read-route-model";
 import type { ReadLabelValueRow } from "@/components/reads/models/read-route-rows";
 import { ReadsAsideRowsSection } from "@/components/reads/ReadsAsideRowsSection/ReadsAsideRowsSection";
+import { ReadsOwnedDataPacks } from "@/components/reads/ReadsOwnedDataPacks/ReadsOwnedDataPacks";
 
 export type ReadsRouteStateAsideProps = {
   readRouteSession: ReadRouteSession;
@@ -183,6 +184,7 @@ export function ReadsRouteStateAside({
             />
           )}
         </div>
+        <ReadsOwnedDataPacks />
       </ReadsAsideRowsSection>
     </aside>
   );

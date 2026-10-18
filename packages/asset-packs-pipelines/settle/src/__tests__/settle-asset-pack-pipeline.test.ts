@@ -53,9 +53,19 @@ describe('ExecutionPipelineSimpleSettleAssetPack', () => {
       assetPackOption: option,
       repository: { fullName: 'acme/app', owner: 'acme', name: 'app', branch: 'main' },
       buyerEthereumAddress: '0xBuyerWallet',
-      depositorEthereumAddress: '0xDepositorWallet',
       masterEthereumAddress: '0xMasterTreasury',
       userId: 'user-1',
+      synthesisRunId: 'read-run-1',
+      sourceContributions: [
+        {
+          depositoryAssetPackId: 'dp-a',
+          admissionRunId: 'adm-a',
+          sellerUserId: 'seller-a',
+          sellerAccount: '0xDepositorWallet',
+          weightBps: 10_000,
+        },
+      ],
+      protocolCoinFeeBps: 500,
       paymentObservation: {
         network: 'ethereum-sepolia',
         amountSats: 12_000,
@@ -103,6 +113,48 @@ describe('ExecutionPipelineSimpleSettleAssetPack', () => {
     expect((result as { pendingPayout?: { status?: string } }).pendingPayout?.status).toBe(
       'pending-seller-review',
     );
+
+    // V49 S-2: protocol coin fee + one contributor slice, conserved.
+    const statement = result.compensationStatement!;
+    expect(statement.mode).toBe('contributors');
+    expect(statement.protocolCoinFeeBps).toBe(500);
+    expect(BigInt(statement.protocolFee) + BigInt(statement.contributors[0].slicePay)).toBe(
+      BigInt(statement.grossPay),
+    );
+    expect(statement.contributors[0]).toMatchObject({ sellerUserId: 'seller-a', weightBps: 10_000, status: 'awaiting-split' });
+    expect(statement.contributors[0].sliceBtd).toBe(statement.btdVolume);
+  });
+
+  it('splits two contributors and keeps treasury-only when none are valid', async () => {
+    const pipeline = factoryExecutionPipelineSimpleSettleAssetPack();
+    const base: SettleAssetPackInput = {
+      assetPackOption: option,
+      repository: { fullName: 'acme/app', owner: 'acme', name: 'app', branch: 'main' },
+      buyerEthereumAddress: '0xBuyerWallet',
+      masterEthereumAddress: '0xMasterTreasury',
+      userId: 'user-1',
+      paymentObservation: { network: 'ethereum-sepolia', amountSats: 12_000 },
+    };
+    const two = await pipeline(
+      {
+        ...base,
+        sourceContributions: [
+          { depositoryAssetPackId: 'dp-a', admissionRunId: 'adm-a', sellerUserId: 'seller-a', sellerAccount: '0xA', weightBps: 6_000 },
+          { depositoryAssetPackId: 'dp-b', admissionRunId: 'adm-b', sellerUserId: 'seller-b', sellerAccount: '0xB', weightBps: 4_000 },
+        ],
+      },
+      new Execution('test:settle:two'),
+    );
+    const statement = two.compensationStatement!;
+    expect(statement.contributors.map((row) => row.weightBps)).toEqual([6_000, 4_000]);
+    const slicePay = statement.contributors.reduce((sum, row) => sum + BigInt(row.slicePay), 0n);
+    const sliceBtd = statement.contributors.reduce((sum, row) => sum + BigInt(row.sliceBtd), 0n);
+    expect(BigInt(statement.protocolFee) + slicePay).toBe(BigInt(statement.grossPay));
+    expect(sliceBtd).toBe(BigInt(statement.btdVolume));
+
+    const none = await pipeline(base, new Execution('test:settle:treasury'));
+    expect(none.compensationStatement!.mode).toBe('treasury-only');
+    expect(none.compensationStatement!.treasuryPay).toBe(none.compensationStatement!.grossPay);
   });
 
   it('mint volume ignores absolutes entirely', () => {

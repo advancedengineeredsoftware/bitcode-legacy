@@ -104,8 +104,49 @@ function settleableOption(overrides: Record<string, unknown> = {}) {
 }
 
 describe('POST /api/read/settle (MVP-E2E L1-R3)', () => {
+  const previousRequirePayment = process.env.BITCODE_SETTLEMENT_REQUIRE_PAYMENT;
   beforeEach(() => {
     jest.clearAllMocks();
+    // Local-development opt-out of the V49 default payment requirement.
+    process.env.BITCODE_SETTLEMENT_REQUIRE_PAYMENT = '0';
+  });
+  afterAll(() => {
+    process.env.BITCODE_SETTLEMENT_REQUIRE_PAYMENT = previousRequirePayment;
+  });
+
+  it('rejects client-supplied payout identities (V49 S-3)', async () => {
+    mockCreateClient.mockResolvedValue({
+      auth: { getUser: async () => ({ data: { user: { id: 'u1' } }, error: null }) },
+    });
+    const response = await POST(
+      requestFor({
+        synthesisRunId: 'run-1',
+        selectedIndexes: [0],
+        depositorEthereumAddress: '0x000000000000000000000000000000000000dEaD',
+      }),
+    );
+    expect(response.status).toBe(400);
+    expect((await response.json()).code).toBe('payout_address_not_client_settable');
+  });
+
+  it('requires a verified payment by default (V49 S-3)', async () => {
+    delete process.env.BITCODE_SETTLEMENT_REQUIRE_PAYMENT;
+    mockCreateClient.mockResolvedValue({
+      auth: { getUser: async () => ({ data: { user: { id: 'u1' } }, error: null }) },
+    });
+    mockFrom.mockImplementation(() => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: async () => ({
+            data: { id: 'run-1', user_id: 'u1', output: { fullOptions: [settleableOption()] }, context: {} },
+            error: null,
+          }),
+        }),
+      }),
+    }));
+    const response = await POST(requestFor({ synthesisRunId: 'run-1', selectedIndexes: [0], payAsset: 'ETH' }));
+    expect(response.status).toBe(402);
+    expect((await response.json()).code).toBe('payment_required');
   });
 
   it('requires a session (L1-A1)', async () => {

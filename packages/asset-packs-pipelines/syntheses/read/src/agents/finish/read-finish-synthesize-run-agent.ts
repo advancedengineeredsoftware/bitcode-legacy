@@ -68,6 +68,9 @@ export default async function runReadFinishSynthesizeRunAgent(input: any, execut
     // Depository supply this option was synthesized from (seller linkage for
     // settle payout). Server-only: the unpaid projection is an allowlist.
     supplyProvenance: opt?.supplyProvenance ?? null,
+    // V49 S-1: model-attributed Depository sources (server-only; settle
+    // resolves sellers and normalizes to basis points).
+    sourceAttributions: Array.isArray(opt?.sourceAttributions) ? opt.sourceAttributions : [],
     selectable: true,
     settleable: true,
   }));

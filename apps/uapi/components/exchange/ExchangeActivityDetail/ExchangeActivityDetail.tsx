@@ -592,8 +592,33 @@ function PayoutFromDetail({
   onPayoutFinalized?: () => void;
 }) {
   const meta = detail.metadata || {};
-  const pending = (meta.pendingPayout || meta.payout) as PacksPendingPayout | undefined;
-  if (!pending || typeof pending !== "object") return null;
+  const legacyPending = (meta.pendingPayout || meta.payout) as PacksPendingPayout | undefined;
+  const statement =
+    meta.compensationStatement && typeof meta.compensationStatement === "object"
+      ? (meta.compensationStatement as CompensationStatementView)
+      : null;
+  const slice =
+    meta.viewerContributorSlice && typeof meta.viewerContributorSlice === "object"
+      ? (meta.viewerContributorSlice as ContributorSliceView)
+      : null;
+  // V49 S-4/S-5: a contributor finalizes THEIR slice; the slider previews it.
+  const pending: PacksPendingPayout | undefined = slice
+    ? {
+        ...(legacyPending || {}),
+        status: slice.status === "finalized" ? "finalized" : "pending-seller-review",
+        btdVolume: slice.sliceBtd ?? "0",
+        payAmount: slice.slicePay ?? "0",
+        payAsset: (statement?.payAsset as PacksPendingPayout["payAsset"]) || legacyPending?.payAsset,
+        sellerBtdBpsFinalized: slice.finalizedSplit?.sellerBtdBps ?? null,
+        sellerBtd: slice.finalizedSplit?.sellerBtd ?? null,
+        treasuryBtd: slice.finalizedSplit?.treasuryBtd ?? null,
+        sellerPay: slice.finalizedSplit?.sellerPay ?? null,
+        treasuryPay: slice.finalizedSplit?.treasuryPay ?? null,
+      }
+    : legacyPending;
+  if (!pending || typeof pending !== "object") {
+    return statement ? <CompensationStatementSummary statement={statement} /> : null;
+  }
 
   const viewer = (viewerEthereumAddress || "").toLowerCase();
   const seller = String(pending.sellerAccount || "").toLowerCase();
@@ -618,6 +643,8 @@ function PayoutFromDetail({
   if (!settleRunId) return null;
 
   return (
+    <>
+    {statement ? <CompensationStatementSummary statement={statement} /> : null}
     <ExchangeActivityDetailPayout
       settleRunId={settleRunId}
       pendingPayout={pending}
@@ -633,6 +660,61 @@ function PayoutFromDetail({
       entitledPatch={meta.entitledPatch ?? null}
       onFinalized={onPayoutFinalized}
     />
+    </>
+  );
+}
+
+type ContributorSliceView = {
+  weightBps?: number | null;
+  sliceBtd?: string | null;
+  slicePay?: string | null;
+  status?: string | null;
+  finalizedSplit?: {
+    sellerBtdBps?: number;
+    sellerBtd?: string;
+    treasuryBtd?: string;
+    sellerPay?: string;
+    treasuryPay?: string;
+  } | null;
+};
+
+type CompensationStatementView = {
+  mode?: string;
+  payAsset?: string;
+  grossPay?: string;
+  protocolCoinFeeBps?: number;
+  protocolFee?: string;
+  contributors?: Array<{ depositoryAssetPackId?: string | null; weightBps?: number | null; status?: string | null; viewerIsContributor?: boolean }>;
+};
+
+/** V49 S-5: source-safe compensation statement (fee + contributor weights). */
+function CompensationStatementSummary({ statement }: { statement: CompensationStatementView }) {
+  const contributors = Array.isArray(statement.contributors) ? statement.contributors : [];
+  return (
+    <div className="mt-3 border border-white/10 bg-black/20 px-3 py-2 text-xs text-neutral-300" data-testid="exchange-compensation-statement">
+      <p className="text-[0.6rem] uppercase tracking-[0.14em] text-neutral-500">Compensation statement</p>
+      <p className="mt-1">
+        Protocol coin fee {typeof statement.protocolCoinFeeBps === "number" ? `${statement.protocolCoinFeeBps / 100}%` : "n/a"}
+        {statement.payAsset ? ` on ${statement.payAsset}` : ""}; BTD leg has no fee.
+      </p>
+      {statement.mode === "treasury-only" ? (
+        <p className="mt-1 text-neutral-400">No admitted Depository contributor — net payment and BTD stay with the treasury.</p>
+      ) : (
+        <ul className="mt-1 grid gap-0.5">
+          {contributors.map((row, index) => (
+            <li key={`${row.depositoryAssetPackId ?? "contributor"}-${index}`} className="flex justify-between gap-2">
+              <span className={row.viewerIsContributor ? "text-emerald-200" : undefined}>
+                {row.viewerIsContributor ? "Your contribution" : `Contributor ${index + 1}`}
+              </span>
+              <span>
+                {typeof row.weightBps === "number" ? `${row.weightBps / 100}%` : "—"} ·{" "}
+                {row.status === "finalized" ? "split finalized" : "awaiting split"}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 

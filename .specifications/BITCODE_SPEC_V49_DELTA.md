@@ -110,6 +110,16 @@ complete MVP:
 - `StepExecution.llms` delegates to the parent AgentExecution, so tracked
   `llm:*` nodes sit beside (not under) the step; the quick one-call count walks
   the whole QUICK pipeline execution.
+- Rich read attribution is one extra model call after measurement rather than
+  a new field on the shared six-field patch-plan schema (which deposit also
+  uses); it is validated against the run's supply and fails soft to
+  treasury-only.
+- Activity history payloads nest raw `output`/`context` copies; the viewer
+  projection of compensation statements is applied to those copies too.
+  Legacy V48 `pendingPayout.sellerUserId` visibility is unchanged (pre-V49
+  exposure; recorded, not widened).
+- The settle package jest config moved onto the shared `createJestConfig`
+  base (its hand-rolled mapper no longer resolved transitive packages).
 - `verificationSignals` for `test-pass-rate` / `buildability` are read but never
   set; the Gate 5 runner is the future source (deferred beyond V49 scope).
 - 46 frozen historical gate scripts reference Need vocabulary; they stay

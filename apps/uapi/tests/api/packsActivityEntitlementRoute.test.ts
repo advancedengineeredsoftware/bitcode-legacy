@@ -60,6 +60,12 @@ function installExecutions() {
         filters.push([column, value]);
         return chain;
       },
+      // V49 S-5 seller lens: `sellerUserId.eq.X,contributorUserIds.cs.[X]`.
+      or: (expression: string) => {
+        const seller = /context->>sellerUserId\.eq\.([^,]+)/u.exec(expression)?.[1];
+        if (seller) filters.push(['context->>sellerUserId', seller]);
+        return chain;
+      },
       order: () => chain,
       limit: async () => {
         const settled = filters.some(([c, v]) => c === 'context->>source' && v === 'read-settle-asset-pack');
@@ -126,5 +132,62 @@ describe('GET /api/packs/activity — settled viewer entitlement', () => {
     viewer('seller-1');
     const record = await settledRecord('http://localhost/api/packs/activity?type=my-read-bought');
     expect(record).toBeUndefined();
+  });
+});
+
+describe('GET /api/packs/activity — V49 multi-contributor projection (S-5)', () => {
+  const { buildContributorCompensation } = jest.requireActual('@bitcode/btd/erc1155');
+  const original = { output: { ...settledRow.output }, context: { ...settledRow.context } };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    installExecutions();
+    (settledRow.output as Record<string, unknown>).compensationStatement = buildContributorCompensation({
+      readId: 'read-1',
+      assetPackId: 'ap-1',
+      payAsset: 'ETH',
+      grossPay: 10_000n,
+      btdVolume: 10_000n,
+      protocolCoinFeeBps: 500,
+      contributions: [
+        { depositoryAssetPackId: 'dp-a', admissionRunId: 'adm-a', sellerUserId: 'seller-1', sellerAccount: '0xa', weightBps: 6_000 },
+        { depositoryAssetPackId: 'dp-b', admissionRunId: 'adm-b', sellerUserId: 'seller-2', sellerAccount: '0xb', weightBps: 4_000 },
+      ],
+    });
+    (settledRow.context as Record<string, unknown>).contributorUserIds = ['seller-1', 'seller-2'];
+  });
+
+  afterAll(() => {
+    settledRow.output = original.output as typeof settledRow.output;
+    settledRow.context = original.context as typeof settledRow.context;
+  });
+
+  it('lets each contributor see and finalize only their own slice', async () => {
+    viewer('seller-2');
+    const record = await settledRecord('http://localhost/api/packs/activity');
+    expect(record!.metadata).toEqual(expect.objectContaining({ viewerIsSeller: true, viewerCanFinalizePayout: true }));
+    expect(record!.metadata.viewerContributorSlice).toEqual(
+      expect.objectContaining({ weightBps: 4_000, status: 'awaiting-split' }),
+    );
+    const contributors = (record!.metadata.compensationStatement as { contributors: Array<Record<string, unknown>> }).contributors;
+    expect(contributors).toEqual([
+      expect.objectContaining({ depositoryAssetPackId: 'dp-a', viewerIsContributor: false }),
+      expect.objectContaining({ depositoryAssetPackId: 'dp-b', viewerIsContributor: true, sliceBtd: expect.any(String) }),
+    ]);
+    expect(contributors[0]).not.toHaveProperty('sliceBtd');
+    // Other contributors' payout accounts and admission runs never reach this viewer.
+    const serialized = JSON.stringify(record!.metadata);
+    expect(serialized).not.toContain('"0xa"');
+    expect(serialized).not.toContain('adm-a');
+    expect(serialized).not.toContain('contributorUserIds');
+  });
+
+  it('shows strangers totals and weights only', async () => {
+    viewer('stranger-1');
+    const record = await settledRecord('http://localhost/api/packs/activity');
+    expect(record!.metadata).toEqual(expect.objectContaining({ viewerIsSeller: false, viewerCanFinalizePayout: false }));
+    const statement = record!.metadata.compensationStatement as { protocolFee: string; contributors: Array<Record<string, unknown>> };
+    expect(statement.protocolFee).toBe('500');
+    expect(statement.contributors.every((row) => !('sliceBtd' in row) && !('sellerUserId' in row))).toBe(true);
   });
 });

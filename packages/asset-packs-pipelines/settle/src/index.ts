@@ -37,8 +37,10 @@ import {
   assertPositiveSettlementBtd,
   balanceOf,
   BITCODE_BTD_TOKEN_ID,
+  buildContributorCompensation,
   buildMultiRailSpotQuote,
   computeSettlementBtdFromRelatives,
+  type CompensationStatement,
   createBitcodeErc1155State,
   createMockSpotBoard,
   finalizeSettle,
@@ -545,8 +547,13 @@ const settleAssetPack: Executor<SettleAssetPackInput, SettleAssetPackInput> = as
     getStored<string>(execution, 'settle-asset-pack-pipeline', 'assetPackKey') ||
     assetPackKeyFor(option, input);
   const buyer = defaultBuyerAddress(input);
-  const depositor = defaultDepositorAddress(input);
   const master = defaultMasterAddress(input);
+  const contributions = Array.isArray(input.sourceContributions) ? input.sourceContributions : [];
+  // V49 S-1: the depositor of record is the first validated contributor; a
+  // treasury-only settle names the master escrow (never a placeholder).
+  const depositor =
+    contributions[0]?.sellerAccount ??
+    (input.depositorEthereumAddress || input.depositorWalletId ? defaultDepositorAddress(input) : master);
   let state = ensureErc1155State(input, master);
 
   const settlementBtd =
@@ -587,14 +594,16 @@ const settleAssetPack: Executor<SettleAssetPackInput, SettleAssetPackInput> = as
       'number'
         ? (settlementBtd as unknown as { decayMicro: number }).decayMicro
         : 1_000_000,
-    shares: [
-      {
-        depositor,
-        weightBps: 10_000,
-        btdBps: 10_000,
-        coinBps: 0,
-      },
-    ],
+    // V49 S-2: shares follow the validated contribution set (treasury-only ⇒
+    // the full share stays with the master escrow until a later refit).
+    shares: contributions.length
+      ? contributions.map((row) => ({
+          depositor: row.sellerAccount,
+          weightBps: row.weightBps,
+          btdBps: 10_000,
+          coinBps: 0,
+        }))
+      : [{ depositor: master, weightBps: 10_000, btdBps: 10_000, coinBps: 0 }],
     metadataRoot,
     deadline: Math.floor(Date.now() / 1000) + 600,
     quoteId: `settle:${assetPackKey}:${Date.now().toString(36)}`,
@@ -609,6 +618,21 @@ const settleAssetPack: Executor<SettleAssetPackInput, SettleAssetPackInput> = as
   });
   state = finalized.state;
   const receipt = finalized.receipt;
+
+  // Protocol coin fee + source-to-shares slices (fail closed on drift).
+  const compensationStatement: CompensationStatement = buildContributorCompensation({
+    readId: input.synthesisRunId || quote.quoteId,
+    assetPackId: assetPackKey,
+    payAsset: receipt.payAsset,
+    grossPay: receipt.payAmount,
+    btdVolume: receipt.btdVolume,
+    contributions,
+    protocolCoinFeeBps: typeof input.protocolCoinFeeBps === 'number' ? input.protocolCoinFeeBps : undefined,
+    paymentReceiptRoot:
+      typeof input.paymentObservation?.txId === 'string' && input.paymentObservation.txId
+        ? `payment:${input.paymentObservation.txId}`
+        : undefined,
+  });
 
   const settleApArtifact: SettleAssetPackArtifact = {
     schema: 'bitcode.settle-asset-pack.settle-asset-pack',
@@ -717,6 +741,12 @@ const settleAssetPack: Executor<SettleAssetPackInput, SettleAssetPackInput> = as
   storeCrossPhaseArtifact(
     execution,
     'settle-asset-pack-pipeline',
+    'compensationStatement',
+    compensationStatement as unknown as SettleStoreValue,
+  );
+  storeCrossPhaseArtifact(
+    execution,
+    'settle-asset-pack-pipeline',
     'erc1155State',
     serializeBitcodeErc1155State(state),
   );
@@ -728,6 +758,7 @@ const settleAssetPack: Executor<SettleAssetPackInput, SettleAssetPackInput> = as
     settleBtd: settleBtdArtifact,
     settlementFinalized: true,
     pendingPayout,
+    compensationStatement,
   };
 };
 
@@ -750,6 +781,37 @@ function paymentReceiptLines(
   const rail = payment.payAsset ? `${payment.payAsset} on ${payment.network ?? 'testnet'}` : payment.network ?? 'testnet';
   const link = payment.explorerUrl ? `[${payment.txId}](${payment.explorerUrl})` : `\`${payment.txId}\``;
   return ['', '### Payment', '', `Paid with ${rail}: ${link}`];
+}
+
+/** PR body lines naming contributors, protocol fee, and evaluation-fit (S-6). */
+function compensationReceiptLines(
+  statement: CompensationStatement | null,
+  measurements: SettleAssetPackOption['measurements'] | null,
+): string[] {
+  const lines: string[] = [];
+  const relatives = Array.isArray((measurements as { relatives?: unknown } | null)?.relatives)
+    ? ((measurements as { relatives: Array<{ measurementKind?: string; volume?: number; label?: string }> }).relatives)
+    : [];
+  if (relatives.length) {
+    lines.push('', '### Relative measurements', '');
+    for (const row of relatives.slice(0, 12)) {
+      const volume = typeof row.volume === 'number' ? row.volume.toFixed(3) : 'n/a';
+      lines.push(`- ${row.label || row.measurementKind || 'relative'}: ${volume}`);
+    }
+  }
+  if (!statement) return lines;
+  lines.push('', '### Compensation', '');
+  lines.push(
+    `Protocol coin fee: ${statement.protocolCoinFeeBps / 100}% (${statement.protocolFee} of ${statement.grossPay} ${statement.payAsset} base units).`,
+  );
+  if (statement.mode === 'treasury-only') {
+    lines.push('No admitted Depository contributor — net payment and BTD stay with the treasury.');
+  } else {
+    for (const row of statement.contributors) {
+      lines.push(`- Contributor \`${row.depositoryAssetPackId}\`: ${row.weightBps / 100}% (awaiting seller split)`);
+    }
+  }
+  return lines;
 }
 
 const shipAssetPackPatchPr: Executor<SettleAssetPackInput, SettleAssetPackInput> = async (
@@ -883,6 +945,7 @@ const shipAssetPackPatchPr: Executor<SettleAssetPackInput, SettleAssetPackInput>
             ? `Files: ${fileChanges.map((c) => `${c.op || 'modify'} ${c.path}`).join(', ')}`
             : 'No fileChanges on patch descriptor (branch still opened from request SHA).',
           ...paymentReceiptLines(input.paymentObservation),
+          ...compensationReceiptLines(input.compensationStatement ?? null, measurements),
         ];
         const pr = (await git.createPullRequest({
           ...baseAuth,
@@ -1200,3 +1263,19 @@ export const executionPipelineSimpleSettleAssetPack: ExecutionPipelineSimpleSett
   factoryExecutionPipelineSimpleSettleAssetPack();
 
 export const runExecutionPipelineSimpleSettleAssetPack = executionPipelineSimpleSettleAssetPack;
+
+/**
+ * V49 S-6 redelivery: run ONLY the ship-asset-pack-patch-pr stage for an
+ * already-settled option (no payment, mint, or rights effects). Callers gate
+ * on settle-row ownership and a `projected` / `failed` prior delivery.
+ */
+export async function redeliverSettledAssetPackPatchPr(
+  input: Pick<
+    SettleAssetPackInput,
+    'repository' | 'assetPackOption' | 'githubAccessToken' | 'paymentObservation' | 'compensationStatement'
+  >,
+  execution: Parameters<typeof shipAssetPackPatchPr>[1],
+): Promise<SettleShippable> {
+  const result = await shipAssetPackPatchPr({ ...input, selectedOptions: undefined }, execution);
+  return result.shippable as SettleShippable;
+}

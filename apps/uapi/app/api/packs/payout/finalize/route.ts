@@ -1,9 +1,12 @@
 /**
  * POST /api/packs/payout/finalize
  *
- * Seller finalizes BTD vs ETH (pay-asset) split for a settled-read AssetPack.
- * Inverse treasury remainder: sellerBtdBps BTD + (10000-sellerBtdBps) ETH for seller.
- * Authorized: the linked seller (`sellerUserId`); unlinked legacy rows: owner.
+ * V49 S-4: each contributing seller finalizes THEIR source-to-shares slice of a
+ * settled read DataPack (inverse treasury remainder on the slice:
+ * sellerBtdBps of slice BTD + (10000 - sellerBtdBps) of slice coin), keyed by
+ * (settleRunId, session user). Only a contributor may finalize, once.
+ * Legacy V48 rows without a compensation statement keep the single-seller
+ * path (linked `sellerUserId`, else the settle-run owner).
  */
 
 import { NextResponse } from 'next/server';
@@ -12,7 +15,10 @@ import { supabaseAdmin } from '@bitcode/supabase';
 import { isExecutionInActiveDataset } from '@bitcode/asset-packs-pipelines-syntheses-domain/demonstration';
 import {
   BITCODE_BTD_TOKEN_ID,
+  ContributorFinalizeError,
   computePayoutSplit,
+  finalizeContributorSlice,
+  type CompensationStatement,
   createBitcodeErc1155State,
   finalizeSellerPayout,
   payoutSplitToPreview,
@@ -77,6 +83,44 @@ export async function POST(request: Request) {
   }
   const output = (row.output as Record<string, unknown> | null) || {};
   const context = (row.context as Record<string, unknown> | null) || {};
+
+  const statement = output.compensationStatement as CompensationStatement | null | undefined;
+  if (statement && statement.schema === 'bitcode.settle.compensation-statement') {
+    if (row.status !== 'completed') {
+      return NextResponse.json({ ok: false, error: 'Settle run is not completed.' }, { status: 409 });
+    }
+    try {
+      const { statement: nextStatement, slice } = finalizeContributorSlice(statement, {
+        sellerUserId: String(user.id),
+        sellerBtdBps,
+      });
+      const allFinalized = nextStatement.contributors.every((entry) => entry.status === 'finalized');
+      const payoutState = allFinalized ? 'finalized' : 'partially-finalized';
+      const { error: updateError } = await supabaseAdmin
+        .from('executions')
+        .update({
+          output: { ...output, compensationStatement: nextStatement, payoutState },
+          context: { ...context, payoutState },
+        })
+        .eq('id', settleRunId);
+      if (updateError) {
+        return NextResponse.json(
+          { ok: false, error: updateError.message || 'Failed to persist payout.' },
+          { status: 500 },
+        );
+      }
+      return NextResponse.json({ ok: true, settleRunId, payoutState, slice, compensationStatement: nextStatement });
+    } catch (error) {
+      if (error instanceof ContributorFinalizeError) {
+        return NextResponse.json(
+          { ok: false, error: error.message, code: error.code },
+          { status: error.code === 'not_a_contributor' ? 403 : 409 },
+        );
+      }
+      throw error;
+    }
+  }
+
   const pending =
     (output.pendingPayout as Record<string, unknown> | null) ||
     (context.pendingPayout as Record<string, unknown> | null);
@@ -203,8 +247,18 @@ export async function POST(request: Request) {
   });
 }
 
-/** Preview totals without writing (seller slider). */
+/** Preview totals without writing (seller slider). Session required (S-4). */
 export async function GET(request: Request) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json(
+      { ok: false, error: 'Session required to preview payout.', code: 'session_required' },
+      { status: 401 },
+    );
+  }
   const url = new URL(request.url);
   const btdVolume = BigInt(url.searchParams.get('btdVolume') || '0');
   const payAmount = BigInt(url.searchParams.get('payAmount') || '0');

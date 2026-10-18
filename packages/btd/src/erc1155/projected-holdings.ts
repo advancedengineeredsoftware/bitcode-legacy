@@ -6,11 +6,14 @@
  * - AssetPacks (ids ≥ 1): DataPacks the account admitted to the Depository
  *   (owner read) plus DataPacks it bought (co-owner, licensed read).
  * - BTD (id 0): the seller slice of FINALIZED payouts on DataPacks the account
- *   deposited. Unfinalized settles keep 100% of V in master escrow, so they do
- *   not count; buyers never receive fungible BTD.
+ *   deposited. V49 settles carry a compensation statement: each contributor is
+ *   credited with THEIR finalized slice only. Unfinalized slices stay in master
+ *   escrow, so they do not count; buyers never receive fungible BTD.
  *
  * Pure: callers query rows (source-safe columns only) and pass them in.
  */
+
+import { finalizedContributorBtd, type CompensationStatement } from './contributor-compensation';
 
 const BTD_SCALE = 10n ** 18n;
 
@@ -22,6 +25,8 @@ export interface ProjectedHoldingsExecutionRow {
   context?: Record<string, unknown> | null;
   /** `output->pendingPayout` (settle rows); never the full output. */
   pendingPayout?: Record<string, unknown> | null;
+  /** `output->compensationStatement` (V49 settle rows). */
+  compensationStatement?: CompensationStatement | null;
 }
 
 export type ProjectedAssetPackReadRight = 'owner_read' | 'licensed_read';
@@ -95,6 +100,11 @@ export function projectAccountHoldingsFromSettlements(
     if (row.user_id === userId) {
       const assetPackId = str(context.assetPackKey) ?? row.id;
       holdings.set(assetPackId, { assetPackId, label: title, acquiredAt, readRightState: 'licensed_read' });
+    }
+
+    if (row.compensationStatement && row.compensationStatement.schema === 'bitcode.settle.compensation-statement') {
+      btdBaseUnits += finalizedContributorBtd(row.compensationStatement, userId);
+      continue;
     }
 
     const pending = row.pendingPayout ?? null;

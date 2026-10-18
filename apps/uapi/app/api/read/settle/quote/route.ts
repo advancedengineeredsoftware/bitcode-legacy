@@ -14,6 +14,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@bitcode/supabase/ssr/server';
 import {
   isSettlementPaymentRequired,
+  loadProjectedBtdTotalMinted,
   quoteReadSettlementSelection,
   rehydrateReadSynthesisSelection,
   resolveSettlementPayTo,
@@ -68,7 +69,11 @@ export async function POST(request: Request) {
       );
     }
     try {
-      const quote = quoteReadSettlementSelection(selection.options);
+      const quote = quoteReadSettlementSelection(
+        selection.options,
+        resolveSettlementSpotBoard(),
+        await loadProjectedBtdTotalMinted(),
+      );
       return NextResponse.json({
         ok: true,
         provider: quote.provider,

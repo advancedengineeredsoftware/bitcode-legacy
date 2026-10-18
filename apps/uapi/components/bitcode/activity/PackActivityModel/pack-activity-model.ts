@@ -1116,9 +1116,18 @@ function promoteSettlePayoutMetadata(
       ? (pendingPayout as { sellerAccount?: string }).sellerAccount
       : null) ||
     null;
+  // V49 S-2: fee + per-contributor slices (viewer projection applied by the route).
+  const compensationStatement = output.compensationStatement || base.compensationStatement || null;
+  const contributorUserIds = Array.isArray(context.contributorUserIds)
+    ? context.contributorUserIds
+    : Array.isArray(base.contributorUserIds)
+      ? base.contributorUserIds
+      : null;
 
   return {
     ...base,
+    ...(compensationStatement ? { compensationStatement } : {}),
+    ...(contributorUserIds ? { contributorUserIds } : {}),
     ...(pendingPayout ? { pendingPayout } : {}),
     ...(payoutState ? { payoutState } : {}),
     ...(entitledPatchSummary ? { entitledPatchSummary } : {}),
@@ -1523,6 +1532,11 @@ export function matchesPackActivityTypeFilter(
  */
 export function packActivityNeedsPayoutReview(record: PackActivityRecord): boolean {
   const meta = record.metadata || {};
+  const statement = meta.compensationStatement;
+  if (statement && typeof statement === 'object' && !Array.isArray(statement)) {
+    const contributors = (statement as { contributors?: Array<{ status?: string }> }).contributors;
+    return Array.isArray(contributors) && contributors.some((row) => row?.status === 'awaiting-split');
+  }
   const pending = meta.pendingPayout;
   if (pending && typeof pending === 'object' && !Array.isArray(pending)) {
     const status = String((pending as { status?: string }).status || '').toLowerCase();

@@ -262,7 +262,12 @@ async function readSettledAssetPackRecords(
         .eq('context->>source', 'read-settle-asset-pack')
         .eq('status', 'completed'),
     );
-    if (options.sellerUserId) query = query.eq('context->>sellerUserId', options.sellerUserId);
+    // V49 S-5: a seller sees every settle they contributed to (multi-seller).
+    if (options.sellerUserId) {
+      query = query.or(
+        `context->>sellerUserId.eq.${options.sellerUserId},context->contributorUserIds.cs.${JSON.stringify([options.sellerUserId])}`,
+      );
+    }
     const { data } = await query.order('created_at', { ascending: false }).limit(Math.min(limit, 50));
     return scopeExecutionRowsToActiveDataset((data || []) as Record<string, unknown>[]).map(
       ({ user_id: ownerId, ...row }: Record<string, unknown>) => {
@@ -372,6 +377,44 @@ function readSellerUserId(metadata: Record<string, unknown>): string | null {
  * entitled patch bodies only for the buyer (settle-row owner) and the seller;
  * payout finalize only for the seller (legacy unlinked rows: the owner).
  */
+type StatementContributor = {
+  sellerUserId?: string;
+  sellerAccount?: string;
+  depositoryAssetPackId?: string;
+  weightBps?: number;
+  sliceBtd?: string;
+  slicePay?: string;
+  status?: string;
+  finalizedSplit?: unknown;
+};
+
+/**
+ * V49 S-5 viewer projection of a compensation statement: totals and weights
+ * for everyone; each contributor's own slice (amounts + split) only to that
+ * contributor; seller ids/accounts never to other viewers.
+ */
+function projectCompensationStatement(
+  statement: Record<string, unknown>,
+  viewerId: string | null,
+  viewerIsBuyer: boolean,
+): Record<string, unknown> {
+  const contributors = Array.isArray(statement.contributors) ? (statement.contributors as StatementContributor[]) : [];
+  return {
+    ...statement,
+    contributors: contributors.map((row) => {
+      const own = Boolean(viewerId && row.sellerUserId === viewerId);
+      return {
+        depositoryAssetPackId: row.depositoryAssetPackId ?? null,
+        weightBps: row.weightBps ?? null,
+        status: row.status ?? null,
+        viewerIsContributor: own,
+        ...(own || viewerIsBuyer ? { sliceBtd: row.sliceBtd ?? null, slicePay: row.slicePay ?? null } : {}),
+        ...(own ? { finalizedSplit: row.finalizedSplit ?? null } : {}),
+      };
+    }),
+  };
+}
+
 function applySettledViewerEntitlement(
   record: PackActivityRecord,
   viewerId: string | null,
@@ -383,10 +426,44 @@ function applySettledViewerEntitlement(
   const sellerUserId = readSellerUserId(metadata);
   const ownerId = settledOwners.get(record.id) ?? (viewerOwnedIds.has(record.id) ? viewerId : null);
   const viewerIsBuyer = Boolean(viewerId && ownerId === viewerId);
-  const viewerIsSeller = Boolean(viewerId && sellerUserId === viewerId);
+  const statement =
+    metadata.compensationStatement && typeof metadata.compensationStatement === 'object'
+      ? (metadata.compensationStatement as Record<string, unknown>)
+      : null;
+  const contributors = statement && Array.isArray(statement.contributors)
+    ? (statement.contributors as StatementContributor[])
+    : null;
+  const viewerSlice = contributors?.find((row) => Boolean(viewerId && row.sellerUserId === viewerId)) ?? null;
+  const viewerIsSeller = contributors ? Boolean(viewerSlice) : Boolean(viewerId && sellerUserId === viewerId);
   metadata.viewerIsBuyer = viewerIsBuyer;
   metadata.viewerIsSeller = viewerIsSeller;
-  metadata.viewerCanFinalizePayout = sellerUserId ? viewerIsSeller : viewerIsBuyer;
+  metadata.viewerCanFinalizePayout = contributors
+    ? viewerSlice?.status === 'awaiting-split'
+    : sellerUserId
+      ? viewerIsSeller
+      : viewerIsBuyer;
+  if (statement) {
+    const projected = projectCompensationStatement(statement, viewerId, viewerIsBuyer);
+    metadata.compensationStatement = projected;
+    // The history payload nests raw output/context copies — project them too.
+    if (metadata.output && typeof metadata.output === 'object') {
+      metadata.output = { ...(metadata.output as Record<string, unknown>), compensationStatement: projected };
+    }
+    if (viewerSlice) {
+      metadata.viewerContributorSlice = {
+        weightBps: viewerSlice.weightBps ?? null,
+        sliceBtd: viewerSlice.sliceBtd ?? null,
+        slicePay: viewerSlice.slicePay ?? null,
+        status: viewerSlice.status ?? null,
+        finalizedSplit: viewerSlice.finalizedSplit ?? null,
+      };
+    }
+  }
+  delete metadata.contributorUserIds;
+  if (metadata.context && typeof metadata.context === 'object') {
+    const { contributorUserIds: _hidden, ...context } = metadata.context as Record<string, unknown>;
+    metadata.context = context;
+  }
   if (!viewerIsBuyer && !viewerIsSeller) {
     delete metadata.entitledPatch;
   }

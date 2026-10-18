@@ -40,6 +40,7 @@
     "./unpaid-option-disclosure": "./src/unpaid-option-disclosure.ts",
     "./postprocess": "./src/postprocess.ts",
     "./profile-absolutes": "./src/profile-absolutes.ts",
+    "./source-contributions": "./src/source-contributions.ts",
     "./synthesis-pipeline-mode": "./src/synthesis-pipeline-mode.ts",
     "./preprocess": "./src/preprocess.ts",
     "./resolve-source-checkout-catalog": "./src/resolve-source-checkout-catalog.ts",

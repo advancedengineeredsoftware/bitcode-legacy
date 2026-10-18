@@ -1873,6 +1873,22 @@ All viewers are source-safe; owned packs link to entitled `.patch` download.
   redelivery receipt and moves the buyer state to
   `repository-delivery-redelivered` on success.
 
+### S-6a Realization map (binding paths)
+
+| Concern | Path |
+|---|---|
+| Fee + slices + per-contributor finalize | `packages/btd/src/erc1155/contributor-compensation.ts` (`buildContributorCompensation`, `finalizeContributorSlice`, `readProtocolCoinFeeBps`, `splitByBasisPoints`) |
+| Contribution normalization | `syntheses/domain/src/source-contributions.ts` (`resolveReadOptionSourceContributions`, `readOptionSourceAttributions`) |
+| Rich attribution (one call after measurement; fail-soft) | `syntheses/read/src/read-source-attribution.ts`, called by the read measurements agent; Finish carries `sourceAttributions` on server-only `fullOptions` |
+| Quick attribution | single quick call (`sourceAttributions`, admitted ids only) |
+| Server seller resolution | `apps/uapi/lib/source-contribution-sellers.ts` (admission row by id or `context.depositoryAssetPackId`; demonstration `supplyProvenance` → one 10000-bps contributor) |
+| Settle | `settle/src/index.ts` finalize stage (shares = contributors; statement persisted as `output.compensationStatement`; context `contributorUserIds`, `compensationMode`); `api/read/settle` rejects `depositorEthereumAddress`, `masterEthereumAddress`, `depositorWalletId`, `sellerAccount`, `sourceContributions` with 400 `payout_address_not_client_settable` |
+| Decay basis | `loadProjectedBtdTotalMinted` (Σ completed settle mints) for quote and settle |
+| Finalize | `api/packs/payout/finalize` (slice path; 403 `not_a_contributor`, 409 `slice_already_finalized`; run `payoutState` `partially-finalized` → `finalized`); GET preview requires a session |
+| Holdings | `projectAccountHoldingsFromSettlements` credits finalized slices; auxillaries reads contributor rows via `context->contributorUserIds` |
+| Viewers | `DepositSoldDataPacks` (viewer slice), `ReadsOwnedDataPacks` (`my-read-bought`, Redeliver), `ExchangeActivityDetail` compensation statement + slice slider; `/api/packs/activity` projects statements per viewer (own slice only; no other sellers' ids, accounts, or admission runs) |
+| Redelivery | `api/read/settle/redeliver` + `redeliverSettledAssetPackPatchPr` (ship stage only) |
+
 ### S-7 Completion
 
 Gate 4 closes when contributions are derived/validated for rich, quick, and

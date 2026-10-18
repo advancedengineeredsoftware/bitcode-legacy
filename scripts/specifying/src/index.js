@@ -1143,6 +1143,11 @@ export {
   buildV49QuickSynthesis
 } from './canonical/v49-quick-synthesis.js';
 export {
+  V49_SETTLEMENT_COMPLETION_ARTIFACT_PATH,
+  V49_SETTLEMENT_COMPLETION_SCHEMA_ID,
+  buildV49SettlementCompletion
+} from './canonical/v49-settlement-completion.js';
+export {
   V47_READER_WEBSITE_COMPLETION_ARTIFACT_PATH,
   V47_READER_WEBSITE_COMPLETION_CURRENT_TARGET,
   V47_READER_WEBSITE_COMPLETION_ROWS,
