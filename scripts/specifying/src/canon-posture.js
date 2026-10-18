@@ -1,7 +1,7 @@
 // @ts-check
 
 export const ACTIVE_CANON_VERSION = 'V48';
-export const DRAFT_TARGET_VERSION = 'V48';
+export const DRAFT_TARGET_VERSION = 'V49';
 export const CURRENT_CANON_OPERATOR_LABEL = `${ACTIVE_CANON_VERSION} active canon / ${DRAFT_TARGET_VERSION} system draft`;
 
 /**

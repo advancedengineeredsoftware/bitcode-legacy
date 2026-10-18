@@ -3,7 +3,8 @@
 /**
  * Living required local CI mirror (pointer-aware).
  * Pre-promotion: V47 pointer + V48 draft family/gates.
- * Post-promotion: V48 sole active + living check-v48-gate*.
+ * Post-promotion: V48 active + living check-v48-gate*, plus the V49 draft
+ * family and check-v49-gate* once BITCODE_SPEC_V49.md exists.
  *
  * Mirrors required GitHub surfaces that gate shared-branch work:
  *   - Casing and Import Consistency
@@ -197,7 +198,9 @@ export function buildLocalCiSteps(repoRoot, mode) {
   );
 
   if (pointer === 'V48') {
-    // Post-promotion: V48 sole active (next-draft also V48 until V49 opens).
+    // Post-promotion: V48 active; V49 draft once its family exists.
+    const v49DraftOpen = existsSync(path.join(repoRoot, '.specifications/BITCODE_SPEC_V49.md'));
+    const draftTarget = v49DraftOpen ? 'V49' : 'V48';
     add('canon-v48-family', () =>
       runNodeScript(repoRoot, 'Canon: V48 promoted family', [
         'scripts/check-bitcode-spec-family.mjs',
@@ -217,12 +220,12 @@ export function buildLocalCiSteps(repoRoot, mode) {
       ]),
     );
     add('canon-posture', () =>
-      runNodeScript(repoRoot, 'Canon: V48 sole posture', [
+      runNodeScript(repoRoot, `Canon: V48→${draftTarget} posture drift`, [
         'scripts/check-bitcode-canon-posture-drift.mjs',
         '--active-canon',
         'V48',
         '--draft-target',
-        'V48',
+        draftTarget,
       ]),
     );
     const v48GateScripts = listDraftGateCheckScripts(repoRoot, 48);
@@ -236,6 +239,31 @@ export function buildLocalCiSteps(repoRoot, mode) {
           '--skip-uapi-tests',
         ]),
       );
+    }
+    if (v49DraftOpen) {
+      add('canon-v49-draft-family', () =>
+        runNodeScript(repoRoot, 'Canon: V49 draft family', [
+          'scripts/check-bitcode-spec-family.mjs',
+          '--version',
+          'V49',
+          '--mode',
+          'draft',
+          '--current-target',
+          'V48',
+        ]),
+      );
+      const v49GateScripts = listDraftGateCheckScripts(repoRoot, 49);
+      for (const scriptName of v49GateScripts) {
+        const gateId = scriptName.replace(/^check-v49-|\.mjs$/g, '');
+        add(`canon-v49-${gateId}`, () =>
+          runNodeScript(repoRoot, `Canon Spec Basics: V49 ${gateId}`, [
+            `scripts/${scriptName}`,
+            '--skip-branch-check',
+            '--skip-package-tests',
+            '--skip-uapi-tests',
+          ]),
+        );
+      }
     }
   } else {
     // Pre-promotion living path: V47 active + V48 draft.

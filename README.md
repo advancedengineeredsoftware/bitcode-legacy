@@ -10,7 +10,7 @@ always the single current Bitcode system under the active canon.
 | | |
 |---|---|
 | **Active canon** | **V48** (`.specifications/BITCODE_SPEC.txt`) — as-is promotion on `version/v48` |
-| **Next draft** | **V48 sole** until V49 opens |
+| **Next draft** | **V49** (`.specifications/BITCODE_SPEC_V49.md` family) — Evaluations, quick synthesis, settlement completion, Claude External |
 | **How to develop** | **[`CONTRIBUTING.md`](CONTRIBUTING.md)** — setup, canon, env, hosts, GitHub App, testing |
 | **How the tree is organized** | [`.docs/FAMILIARIZATION.md`](.docs/FAMILIARIZATION.md) |
 | **Filesystem / component law** | [`.docs/BITCODE_SOURCE_LAYOUT.md`](.docs/BITCODE_SOURCE_LAYOUT.md) |
@@ -61,7 +61,7 @@ Product routes are `/packs`, `/deposits`, `/reads`, and `/docs`.
 | --- | --- |
 | [`.specifications/BITCODE_SPEC.txt`](.specifications/BITCODE_SPEC.txt) | **Active** version pointer (currently **V47**) |
 | `.specifications/BITCODE_SPEC_V47.md` (+ DELTA / NOTES / PARITY / PROVEN) | Promoted commercial website testnet-launch canon |
-| `.specifications/BITCODE_SPEC_V48.md` (+ family) | **Draft** rebuild-alone SPEC for V48 gate work |
+| `.specifications/BITCODE_SPEC_V49.md` (+ family) | **Draft** rebuild-alone SPEC for V49 gate work (V48 family is active canon) |
 | `.specifications/BITCODE_SPECIFYING.md` | Metaspec: Complete Implementation Derivability |
 | [`.qa/BITCODE_V48_QA.md`](.qa/BITCODE_V48_QA.md) | Interactive QA ledger / gate runbooks |
 | [`.docs/FAMILIARIZATION.md`](.docs/FAMILIARIZATION.md) | **Non-canonical** codebase walkthrough |

@@ -1,0 +1,174 @@
+{
+  "artifactId": "v49-opening-charter",
+  "schemaId": "bitcode.v49.openingCharter.v1",
+  "version": "V49",
+  "currentTarget": "V48",
+  "artifactPath": ".proofs/v49/opening-charter.json",
+  "sourceSafetyVerdict": "source-safe-opening-charter",
+  "gateIds": [
+    "opening-charter",
+    "evaluations-rename",
+    "quick-synthesis",
+    "settlement-completion",
+    "benchmark-delta-relatives",
+    "claude-external",
+    "promotion-readiness"
+  ],
+  "reformChapterHeadings": [
+    "## V49 Evaluations rename law (Gate 2)",
+    "## V49 quick synthesis law (Gate 3)",
+    "## V49 settlement completion law (Gate 4)",
+    "## V49 benchmark-delta Relative law (Gate 5)",
+    "## V49 Claude External law (Gate 6)"
+  ],
+  "acceptedDecisionTokens": [
+    "BITCODE_SYNTHESIS_PIPELINE",
+    "factoryExecutionPipelineQuick",
+    "factoryQuickAgent",
+    "BITCODE_PROTOCOL_COIN_FEE_BPS",
+    "buildSourceToSharesProof",
+    "OAuth 2.1",
+    ".bitcode/benchmarks.json",
+    "Need → Evaluation",
+    "no dual-read"
+  ],
+  "forbiddenPayloadIds": [
+    "protected_source_payload",
+    "raw_source_text",
+    "unpaid_datapack_source",
+    "raw_protected_prompt",
+    "raw_provider_response",
+    "oauth_token_material",
+    "wallet_private_material",
+    "settlement_private_payload"
+  ],
+  "predicateResults": [
+    {
+      "id": "pointer-remains-v48",
+      "sourcePath": ".specifications/BITCODE_SPEC.txt",
+      "passed": true
+    },
+    {
+      "id": "canon-posture-v48-active-v49-draft",
+      "sourcePath": "scripts/specifying/src/canon-posture.js",
+      "passed": true
+    },
+    {
+      "id": "family-files-present-with-draft-status",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49.md",
+      "passed": true
+    },
+    {
+      "id": "spec-declares-draft-posture",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49.md",
+      "passed": true
+    },
+    {
+      "id": "spec-carries-reform-chapters",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49.md",
+      "passed": true
+    },
+    {
+      "id": "spec-carries-gate-plan",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49.md",
+      "passed": true
+    },
+    {
+      "id": "spec-evaluations-vocabulary",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49.md",
+      "passed": true
+    },
+    {
+      "id": "delta-records-accepted-decisions",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49_DELTA.md",
+      "passed": true
+    },
+    {
+      "id": "notes-carry-simplified-reading",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49_NOTES.md",
+      "passed": true
+    },
+    {
+      "id": "parity-rows-bind-gates",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49_PARITY_MATRIX.md",
+      "passed": true
+    },
+    {
+      "id": "measurement-parity-covers-relative-family",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49_MEASUREMENT_PARITY_MATRIX.md",
+      "passed": true
+    },
+    {
+      "id": "roadmap-names-v49-draft-target",
+      "sourcePath": ".specifications/SPECIFICATIONS_ROADMAP.md",
+      "passed": true
+    },
+    {
+      "id": "specifying-readme-posture",
+      "sourcePath": "scripts/specifying/README.md",
+      "passed": true
+    },
+    {
+      "id": "local-ci-runs-v49-draft",
+      "sourcePath": "scripts/run-bitcode-local-ci.mjs",
+      "passed": true
+    },
+    {
+      "id": "workflows-run-v49-draft",
+      "sourcePath": ".github/workflows/bitcode-canon-quality.yml",
+      "passed": true
+    },
+    {
+      "id": "package-json-exposes-gate1",
+      "sourcePath": "package.json",
+      "passed": true
+    },
+    {
+      "id": "package-exports-gate1",
+      "sourcePath": "scripts/specifying/src/index.js",
+      "passed": true
+    },
+    {
+      "id": "generator-checker-test-exist",
+      "sourcePath": "scripts/generate-v49-opening-charter.mjs",
+      "passed": true
+    }
+  ],
+  "sourceRoots": {
+    "activePointer": ".specifications/BITCODE_SPEC.txt:4808562fa1f401b1a571836a",
+    "spec": ".specifications/BITCODE_SPEC_V49.md:286551b9a9302203458d50b4",
+    "delta": ".specifications/BITCODE_SPEC_V49_DELTA.md:6cc187051d5b9a9230e268d3",
+    "notes": ".specifications/BITCODE_SPEC_V49_NOTES.md:feb9e6d51fbc109d3b160e33",
+    "parity": ".specifications/BITCODE_SPEC_V49_PARITY_MATRIX.md:c0eb54248291fb18f00cc7f9",
+    "measurementParity": ".specifications/BITCODE_SPEC_V49_MEASUREMENT_PARITY_MATRIX.md:a4f8825ec26e197a4af44142",
+    "roadmap": ".specifications/SPECIFICATIONS_ROADMAP.md:cc689d141fb53654e5b19f0e",
+    "canonPosture": "scripts/specifying/src/canon-posture.js:2f3697d2884e02f7feb8c1ae",
+    "specifyingReadme": "scripts/specifying/README.md:1978607a2bc39a171464f3f2",
+    "localCi": "scripts/run-bitcode-local-ci.mjs:20b23065f2f16a4183840cd9",
+    "canonWorkflow": ".github/workflows/bitcode-canon-quality.yml:3f41f6ca91f676a37295fd35",
+    "gateWorkflow": ".github/workflows/bitcode-gate-quality.yml:253bd643c7b85ffa7f2b767c",
+    "packageJson": "package.json:ecf746a810d9b69284006674",
+    "protocolIndex": "scripts/specifying/src/index.js:6c221db5ae338aa296155282",
+    "protocolTypes": "scripts/specifying/src/index.d.ts:34d5d1c2aa0fafc18972e4b5",
+    "generator": "scripts/generate-v49-opening-charter.mjs:0dfaad5b14ac468fe88db9f5",
+    "checker": "scripts/check-v49-gate1-opening-charter.mjs:996faa9f8608d72033e61cd7",
+    "protocolTest": "scripts/specifying/test/v49-opening-charter.test.js:a60691d54ea8e9eb2f4830ab"
+  },
+  "artifactRoot": "v49-opening-charter:f69b2f390f159d03c417e8c0",
+  "coverage": {
+    "requiredPredicateCount": 18,
+    "passedPredicateCount": 18,
+    "failedPredicateIds": [],
+    "familyOpened": true,
+    "postureOpened": true,
+    "livingCiWired": true,
+    "sourceSafeMetadataOnly": true,
+    "protectedSourceVisible": false,
+    "rawPromptVisible": false,
+    "rawProviderResponseVisible": false,
+    "oauthTokenMaterialVisible": false,
+    "walletPrivateMaterialVisible": false,
+    "valueBearingMainnetEnabled": false
+  },
+  "passed": true
+}
