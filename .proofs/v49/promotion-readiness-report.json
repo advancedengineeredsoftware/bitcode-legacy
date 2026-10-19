@@ -1,0 +1,203 @@
+{
+  "artifactId": "v49-promotion-readiness-report",
+  "schemaId": "bitcode.v49.promotionReadinessReport.v1",
+  "version": "V49",
+  "currentTarget": "V48",
+  "artifactPath": ".proofs/v49/promotion-readiness-report.json",
+  "sourceSafetyVerdict": "source-safe-promotion-readiness",
+  "pointer": "V48",
+  "gates": [
+    {
+      "gate": 1,
+      "artifactPath": ".proofs/v49/opening-charter.json",
+      "evidence": "regenerated",
+      "present": true,
+      "fresh": true,
+      "passed": true,
+      "sourceSafe": true,
+      "artifactRoot": "v49-opening-charter:ca4890dbb320ab1fb0e4ad33"
+    },
+    {
+      "gate": 2,
+      "artifactPath": ".proofs/v49/evaluations-rename.json",
+      "evidence": "regenerated",
+      "present": true,
+      "fresh": true,
+      "passed": true,
+      "sourceSafe": true,
+      "artifactRoot": "v49-evaluations-rename:28c322a8d590859c2af85c84"
+    },
+    {
+      "gate": 3,
+      "artifactPath": ".proofs/v49/quick-synthesis.json",
+      "evidence": "regenerated",
+      "present": true,
+      "fresh": true,
+      "passed": true,
+      "sourceSafe": true,
+      "artifactRoot": "v49-quick-synthesis:a99551494a063096ca34db06"
+    },
+    {
+      "gate": 4,
+      "artifactPath": ".proofs/v49/settlement-completion.json",
+      "evidence": "regenerated",
+      "present": true,
+      "fresh": true,
+      "passed": true,
+      "sourceSafe": true,
+      "artifactRoot": "v49-settlement-completion:22a974132dac86bcbc319c63"
+    },
+    {
+      "gate": 5,
+      "artifactPath": ".proofs/v49/benchmark-delta-relatives.json",
+      "evidence": "regenerated",
+      "present": true,
+      "fresh": true,
+      "passed": true,
+      "sourceSafe": true,
+      "artifactRoot": "v49-benchmark-delta-relatives:4a162f5fb0703f6129695497"
+    },
+    {
+      "gate": 6,
+      "artifactPath": ".proofs/v49/claude-external.json",
+      "evidence": "regenerated",
+      "present": true,
+      "fresh": true,
+      "passed": true,
+      "sourceSafe": true,
+      "artifactRoot": "v49-claude-external:61cb81c8289991a12f2891f0"
+    }
+  ],
+  "rehearsal": {
+    "ledgerPresent": true,
+    "lanes": [
+      {
+        "id": "quick-synthesis",
+        "status": "pending"
+      },
+      {
+        "id": "rich-synthesis",
+        "status": "pending"
+      },
+      {
+        "id": "two-contributor-settlement",
+        "status": "pending"
+      },
+      {
+        "id": "benchmark-delta-read",
+        "status": "pending"
+      },
+      {
+        "id": "claude-connector-session",
+        "status": "pending"
+      }
+    ],
+    "attestedBy": null,
+    "attestedAt": null,
+    "attested": false
+  },
+  "predicateResults": [
+    {
+      "id": "gates-1-6-present",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49.md",
+      "passed": true
+    },
+    {
+      "id": "gates-1-6-fresh",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49.md",
+      "passed": true
+    },
+    {
+      "id": "gates-1-6-passed",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49.md",
+      "passed": true
+    },
+    {
+      "id": "gates-1-6-source-safe",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49.md",
+      "passed": true
+    },
+    {
+      "id": "pointer-v48-or-v49",
+      "sourcePath": ".specifications/BITCODE_SPEC.txt",
+      "passed": true
+    },
+    {
+      "id": "promote-plan-supports-v49",
+      "sourcePath": "scripts/promote-bitcode-canon.mjs",
+      "passed": true
+    },
+    {
+      "id": "spec-family-prepare-supports-v49",
+      "sourcePath": "scripts/prepare-bitcode-spec-family-promotion.mjs",
+      "passed": true
+    },
+    {
+      "id": "runtime-prepare-is-version-generic",
+      "sourcePath": "scripts/prepare-bitcode-runtime-canon-promotion.mjs",
+      "passed": true
+    },
+    {
+      "id": "local-ci-supports-v49-sole",
+      "sourcePath": "scripts/run-bitcode-local-ci.mjs",
+      "passed": true
+    },
+    {
+      "id": "proven-appendix-generated",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49_PROVEN.md",
+      "passed": true
+    },
+    {
+      "id": "rehearsal-ledger-lists-required-lanes",
+      "sourcePath": ".qa/BITCODE_V49_STAGING_REHEARSAL.md",
+      "passed": true
+    },
+    {
+      "id": "spec-carries-promotion-canon",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49.md",
+      "passed": true
+    },
+    {
+      "id": "package-wiring",
+      "sourcePath": "package.json",
+      "passed": true
+    }
+  ],
+  "sourceRoots": {
+    "spec": ".specifications/BITCODE_SPEC_V49.md:cd028ee8d7d5a82e67cd4af8",
+    "pointer": ".specifications/BITCODE_SPEC.txt:4808562fa1f401b1a571836a",
+    "rehearsalLedger": ".qa/BITCODE_V49_STAGING_REHEARSAL.md:80e3ae9ad0a4c43f012fe71e",
+    "promoteCanon": "scripts/promote-bitcode-canon.mjs:ea3db2d633152ba2ba2ac471",
+    "prepareSpecFamily": "scripts/prepare-bitcode-spec-family-promotion.mjs:868037e0437efdbfe1e2acf7",
+    "prepareRuntime": "scripts/prepare-bitcode-runtime-canon-promotion.mjs:46490329f9bf70ac1af90122",
+    "localCi": "scripts/run-bitcode-local-ci.mjs:9fe763f6035fb9a75fea108d",
+    "packageJson": "package.json:7e0fcdc54508a5f470337f68",
+    "protocolIndex": "scripts/specifying/src/index.js:4f0a75dd68c3763d2068f521",
+    "protocolTypes": "scripts/specifying/src/index.d.ts:4ca66854e5660ec5cf12d5b5",
+    "specifyingReadme": "scripts/specifying/README.md:ec7029ae890e05c5020a2904",
+    "generator": "scripts/generate-v49-promotion-readiness-report.mjs:930ba329ad2378a97067a39f",
+    "checker": "scripts/check-v49-gate7-promotion-readiness.mjs:4bda5631a2628cd4c3714ca4",
+    "protocolTest": "scripts/specifying/test/v49-promotion-readiness-report.test.js:e359ca8634868849b16e7559"
+  },
+  "artifactRoot": "v49-promotion-readiness-report:f0db5e66cbdc5d600f53164f",
+  "promotion": {
+    "admitted": false,
+    "blockers": [
+      "staging-rehearsal:quick-synthesis,rich-synthesis,two-contributor-settlement,benchmark-delta-read,claude-connector-session"
+    ],
+    "postPromotionPosture": {
+      "pointer": "V49",
+      "activeCanon": "V49",
+      "draftTarget": "V49"
+    },
+    "valueBearingMainnetAdmitted": false
+  },
+  "coverage": {
+    "requiredPredicateCount": 13,
+    "passedPredicateCount": 13,
+    "failedPredicateIds": [],
+    "sourceSafeMetadataOnly": true,
+    "protectedSourceVisible": false
+  },
+  "passed": true
+}

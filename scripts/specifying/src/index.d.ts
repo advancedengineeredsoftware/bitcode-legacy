@@ -998,6 +998,10 @@ export function buildV49BenchmarkDeltaRelatives(input?: Record<string, unknown>)
 export const V49_CLAUDE_EXTERNAL_ARTIFACT_PATH: string;
 export const V49_CLAUDE_EXTERNAL_SCHEMA_ID: string;
 export function buildV49ClaudeExternal(input?: Record<string, unknown>): BitcodeProtocolReport;
+export const V49_PROMOTION_READINESS_ARTIFACT_PATH: string;
+export const V49_PROMOTION_READINESS_SCHEMA_ID: string;
+export function buildV49PromotionReadinessReport(input?: Record<string, unknown>): BitcodeProtocolReport;
+export function readV49RehearsalAttestation(content: string): Record<string, unknown>;
 export const V47_READER_WEBSITE_COMPLETION_ARTIFACT_PATH: string;
 export const V47_READER_WEBSITE_COMPLETION_CURRENT_TARGET: string;
 export const V47_READER_WEBSITE_COMPLETION_SCHEMA_ID: string;

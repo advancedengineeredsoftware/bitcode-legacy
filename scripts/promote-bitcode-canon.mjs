@@ -42,7 +42,7 @@ function printHelp() {
       'Usage: npm run promote:canon -- --version V20 --commit <proof-source-commit> [--dry-run]',
       '',
       'Options:',
-      '  --version <VN>           Canonical version to promote. Accepted targets: V19–V25, V28–V48.',
+      '  --version <VN>           Canonical version to promote. Accepted targets: V19–V25, V28–V49.',
       '  --commit <sha>           Proof-source commit to render into the generated appendix.',
       '  --dry-run                Print the promotion plan without executing commands or writing files.',
       '  --allow-dirty-start      Permit a dirty worktree before promotion. Not for canonical use.',
@@ -677,6 +677,31 @@ function buildCommandPlan(version, commit) {
   const v48PromotedCanonicalInputCheckCommand = ['node', ['scripts/check-bitcode-canonical-inputs.mjs', '--current-target', 'V48']];
   const v48PromotedSpecCheckCommand = ['node', ['scripts/check-bitcode-spec-family.mjs', '--version', 'V48', '--mode', 'promoted', '--current-target', 'V48']];
   const v48PromotedCanonPostureDriftCommand = ['node', ['scripts/check-bitcode-canon-posture-drift.mjs', '--active-canon', 'V48', '--draft-target', 'V48']];
+  // V49: Gates 1–6 + Gate 7 readiness (promotion mode admits only with the
+  // staging-testnet rehearsal attestation); next draft stays V49 until V50 opens.
+  const v49DraftSpecCheckCommand = ['node', ['scripts/check-bitcode-spec-family.mjs', '--version', 'V49', '--mode', 'draft', '--current-target', 'V48']];
+  const v49CanonicalInputCheckCommand = ['node', ['scripts/check-bitcode-canonical-inputs.mjs', '--current-target', 'V48']];
+  const v49DraftCanonPostureDriftCommand = ['node', ['scripts/check-bitcode-canon-posture-drift.mjs', '--active-canon', 'V48', '--draft-target', 'V49']];
+  const v49GateCommands = [
+    'check-v49-gate1-opening-charter.mjs',
+    'check-v49-gate2-evaluations-rename.mjs',
+    'check-v49-gate3-quick-synthesis.mjs',
+    'check-v49-gate4-settlement-completion.mjs',
+    'check-v49-gate5-benchmark-delta-relatives.mjs',
+    'check-v49-gate6-claude-external.mjs',
+  ].map((script) => ['node', [`scripts/${script}`, '--skip-branch-check', '--skip-package-tests', '--skip-uapi-tests']]);
+  const v49Gate7Command = ['node', ['scripts/check-v49-gate7-promotion-readiness.mjs', '--promotion-mode', '--require-rehearsal', '--skip-branch-check', '--skip-package-tests']];
+  const v49PreparePromotionSpecFamilyCommand = ['node', ['scripts/prepare-bitcode-spec-family-promotion.mjs', '--version', 'V49', '--commit', commit]];
+  const v49PrepareRuntimePromotionCommand = ['node', ['scripts/prepare-bitcode-runtime-canon-promotion.mjs', '--version', 'V49', '--next-draft', 'V49']];
+  const v49PromotedCanonicalInputCheckCommand = ['node', ['scripts/check-bitcode-canonical-inputs.mjs', '--current-target', 'V49']];
+  const v49PromotedSpecCheckCommand = ['node', ['scripts/check-bitcode-spec-family.mjs', '--version', 'V49', '--mode', 'promoted', '--current-target', 'V49']];
+  const v49PromotedCanonPostureDriftCommand = ['node', ['scripts/check-bitcode-canon-posture-drift.mjs', '--active-canon', 'V49', '--draft-target', 'V49']];
+  // Post-promotion truth: Gates 1–6 artifacts become frozen evidence; the
+  // readiness report is regenerated for pointer V49 and re-checked.
+  const v49PostPromotionReadinessCommands = [
+    ['node', ['scripts/generate-v49-promotion-readiness-report.mjs']],
+    ['node', ['scripts/check-v49-gate7-promotion-readiness.mjs', '--promotion-mode', '--require-rehearsal', '--skip-branch-check', '--skip-package-tests']],
+  ];
   const inheritedProofCommands = [
     ['pnpm', ['--filter', '@bitcode/specifying', 'run', 'typecheck']],
     ['pnpm', ['--filter', '@bitcode/specifying', 'run', 'test:unit']],
@@ -1657,7 +1682,34 @@ function buildCommandPlan(version, commit) {
       ['git', ['diff', '--check']],
     ];
   }
-  throw new Error(`Unsupported promotion target ${version}. Expected V19–V25 or V28–V48.`);
+  if (version === 'V49') {
+    return [
+      v49DraftSpecCheckCommand,
+      v49CanonicalInputCheckCommand,
+      v49DraftCanonPostureDriftCommand,
+      ...v49GateCommands,
+      v49Gate7Command,
+      ['pnpm', ['--filter', '@bitcode/specifying', 'typecheck']],
+      ['pnpm', ['--filter', '@bitcode/specifying', 'test']],
+      ['pnpm', ['--filter', '@bitcode/btd', 'typecheck']],
+      ['pnpm', ['--filter', '@bitcode/btd', 'test']],
+      ['pnpm', ['--filter', '@bitcode/generic-measurements-relatives', 'exec', 'jest', '--config', 'jest.config.cjs', '--forceExit']],
+      ['pnpm', ['--filter', '@bitcode/pipeline-hosts', 'typecheck']],
+      ['pnpm', ['--filter', '@bitcode/pipeline-hosts', 'exec', 'jest', '--config', 'jest.config.cjs', '--passWithNoTests', '--forceExit']],
+      ['pnpm', ['--filter', '@bitcode/asset-packs-pipelines-syntheses-quick', 'exec', 'jest', '--config', 'jest.config.cjs', '--forceExit']],
+      ['pnpm', ['--filter', '@bitcode/mcp-generics', 'typecheck']],
+      v49PreparePromotionSpecFamilyCommand,
+      v49PrepareRuntimePromotionCommand,
+      ['node', ['scripts/generate-bitcode-proven.mjs', '--version', version, '--commit', commit, '--worktree-state', 'clean', '--output', archivedProvenOutput(version), '--allow-dirty']],
+      ['node', ['scripts/generate-bitcode-proven.mjs', '--version', version, '--commit', commit, '--worktree-state', 'clean', '--output', archivedProvenOutput(version), '--check', '--allow-dirty']],
+      v49PromotedCanonicalInputCheckCommand,
+      v49PromotedSpecCheckCommand,
+      v49PromotedCanonPostureDriftCommand,
+      ...v49PostPromotionReadinessCommands,
+      ['git', ['diff', '--check']],
+    ];
+  }
+  throw new Error(`Unsupported promotion target ${version}. Expected V19–V25 or V28–V49.`);
 }
 
 /**
@@ -3158,7 +3210,18 @@ async function buildCommitMessageBody(version, commit) {
       `Proof-source commit: ${commit}`,
     ].join('\n');
   }
-  throw new Error(`Unsupported promotion target ${version}. Expected V19–V25 or V28–V48.`);
+  if (version === 'V49') {
+    return [
+      'Promotes V49 as the active fast, real, end-to-end commercial MVP canon:',
+      'Evaluations, quick synthesis, multi-source settlement, benchmark-delta',
+      'Relatives, and the Claude External. Gates 1–7 closed with fresh',
+      '.proofs/v49 artifacts and a staging-testnet rehearsal attestation.',
+      'Value-bearing mainnet remains blocked.',
+      '',
+      `Proof-source commit: ${commit}`,
+    ].join('\n');
+  }
+  throw new Error(`Unsupported promotion target ${version}. Expected V19–V25 or V28–V49.`);
 }
 
 async function main() {
@@ -3169,8 +3232,8 @@ async function main() {
   }
 
   const version = args.version || '';
-  if (!['V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V28', 'V29', 'V30', 'V31', 'V32', 'V33', 'V34', 'V35', 'V36', 'V37', 'V38', 'V39', 'V40', 'V41', 'V42', 'V43', 'V44', 'V45', 'V46', 'V47', 'V48'].includes(version)) {
-    throw new Error(`Canonical promotion accepts --version V19–V25 or V28–V48. Received ${version || 'none'}.`);
+  if (!['V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V28', 'V29', 'V30', 'V31', 'V32', 'V33', 'V34', 'V35', 'V36', 'V37', 'V38', 'V39', 'V40', 'V41', 'V42', 'V43', 'V44', 'V45', 'V46', 'V47', 'V48', 'V49'].includes(version)) {
+    throw new Error(`Canonical promotion accepts --version V19–V25 or V28–V49. Received ${version || 'none'}.`);
   }
   const commit = args.commit || '';
   if (!commit) {

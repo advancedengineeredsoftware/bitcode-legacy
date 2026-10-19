@@ -33,6 +33,13 @@ Historical era token (do not delete — V47 Gate 10 artifact predicate):
 Living required gates for this pointer pair only — see V47 Gate 10 and
 `.specifications/BITCODE_SPECIFYING.md` §4.3 and §13.1.
 
+**V49 promotion readiness (Gate 7):** `check:v49-gate7` validates
+`.proofs/v49/promotion-readiness-report.json` (Gates 1–6 artifacts present,
+fresh, passing; V49 promotion scripts; local-CI `V49` sole posture; generated
+`BITCODE_SPEC_V49_PROVEN.md`). Promotion (`promote:canon -- --version V49`)
+runs it with `--promotion-mode --require-rehearsal`, so the pointer advances
+only after the operator signs `.qa/BITCODE_V49_STAGING_REHEARSAL.md`.
+
 Commercial scripts, API/runtime code, and workflow checks must import canon
 posture, spec-family checks, canonical-input checks, canon-drift checks, and
 proven-generation helpers from `@bitcode/specifying` or

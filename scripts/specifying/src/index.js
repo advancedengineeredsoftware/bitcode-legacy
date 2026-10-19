@@ -1158,6 +1158,12 @@ export {
   buildV49ClaudeExternal
 } from './canonical/v49-claude-external.js';
 export {
+  V49_PROMOTION_READINESS_ARTIFACT_PATH,
+  V49_PROMOTION_READINESS_SCHEMA_ID,
+  buildV49PromotionReadinessReport,
+  readV49RehearsalAttestation
+} from './canonical/v49-promotion-readiness-report.js';
+export {
   V47_READER_WEBSITE_COMPLETION_ARTIFACT_PATH,
   V47_READER_WEBSITE_COMPLETION_CURRENT_TARGET,
   V47_READER_WEBSITE_COMPLETION_ROWS,

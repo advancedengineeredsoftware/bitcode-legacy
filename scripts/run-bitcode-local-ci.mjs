@@ -184,7 +184,7 @@ export function buildLocalCiSteps(repoRoot, mode) {
     return steps;
   }
 
-  // --- full living mirror (pointer-aware: V47+V48 draft, or V48 sole) ---
+  // --- full living mirror (pointer-aware: V47+V48 draft, V48+V49 draft, or V49 sole) ---
 
   const pointer = readPointer(repoRoot);
 
@@ -197,7 +197,46 @@ export function buildLocalCiSteps(repoRoot, mode) {
     runStep(repoRoot, 'Casing: import mismatches', 'bash', ['scripts/check-import-casing.sh']),
   );
 
-  if (pointer === 'V48') {
+  if (pointer === 'V49') {
+    // Post-promotion: V49 sole (V49 active, V49 draft until V50 opens).
+    add('canon-v49-family', () =>
+      runNodeScript(repoRoot, 'Canon: V49 promoted family', [
+        'scripts/check-bitcode-spec-family.mjs',
+        '--version',
+        'V49',
+        '--mode',
+        'promoted',
+        '--current-target',
+        'V49',
+      ]),
+    );
+    add('canon-v49-inputs', () =>
+      runNodeScript(repoRoot, 'Canon: V49 canonical inputs', [
+        'scripts/check-bitcode-canonical-inputs.mjs',
+        '--current-target',
+        'V49',
+      ]),
+    );
+    add('canon-posture', () =>
+      runNodeScript(repoRoot, 'Canon: V49→V49 posture drift', [
+        'scripts/check-bitcode-canon-posture-drift.mjs',
+        '--active-canon',
+        'V49',
+        '--draft-target',
+        'V49',
+      ]),
+    );
+    // Gates 1–6 assert draft-era facts and are frozen promoted-era evidence;
+    // Gate 7 (promotion mode) binds them as present and passing.
+    add('canon-v49-gate7-promotion-readiness', () =>
+      runNodeScript(repoRoot, 'Canon: V49 gate7 promotion readiness', [
+        'scripts/check-v49-gate7-promotion-readiness.mjs',
+        '--promotion-mode',
+        '--skip-branch-check',
+        '--skip-package-tests',
+      ]),
+    );
+  } else if (pointer === 'V48') {
     // Post-promotion: V48 active; V49 draft once its family exists.
     const v49DraftOpen = existsSync(path.join(repoRoot, '.specifications/BITCODE_SPEC_V49.md'));
     const draftTarget = v49DraftOpen ? 'V49' : 'V48';
@@ -829,9 +868,9 @@ export function buildLocalCiSteps(repoRoot, mode) {
 export function runLocalCi(options) {
   const { mode, repoRoot, list } = options;
   const pointer = readPointer(repoRoot);
-  if (mode === 'full' && pointer !== 'V47' && pointer !== 'V48') {
+  if (mode === 'full' && pointer !== 'V47' && pointer !== 'V48' && pointer !== 'V49') {
     throw new Error(
-      `run-bitcode-local-ci full mode supports living pointers V47 (with V48 draft) or V48 sole; observed pointer=${pointer || 'empty'}.`,
+      `run-bitcode-local-ci full mode supports living pointers V47 (with V48 draft), V48 (with V49 draft), or V49 sole; observed pointer=${pointer || 'empty'}.`,
     );
   }
 

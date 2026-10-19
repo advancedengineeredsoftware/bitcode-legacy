@@ -158,6 +158,20 @@ complete MVP:
   of outcome); replaying a consumed code revokes tokens it issued.
 - `apps/mcp` `measure-tools.ts` does not typecheck at the V49 Gate 5 tip
   (pre-existing; not in the living CI typecheck set); Gate 6 does not touch it.
+- Gate 7 separates readiness from admission: `check:v49-gate7` passes when the
+  promotion machinery is complete (Gates 1–6 artifacts fresh, promotion
+  scripts, `V49` sole local-CI posture, generated PROVEN), while promotion
+  (`--require-rehearsal`) also needs the operator-signed staging-testnet
+  rehearsal ledger `.qa/BITCODE_V49_STAGING_REHEARSAL.md` (five lanes). The
+  pointer stays `V48` until the operator runs `promote:canon -- --version V49`.
+- After promotion, Gates 1–6 assert draft-era facts (draft posture, opening
+  roadmap), so they become frozen promoted-era evidence: the readiness report
+  binds their committed artifacts as present and passing, and local CI under
+  pointer `V49` runs Gate 7 in promotion mode only (V47 Gate 10 precedent).
+- The V49 promotion plan was executed end to end in a scratch worktree with a
+  simulated signed rehearsal (all non-pnpm steps, including the pointer write,
+  PROVEN generation, and promoted family / input / posture checks); the pnpm
+  test steps are the living CI suites.
 - `verificationSignals` for `test-pass-rate` / `buildability` are read but never
   set; the Gate 5 runner is the future source (deferred beyond V49 scope).
 - 46 frozen historical gate scripts reference Need vocabulary; they stay

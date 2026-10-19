@@ -446,9 +446,9 @@
     "realSynthesis": "packages/asset-packs-pipelines/syntheses/deposit/src/deposit-option-real-synthesis.ts:63019731cb5cad38f8e0215e",
     "implementationPackTypes": "packages/asset-packs-pipelines/syntheses/domain/src/agents/implementation/asset-packs-implementation-pack-types.ts:785a637101048134f86995b7",
     "patchfileSchema": "packages/asset-packs-pipelines/syntheses/domain/src/agents/implementation/asset-packs-synthesis-schema.ts:892c42c7598a62ad749f5f42",
-    "packageJson": "package.json:b5323d4ff89a558515c9a3fd",
-    "protocolIndex": "scripts/specifying/src/index.js:34f6e9d7ec9e0a16757d7067",
-    "protocolTypes": "scripts/specifying/src/index.d.ts:714e25b85b8a558c2acc2881",
+    "packageJson": "package.json:7e0fcdc54508a5f470337f68",
+    "protocolIndex": "scripts/specifying/src/index.js:4f0a75dd68c3763d2068f521",
+    "protocolTypes": "scripts/specifying/src/index.d.ts:4ca66854e5660ec5cf12d5b5",
     "protocolSource": "scripts/specifying/src/canonical/v48-depositor-website-completion.js:ef85ffae23e2ebf1dcd1a2ce",
     "protocolTest": "scripts/specifying/test/v48-depositor-website-completion.test.js:694dc1977238e539e5817817",
     "generator": "scripts/generate-v48-depositor-website-completion.mjs:e6db8828c5a56ca6e9db9ecf",
@@ -456,7 +456,7 @@
     "gateWorkflow": ".github/workflows/bitcode-gate-quality.yml:253bd643c7b85ffa7f2b767c",
     "canonWorkflow": ".github/workflows/bitcode-canon-quality.yml:3f41f6ca91f676a37295fd35"
   },
-  "artifactRoot": "v48-depositor-website-completion:e36306dd741a3f3c511a6da9",
+  "artifactRoot": "v48-depositor-website-completion:a4497d6fe8f5626de00f46c4",
   "coverage": {
     "requiredPredicateCount": 24,
     "passedPredicateCount": 24,

@@ -31,7 +31,7 @@ function printHelp() {
       'Usage: node scripts/prepare-bitcode-spec-family-promotion.mjs --version V31 --commit <sha> [--repo-root <path>]',
       '',
       'Rewrites the hand-authored spec family status truth for canonical promotion.',
-      'Currently implemented for V21–V25, V28–V48.'
+      'Currently implemented for V21–V25, V28–V49.'
     ].join('\n')
   );
 }
@@ -350,6 +350,67 @@ function rewriteV48PromotedParityMatrix(content, version) {
     .replaceAll('| pending |', '| closed |')
     .replaceAll('| substantially advanced |', '| closed |')
     .replaceAll('| substantially advanced|', '| closed |');
+}
+
+const V49_DRAFT_HIERARCHY_PARAGRAPH = [
+  '`BITCODE_SPEC.txt` points to `V48`; V48 is the active promoted Bitcode canon and',
+  'V49 is the draft target. `BITCODE_SPEC_V49.md`, `BITCODE_SPEC_V49_DELTA.md`,',
+  '`BITCODE_SPEC_V49_NOTES.md`, `BITCODE_SPEC_V49_PARITY_MATRIX.md`, and',
+  '`BITCODE_SPEC_V49_MEASUREMENT_PARITY_MATRIX.md` are the V49 draft',
+  'specification-family material. The V49 draft authorizes implementation gate by',
+  'gate through Complete Implementation Derivability; no implementation may outrun',
+  'it.',
+].join('\n');
+
+const V49_PROMOTED_HIERARCHY_PARAGRAPH = [
+  '`BITCODE_SPEC.txt` points to `V49`; V49 is the active promoted Bitcode canon.',
+  '`BITCODE_SPEC_V49.md`, `BITCODE_SPEC_V49_DELTA.md`, `BITCODE_SPEC_V49_NOTES.md`,',
+  '`BITCODE_SPEC_V49_PARITY_MATRIX.md`, and',
+  '`BITCODE_SPEC_V49_MEASUREMENT_PARITY_MATRIX.md` are the promoted V49',
+  'specification-family material. The V49 formal specification family is active',
+  'canon and authorizes implementation through sole Complete Implementation',
+  'Derivability.',
+].join('\n');
+
+/**
+ * @param {string} content
+ * @param {string} version
+ */
+function rewriteV49PromotedSourceOfTruthHierarchy(content, version) {
+  if (version !== 'V49') return content;
+  return content.replace(V49_DRAFT_HIERARCHY_PARAGRAPH, V49_PROMOTED_HIERARCHY_PARAGRAPH);
+}
+
+/**
+ * @param {string} content
+ * @param {string} version
+ */
+function rewriteV49PromotedDraftPosture(content, version) {
+  if (version !== 'V49') return content;
+  return content
+    .replaceAll('V49 is the sole draft target', 'V49 is the active promoted canon')
+    .replaceAll('Generated structured artifact inventory: draft V49 family', 'Generated structured artifact inventory: active canonical V49 family')
+    .replaceAll('`BITCODE_SPEC_V49_PROVEN.md` at promotion', '`BITCODE_SPEC_V49_PROVEN.md` as the active generated proof appendix')
+    .replaceAll('| `BITCODE_SPEC_V49_PROVEN.md` | Generated proof appendix (at promotion) |', '| `BITCODE_SPEC_V49_PROVEN.md` | Generated proof appendix (active) |')
+    .replaceAll('V49 draft-family validation (living checks for active V48 + draft V49 only;', 'V49 promoted-family validation (living checks for active V49;')
+    .replaceAll('Spec-family validation for the **promoted V48** family and the **draft V49**\n  family (`check-bitcode-spec-family --version V49 --mode draft\n  --current-target V48`).', 'Spec-family validation for the **promoted V49** family\n  (`check-bitcode-spec-family --version V49 --mode promoted\n  --current-target V49`).')
+    .replaceAll('Canonical-input and posture-drift checks for `V48 active / V49 draft`\n  (`check-bitcode-canon-posture-drift --active-canon V48 --draft-target V49`).', 'Canonical-input and posture-drift checks for `V49 active / V49 draft`\n  (`check-bitcode-canon-posture-drift --active-canon V49 --draft-target V49`).')
+    // Historical Gate 1 mentions of the opening posture (draft over active V48).
+    .replaceAll('`V48 active / V49 draft`', 'the Gate 1 opening posture (V49 drafted over active V48)');
+}
+
+/**
+ * @param {string} content
+ * @param {string} version
+ */
+function rewriteV49PromotedParityMatrix(content, version) {
+  if (version !== 'V49') return content;
+  return content
+    .replaceAll('| implemented; promotion pending |', '| closed |')
+    .replaceAll('| spec closed; source gap |', '| closed |')
+    .replaceAll('| generated artifact pending |', '| closed |')
+    .replaceAll('| drafted |', '| closed |')
+    .replaceAll('| pending |', '| closed |');
 }
 
 /**
@@ -978,6 +1039,48 @@ function rewritePromotionStatus(version, commit, content, kind) {
       : promotedSourceTruth;
   }
 
+  if (version === 'V49') {
+    const sharedInventory =
+      'active canonical `.proofs/v49/opening-charter.json`, `.proofs/v49/evaluations-rename.json`, `.proofs/v49/quick-synthesis.json`, `.proofs/v49/settlement-completion.json`, `.proofs/v49/benchmark-delta-relatives.json`, `.proofs/v49/claude-external.json`, `.proofs/v49/promotion-readiness-report.json`, `.proofs/v49/spec-family-report.json`, `.proofs/v49/canonical-input-report.json`, `.proofs/v49/canon-posture-drift-report.json` when regenerated, living `check:v49-gate*` evidence, the V49 staging-testnet rehearsal attestation, V49 promotion workflow evidence, and `BITCODE_SPEC_V49_PROVEN.md` as the generated proof appendix for V49 promotion';
+    const scopeByKind = {
+      spec: 'V49 canonical system specification for the fast, real, end-to-end commercial MVP (Evaluations, quick synthesis, multi-source settlement, benchmark-delta Relatives, Claude External) over promoted V48 canon',
+      delta: 'V49 canonical delta for the fast, real, end-to-end commercial MVP over promoted V48 canon',
+      notes: 'V49 canonical notes for the fast, real, end-to-end commercial MVP over promoted V48 canon',
+      parity: 'V49 canonical parity ledger for the fast, real, end-to-end commercial MVP over promoted V48 canon',
+    };
+    const stateByKind = {
+      spec: 'canonical promotion complete; V49 is the active fast, real, end-to-end commercial MVP canon and the V49 hand-authored plus generated canon are aligned',
+      delta: 'canonical promotion complete; this delta records the promoted V48-to-V49 commercial MVP closure set',
+      notes: 'canonical promotion complete; V49 notes record accepted Evaluations, quick synthesis, settlement, benchmark-delta, and Claude External law (weaker than SPEC)',
+      parity: 'canonical promotion complete; V49 parity truth, gate artifacts, staging-testnet rehearsal, and promotion automation are aligned',
+    };
+    const rewritten = rewriteStatusValues(content, {
+      Scope: scopeByKind[kind],
+      ...(kind !== 'delta'
+        ? { 'Last fully realized canonical target preserved in source': '`V49`' }
+        : {}),
+      'Current canonical/latest target': '`V49`',
+      'Canonical proof-source commit': `\`${commit}\``,
+      'Generated structured artifact inventory': sharedInventory,
+      'Source parity state':
+        'V49 source-side Evaluations, quick synthesis, multi-source settlement, benchmark-delta Relatives, and Claude External law are canonicalized in the promoted V49 file family',
+      'V49 state': stateByKind[kind],
+      ...(kind === 'spec'
+        ? {
+            Posture:
+              '**sole-complete promoted canon** — pointer names V49; **all V49 rebuild semantics live only in this family**',
+          }
+        : {}),
+    });
+    const promotedPosture = rewriteV49PromotedDraftPosture(
+      rewriteV49PromotedSourceOfTruthHierarchy(rewritten, version),
+      version,
+    );
+    return kind === 'parity'
+      ? rewriteV49PromotedParityMatrix(rewritePromotedParityJudgments(promotedPosture, version), version)
+      : promotedPosture;
+  }
+
   if (version === 'V48') {
     const sharedInventory =
       'active canonical `.proofs/v48/spec-family-report.json`, `.proofs/v48/canonical-input-report.json`, `.proofs/v48/canon-posture-drift-report.json` when regenerated, `.proofs/v48/depositor-website-completion.json`, living `check:v48-gate*` evidence, V48 promotion workflow evidence, and `BITCODE_SPEC_V48_PROVEN.md` as the generated proof appendix for V48 as-is promotion';
@@ -1094,7 +1197,7 @@ function rewritePromotionStatus(version, commit, content, kind) {
   }
 
   if (!['V21', 'V22', 'V23', 'V24', 'V25'].includes(version)) {
-    throw new Error(`Promotion hand-authored family rewriting is currently implemented for V21–V25, V28–V48. Received ${version}.`);
+    throw new Error(`Promotion hand-authored family rewriting is currently implemented for V21–V25, V28–V49. Received ${version}.`);
   }
   const sharedInventory = version === 'V21'
     ? 'active canonical `.proofs/v19/*` reproducible reports, `.proofs/v20/*` operator-quality reports, `.proofs/v21/spec-family-report.json`, and `.proofs/v21/canonical-input-report.json`; `ENGI_SPEC_V21_PROVEN.md` is the active generated proof appendix for V21'
