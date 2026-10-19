@@ -107,7 +107,7 @@
     }
   ],
   "sourceRoots": {
-    "spec": ".specifications/BITCODE_SPEC_V49.md:99a2f4bcecefed0e29bfa674",
+    "spec": ".specifications/BITCODE_SPEC_V49.md:1ff2b5927bc0351c106de312",
     "compensation": "packages/btd/src/erc1155/contributor-compensation.ts:cf027794a8c45bb3c4f6e25b",
     "compensationTest": "packages/btd/__tests__/contributor-compensation.test.ts:608ed0a9f2ecedb7ffd89aad",
     "holdings": "packages/btd/src/erc1155/projected-holdings.ts:cc318897a24ea9c6d42f7c15",
@@ -118,7 +118,7 @@
     "richAttributionTest": "packages/asset-packs-pipelines/syntheses/read/src/__tests__/read-source-attribution.test.ts:d5c2122c8708cdea46d659a3",
     "readMeasurements": "packages/asset-packs-pipelines/syntheses/read/src/agents/implementation/read-implementation-agent-asset-packs-measurements-synthesis.ts:0fe9390a4b61a5f373eee7cd",
     "readFinish": "packages/asset-packs-pipelines/syntheses/read/src/agents/finish/read-finish-synthesize-run-agent.ts:e77efcc76ca1a6547ba1f03b",
-    "settlePipeline": "packages/asset-packs-pipelines/settle/src/index.ts:c3299abfd09f6e1e0feda10d",
+    "settlePipeline": "packages/asset-packs-pipelines/settle/src/index.ts:406673c9b1e7423646b83920",
     "settlePipelineTest": "packages/asset-packs-pipelines/settle/src/__tests__/settle-asset-pack-pipeline.test.ts:d3fcc58ffa945b8c76a238b9",
     "sellerResolution": "apps/uapi/lib/source-contribution-sellers.ts:bfa9f40e8c9e35df7c2b3240",
     "checkout": "apps/uapi/lib/read-settlement-checkout.ts:81675beb61b7a648d6536427",
@@ -136,15 +136,15 @@
     "ownedViewer": "apps/uapi/components/reads/ReadsOwnedDataPacks/ReadsOwnedDataPacks.tsx:a4745a4129ba9ef2bd84514e",
     "viewerTest": "apps/uapi/tests/settlementViewers.test.tsx:f4c4fd968bf31885245b1daf",
     "exchangeDetail": "apps/uapi/components/exchange/ExchangeActivityDetail/ExchangeActivityDetail.tsx:f3b374149c2c9c3f65de0e3d",
-    "localCi": "scripts/run-bitcode-local-ci.mjs:e0c36a58729456ff3dd5a0e6",
-    "packageJson": "package.json:3732cc7fb9aae19c536916ee",
-    "protocolIndex": "scripts/specifying/src/index.js:a3ebc425588a0c133644c531",
-    "protocolTypes": "scripts/specifying/src/index.d.ts:3c731516d8edc524148465fd",
+    "localCi": "scripts/run-bitcode-local-ci.mjs:f90cf48c574381a07c102847",
+    "packageJson": "package.json:4420ed94d8150252b364aac7",
+    "protocolIndex": "scripts/specifying/src/index.js:251030e319e58bf9d39f085b",
+    "protocolTypes": "scripts/specifying/src/index.d.ts:29dc488866f416b427d695ee",
     "generator": "scripts/generate-v49-settlement-completion.mjs:8b6e3743d6f4dc22696737e7",
     "checker": "scripts/check-v49-gate4-settlement-completion.mjs:fc30e185c3566b87ead748d6",
     "protocolTest": "scripts/specifying/test/v49-settlement-completion.test.js:d7f500b2c5cdd853d2b493e6"
   },
-  "artifactRoot": "v49-settlement-completion:4ec4a94828c937c862b450b5",
+  "artifactRoot": "v49-settlement-completion:cd4d2d262a78046e5c73445e",
   "coverage": {
     "requiredPredicateCount": 18,
     "passedPredicateCount": 18,

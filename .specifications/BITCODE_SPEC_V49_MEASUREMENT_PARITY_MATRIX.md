@@ -127,11 +127,11 @@ zero.
 | --- | --- | --- | --- | --- | --- |
 | R-01 | Category literal `'relative'` replaces `'neediness'` | V48 literal | type + migration tests | implemented; promotion pending | Gate 2 |
 | R-02 | Package `generic-measurements/relatives` | `generic-measurements/needinesses` | package tests | implemented; promotion pending | Gate 2 |
-| R-03 | Kind-pattern law (`-fit` or `benchmark-delta:<id>`) | `-fit` suffix only | unit tests | spec closed; source gap | Gate 5 |
-| R-04 | Subfamily mass table | 0.6 / 0.4 static/dynamic | unit tests | spec closed; source gap | Gate 5 |
-| R-05 | Manifest parser fail-closed | absent | parser tests | spec closed; source gap | Gate 5 |
-| R-06 | Runner medians, budget, `not_run` on exhaustion | absent | fixture repo test | spec closed; source gap | Gate 5 |
-| R-07 | Reading formula + statuses | absent | unit tests | spec closed; source gap | Gate 5 |
+| R-03 | Kind-pattern law (`-fit` or `benchmark-delta:<id>`) | `assertRelativeKindPattern` (relatives, read validation, buyer projection, btd) | unit tests | implemented; promotion pending | Gate 5 |
+| R-04 | Subfamily mass table | `RELATIVE_SUBFAMILY_MASS_TABLE` + btd mirror | unit tests | implemented; promotion pending | Gate 5 |
+| R-05 | Manifest parser fail-closed | `parseBenchmarkManifest` | parser tests | implemented; promotion pending | Gate 5 |
+| R-06 | Runner medians, budget, `not_run` on exhaustion | `runBenchmarkDeltas` | fixture repo test | implemented; promotion pending | Gate 5 |
+| R-07 | Reading formula + statuses | `readBenchmarkDelta` | unit tests | implemented; promotion pending | Gate 5 |
 | R-08 | Quick Evaluation-inferred rows are `estimated` | quick read rows `estimated` via `measureQuickReadRelatives` | quick tests | implemented; promotion pending | Gate 3 |
-| R-09 | Option card Absolute / Relative sections incl. benchmark rows | needinesses section | component tests | spec closed; source gap | Gates 2, 5 |
+| R-09 | Option card Absolute / Relative sections incl. benchmark rows | `ReadsOptionCard` fit panel + Relative list | component tests | implemented; promotion pending | Gates 2, 5 |
 | R-10 | Settlement BTD from relatives only | from needinesses only | btd tests | implemented; promotion pending | Gate 2 |

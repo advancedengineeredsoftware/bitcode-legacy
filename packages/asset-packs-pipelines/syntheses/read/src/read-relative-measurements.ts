@@ -1,8 +1,10 @@
 /**
  * Read relatives measurement law helpers.
  *
- * All relative measurement kinds are "fits" and MUST be suffixed `-fit`
- * (e.g. language-fit, domain-fit, session-refresh-fit).
+ * Fit relatives (static + Evaluation-inferred) are suffixed `-fit` (e.g.
+ * language-fit, session-refresh-fit). V49 adds the benchmark-delta subfamily
+ * (`benchmark-delta:<id>`, measured post-synthesis by the benchmark runner);
+ * `assertRelativeKindPattern` admits both.
  *
  * Hybrid:
  *   - Static catalogue (language-fit, domain-fit, interface-fit)
@@ -18,6 +20,7 @@
 
 import {
   ASSET_PACK_RELATIVES_CATALOG,
+  assertRelativeKindPattern,
   computeEvaluationFitVolume,
   EVALUATION_FIT_COMPOSITE_KIND,
   factoryRelativesMeasureAgent,
@@ -26,7 +29,12 @@ import {
 import type { MeasurementSpec } from '@bitcode/measurement-generics';
 import { isAssetPackRealInferenceEnabled } from '@bitcode/asset-packs-pipelines-syntheses-domain/runtime-inference-policy';
 
-export { ASSET_PACK_RELATIVES_CATALOG, computeEvaluationFitVolume, EVALUATION_FIT_COMPOSITE_KIND };
+export {
+  ASSET_PACK_RELATIVES_CATALOG,
+  assertRelativeKindPattern,
+  computeEvaluationFitVolume,
+  EVALUATION_FIT_COMPOSITE_KIND,
+};
 
 const FIT_SUFFIX = '-fit';
 

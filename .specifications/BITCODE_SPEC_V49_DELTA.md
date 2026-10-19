@@ -120,6 +120,26 @@ complete MVP:
   exposure; recorded, not widened).
 - The settle package jest config moved onto the shared `createJestConfig`
   base (its hand-rolled mapper no longer resolved transitive packages).
+- Benchmark measurement is a post-synthesis Host stage in the read dispatcher
+  for both rich and quick runs, rather than a step inside the Implementation
+  measurements agent / quick Measure step: the runner needs a Host workspace,
+  and the synthesis pipelines stay host-free. Rows, masses, and evaluation-fit
+  are applied before the run is stored, so Finish carriers and settle see the
+  same option.
+- The manifest/reading/selection law lives in the relatives package under
+  `src/benchmark-delta/` (subpath export) instead of a separate nested
+  package; it stays dependency-free so `@bitcode/pipeline-hosts` and uapi can
+  import it without the measure-agent graph.
+- Rich synthesis adds Evaluation-referenced benchmark ids deterministically
+  (declared id or title named in the Evaluation text) instead of a new
+  comprehend-evaluations output field; quick keeps its `benchmarkIds` output.
+- Settle's boundary parser dropped `status` / `propertyClass`, so a failed
+  benchmark row could have regained catalogue weight at mint. The parser now
+  keeps them, and a benchmark row stored with weight 0 is non-bearing in both
+  the relatives law and the btd mirror.
+- Network egress during benchmark commands is not enforced by the runner; it
+  relies on the Host's network policy. Commands never receive operator
+  secrets (`env -i`).
 - `verificationSignals` for `test-pass-rate` / `buildability` are read but never
   set; the Gate 5 runner is the future source (deferred beyond V49 scope).
 - 46 frozen historical gate scripts reference Need vocabulary; they stay

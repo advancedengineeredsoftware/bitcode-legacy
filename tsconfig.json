@@ -43,6 +43,8 @@
       "@bitcode/generic-measurements-shared-absolute-measure-input": ["packages/generic-measurements/shared/absolute-measure-input/src/index.ts"],
       "@bitcode/generic-measurements-absolutes": ["packages/generic-measurements/absolutes/src/index.ts"],
       "@bitcode/generic-measurements-relatives": ["packages/generic-measurements/relatives/src/index.ts"],
+      "@bitcode/generic-measurements-relatives/benchmark-delta": ["packages/generic-measurements/relatives/src/benchmark-delta/index.ts"],
+      "@bitcode/generic-measurements-relatives/*": ["packages/generic-measurements/relatives/src/*"],
       "@bitcode/generic-asset-packs-synthesis": ["packages/generic-asset-packs/synthesis/src/index.ts"],      "@bitcode/asset-packs-generics": ["packages/asset-packs-generics/src/index.ts"],
       "@bitcode/asset-packs-generics/*": ["packages/asset-packs-generics/src/*"],      "@bitcode/artifact-generics": ["packages/artifact-generics/src/index.ts"],
       "@bitcode/artifact-generics/*": ["packages/artifact-generics/src/*"],

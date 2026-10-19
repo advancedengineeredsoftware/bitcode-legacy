@@ -100,6 +100,8 @@ function optionToReadSynthesized(option: SettleAssetPackOption) {
       weight: typeof row.weight === 'number' ? row.weight : 0,
       unit: typeof row.unit === 'string' ? row.unit : 'fit',
       category: 'relative' as const,
+      ...('status' in row && typeof row.status === 'string' ? { status: row.status } : {}),
+      ...('propertyClass' in row && typeof row.propertyClass === 'string' ? { propertyClass: row.propertyClass } : {}),
     };
   });
   const absolutes = (option.measurements?.absolutes ?? []).map((row) => {
@@ -783,6 +785,34 @@ function paymentReceiptLines(
   return ['', '### Payment', '', `Paid with ${rail}: ${link}`];
 }
 
+export type SettleReceiptRelativeRow = {
+  measurementKind?: string;
+  volume?: number;
+  label?: string;
+  status?: string;
+  benchmark?: {
+    baseline: number | null;
+    candidate: number | null;
+    unit: string | null;
+    improvementRatio: number | null;
+  };
+};
+
+/** Relative row for the PR receipt; benchmark rows show baseline → candidate (V49 B-5). */
+export function formatSettleReceiptRelative(row: SettleReceiptRelativeRow): string {
+  const volume = typeof row.volume === 'number' ? row.volume.toFixed(3) : 'n/a';
+  if (!row.measurementKind?.startsWith('benchmark-delta:')) return volume;
+  const evidence = row.benchmark;
+  if (row.status !== 'measured' || !evidence || evidence.baseline === null || evidence.candidate === null) {
+    return `${row.status === 'not_run' ? 'not run' : 'insufficient evidence'} (no weight)`;
+  }
+  const unit = evidence.unit ? ` ${evidence.unit}` : '';
+  const percent = evidence.improvementRatio === null ? null : evidence.improvementRatio * 100;
+  return `${evidence.baseline}${unit} → ${evidence.candidate}${unit}${
+    percent === null ? '' : ` (${percent >= 0 ? '+' : ''}${percent.toFixed(1)}%)`
+  }; volume ${volume}`;
+}
+
 /** PR body lines naming contributors, protocol fee, and evaluation-fit (S-6). */
 function compensationReceiptLines(
   statement: CompensationStatement | null,
@@ -790,13 +820,12 @@ function compensationReceiptLines(
 ): string[] {
   const lines: string[] = [];
   const relatives = Array.isArray((measurements as { relatives?: unknown } | null)?.relatives)
-    ? ((measurements as { relatives: Array<{ measurementKind?: string; volume?: number; label?: string }> }).relatives)
+    ? ((measurements as unknown as { relatives: SettleReceiptRelativeRow[] }).relatives)
     : [];
   if (relatives.length) {
     lines.push('', '### Relative measurements', '');
     for (const row of relatives.slice(0, 12)) {
-      const volume = typeof row.volume === 'number' ? row.volume.toFixed(3) : 'n/a';
-      lines.push(`- ${row.label || row.measurementKind || 'relative'}: ${volume}`);
+      lines.push(`- ${row.label || row.measurementKind || 'relative'}: ${formatSettleReceiptRelative(row)}`);
     }
   }
   if (!statement) return lines;

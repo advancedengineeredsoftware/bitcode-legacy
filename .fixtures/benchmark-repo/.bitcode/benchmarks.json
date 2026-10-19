@@ -1,0 +1,39 @@
+{
+  "schema": "bitcode.benchmarks",
+  "version": 1,
+  "benchmarks": [
+    {
+      "id": "lookup-steps",
+      "title": "Lookup steps",
+      "runtime": "node24",
+      "command": "node bench/lookup.js",
+      "metric": { "source": "stdout-regex", "pattern": "steps: ([0-9]+)" },
+      "direction": "lower-is-better",
+      "unit": "steps",
+      "runs": 1,
+      "timeoutMs": 30000
+    },
+    {
+      "id": "lookup-report",
+      "title": "Lookup report",
+      "runtime": "node24",
+      "command": "node bench/report.js",
+      "metric": { "source": "json-file", "path": "out/report.json", "jsonPath": "$.results[0].steps" },
+      "direction": "lower-is-better",
+      "unit": "steps",
+      "runs": 2,
+      "timeoutMs": 30000
+    },
+    {
+      "id": "render-throughput",
+      "title": "Render throughput",
+      "runtime": "node24",
+      "command": "node bench/render.js",
+      "metric": { "source": "stdout-regex", "pattern": "renders: ([0-9]+)" },
+      "direction": "higher-is-better",
+      "unit": "renders",
+      "runs": 1,
+      "timeoutMs": 30000
+    }
+  ]
+}

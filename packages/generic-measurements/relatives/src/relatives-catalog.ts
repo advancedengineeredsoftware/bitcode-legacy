@@ -13,7 +13,9 @@
  * Full RelativesMeasureAgent product wiring is Gate 4 / synthesize-reads.
  */
 
-export type RelativePropertyClass = 'static-catalog' | 'dynamic-inferred' | 'composite';
+import { applyRelativeSubfamilyMasses } from './relative-subfamily-masses';
+
+export type RelativePropertyClass = 'static-catalog' | 'dynamic-inferred' | 'benchmark-delta' | 'composite';
 
 export interface AssetPackRelativeSpec {
   measurementKind: string;
@@ -69,12 +71,15 @@ export type RelativeReadingLike = {
   measurementKind: string;
   volume: number;
   weight?: number;
+  status?: string;
+  propertyClass?: string;
 };
 
 /**
- * evaluation-fit = weighted mean of relatives volumes.
- * Uses reading.weight when present; else catalogue weight; else equal weight.
- * Empty set → 0.
+ * evaluation-fit = weighted mean of relatives volumes under the subfamily mass
+ * law (static / Evaluation-inferred / benchmark delta). Raw weight is
+ * reading.weight when present; else catalogue weight; else equal weight.
+ * `insufficient_evidence` / `not_run` rows carry zero weight. Empty set → 0.
  */
 export function computeEvaluationFitVolume(
   relatives: RelativeReadingLike[],
@@ -82,14 +87,18 @@ export function computeEvaluationFitVolume(
 ): number {
   if (!Array.isArray(relatives) || relatives.length === 0) return 0;
   const weightByKind = new Map(catalog.map((s) => [s.measurementKind, s.weight]));
+  const massed = applyRelativeSubfamilyMasses(
+    relatives.filter((row) => row && typeof row.volume === 'number' && Number.isFinite(row.volume)),
+    {
+      staticKinds: catalog.map((s) => s.measurementKind),
+      fallbackWeight: (row) => weightByKind.get(row.measurementKind),
+    },
+  );
   let sumW = 0;
   let sum = 0;
-  for (const row of relatives) {
-    if (!row || typeof row.volume !== 'number' || !Number.isFinite(row.volume)) continue;
-    const w =
-      typeof row.weight === 'number' && Number.isFinite(row.weight) && row.weight > 0
-        ? row.weight
-        : weightByKind.get(row.measurementKind) ?? 1;
+  for (const row of massed) {
+    const w = row.weight ?? 0;
+    if (!(w > 0)) continue;
     const v = Math.max(0, Math.min(1, row.volume));
     sumW += w;
     sum += w * v;

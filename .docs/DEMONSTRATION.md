@@ -166,6 +166,7 @@ The chip refreshes right after settle and after a payout finalize.
 | MetaMask shows **From: Account 1 → To: Account 1** / "No changes" | The pay-to resolved to the presenter's own wallet (e.g. `BITCODE_MASTER_ACCOUNT` is that wallet). Set `BITCODE_SETTLEMENT_ETH_RECIPIENT` to a different treasury address; the checkout now refuses, and verification rejects (`self-payment`), paying yourself. |
 | Delivery "projected" | No request SHA and branch head unresolved, or no GitHub token for the reader — fix the reader's App install. |
 | Seller doesn't see the sale | The read option had no admitted Depository match (admit the seller's pack *before* the read); the settle is then treasury-only (V49). |
+| No benchmark rows on read options | The reader repository must declare `.bitcode/benchmarks.json` at the request commit and the benchmark must be checked (or named in the Evaluation); demonstration replay never runs benchmarks; `BITCODE_BENCHMARKS=0` disables them. |
 | Settle 400 `payout_address_not_client_settable` | The client sent a payout identity; V49 resolves sellers and treasury server-side only. |
 
 ## 6. Known gaps (not covered by demonstration mode)

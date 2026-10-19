@@ -20,6 +20,11 @@ import {
   type BuyerAbsoluteChip,
   type BuyerFitRow,
 } from "@/components/reads/models/read-buyer-measurement-projection";
+import {
+  formatBenchmarkDelta,
+  isBenchmarkDeltaRow,
+  type BenchmarkDeltaEvidenceView,
+} from "@/components/reads/models/read-benchmark-presentation";
 
 function asReadings(value: unknown): Array<{
   measurementKind?: string;
@@ -31,6 +36,7 @@ function asReadings(value: unknown): Array<{
   status?: string;
   weight?: number;
   rationale?: string;
+  benchmark?: BenchmarkDeltaEvidenceView | null;
 }> {
   return Array.isArray(value) ? value : [];
 }
@@ -122,6 +128,7 @@ export function ReadsOptionCard(props: {
 
   const absolutes = asReadings(option.measurements?.absolutes);
   const relatives = asReadings(option.measurements?.relatives);
+  const benchmarkRows = relatives.filter((row) => isBenchmarkDeltaRow(row));
   const coveragePercent =
     typeof option.coveragePercent === "number"
       ? option.coveragePercent
@@ -222,6 +229,24 @@ export function ReadsOptionCard(props: {
             <FitBar key={row.measurementKind} row={row} />
           ))}
         </div>
+        {benchmarkRows.length > 0 ? (
+          // V49 B-5: declared-benchmark deltas (patch applied, command re-run).
+          <ul className="mt-1 grid gap-1 border-t border-white/10 pt-2" data-testid={`reads-option-benchmarks-${option.index}`}>
+            {benchmarkRows.map((row, i) => (
+              <li
+                key={`${row.measurementKind}-${i}`}
+                className="flex flex-wrap justify-between gap-2 text-[0.72rem] text-neutral-300"
+                data-testid="reads-option-benchmark-delta-row"
+                title={row.rationale}
+              >
+                <span>{row.label || row.measurementKind}</span>
+                <span className={statusClass((row.status ?? null) as AbsoluteHonestyStatus | null)}>
+                  {formatBenchmarkDelta(row)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </div>
 
       {/* P1/P2: gates + quality */}
@@ -345,15 +370,25 @@ export function ReadsOptionCard(props: {
                 Relative
               </p>
               <ul className="mt-1 space-y-0.5">
-                {relatives.map((row, i) => (
-                  <li key={`evaluation-${i}`}>
-                    {row.label || row.measurementKind || row.kind || "fit"}
-                    {typeof row.volume === "number"
-                      ? ` · ${row.volume.toFixed(3)}`
-                      : ""}
-                    {row.status ? ` · ${row.status}` : ""}
-                  </li>
-                ))}
+                {relatives.map((row, i) =>
+                  isBenchmarkDeltaRow(row) ? (
+                    // V49 B-5: baseline → candidate, signed %, unit, honesty badge.
+                    <li key={`evaluation-${i}`} data-testid="reads-option-benchmark-delta" title={row.rationale}>
+                      {row.label || row.measurementKind} · {formatBenchmarkDelta(row)}
+                      {row.status ? (
+                        <span className={statusClass(row.status as AbsoluteHonestyStatus)}>{` · ${row.status}`}</span>
+                      ) : null}
+                    </li>
+                  ) : (
+                    <li key={`evaluation-${i}`}>
+                      {row.label || row.measurementKind || row.kind || "fit"}
+                      {typeof row.volume === "number"
+                        ? ` · ${row.volume.toFixed(3)}`
+                        : ""}
+                      {row.status ? ` · ${row.status}` : ""}
+                    </li>
+                  ),
+                )}
               </ul>
             </div>
           ) : null}

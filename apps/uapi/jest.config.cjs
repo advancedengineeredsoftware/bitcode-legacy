@@ -134,6 +134,9 @@ module.exports = {
     '^@bitcode/generic-agents-ptrr$': '<rootDir>/../../packages/generic-agents/PTRR/src/index.ts',
     '^@bitcode/generic-agents-ptrr/(.*)$': '<rootDir>/../../packages/generic-agents/PTRR/src/$1',
     '^@bitcode/pipeline-hosts$': '<rootDir>/../../packages/pipeline-hosts/src/index.ts',
+    '^@bitcode/generic-measurements-relatives$': '<rootDir>/../../packages/generic-measurements/relatives/src/index.ts',
+    '^@bitcode/generic-measurements-relatives/benchmark-delta$': '<rootDir>/../../packages/generic-measurements/relatives/src/benchmark-delta/index.ts',
+    '^@bitcode/generic-measurements-relatives/(relative-subfamily-masses|relatives-catalog)$': '<rootDir>/../../packages/generic-measurements/relatives/src/$1.ts',
     '^@bitcode/pipeline-hosts/(.*)$': '<rootDir>/../../packages/pipeline-hosts/src/$1',
 
     // -------------------------------------------------------------------
@@ -180,6 +183,7 @@ module.exports = {
     '<rootDir>/tests/RunDetailsView.mapping.test.tsx',
     '<rootDir>/tests/synthesisPipelinePreference.test.tsx',
     '<rootDir>/tests/settlementViewers.test.tsx',
+    '<rootDir>/tests/readBenchmarkDeltas.test.tsx',
     '<rootDir>/tests/usePipelineExecution.test.tsx',
     // BTD and auxillaries coverage
     '<rootDir>/tests/userDataRoute.test.ts',

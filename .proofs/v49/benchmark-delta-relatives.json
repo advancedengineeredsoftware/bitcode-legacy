@@ -1,0 +1,186 @@
+{
+  "artifactId": "v49-benchmark-delta-relatives",
+  "schemaId": "bitcode.v49.benchmarkDeltaRelatives.v1",
+  "version": "V49",
+  "currentTarget": "V48",
+  "artifactPath": ".proofs/v49/benchmark-delta-relatives.json",
+  "sourceSafetyVerdict": "source-safe-benchmark-delta-relatives",
+  "manifestPath": ".bitcode/benchmarks.json",
+  "relativeKindPatterns": [
+    "^[a-z0-9-]+-fit$",
+    "^benchmark-delta:[a-z0-9][a-z0-9._-]*$"
+  ],
+  "readingLaw": "volume = clamp01(0.5 + improvementRatio / (2 * cap)); cap default 0.5; magnitude = improvementRatio * 100",
+  "subfamilyMassTable": {
+    "static": {
+      "static": 1
+    },
+    "static+inferred": {
+      "static": 0.6,
+      "inferred": 0.4
+    },
+    "static+benchmark": {
+      "static": 0.6,
+      "benchmark": 0.4
+    },
+    "static+inferred+benchmark": {
+      "static": 0.4,
+      "inferred": 0.3,
+      "benchmark": 0.3
+    }
+  },
+  "predicateResults": [
+    {
+      "id": "manifest-declared-fail-closed",
+      "sourcePath": "packages/generic-measurements/relatives/src/benchmark-delta/benchmark-manifest.ts",
+      "passed": true
+    },
+    {
+      "id": "reading-law-clamp-and-statuses",
+      "sourcePath": "packages/generic-measurements/relatives/src/benchmark-delta/benchmark-reading.ts",
+      "passed": true
+    },
+    {
+      "id": "kind-pattern-law",
+      "sourcePath": "packages/generic-measurements/relatives/src/relative-subfamily-masses.ts",
+      "passed": true
+    },
+    {
+      "id": "subfamily-masses-bound-in-both-tables",
+      "sourcePath": "packages/btd/src/erc1155/settlement-btd-from-relatives.ts",
+      "passed": true
+    },
+    {
+      "id": "failed-benchmarks-weigh-zero",
+      "sourcePath": "packages/btd/src/erc1155/settlement-btd-from-relatives.ts",
+      "passed": true
+    },
+    {
+      "id": "runner-host-workspace-and-budget",
+      "sourcePath": "packages/pipeline-hosts/src/benchmark-runner.ts",
+      "passed": true
+    },
+    {
+      "id": "fixture-proves-positive-and-insufficient",
+      "sourcePath": "packages/pipeline-hosts/src/__tests__/benchmark-runner.test.ts",
+      "passed": true
+    },
+    {
+      "id": "selection-route-source-safe",
+      "sourcePath": "apps/uapi/app/api/read/benchmarks/route.ts",
+      "passed": true
+    },
+    {
+      "id": "selection-union-restricted-to-declared",
+      "sourcePath": "packages/generic-measurements/relatives/src/benchmark-delta/benchmark-selection.ts",
+      "passed": true
+    },
+    {
+      "id": "request-carries-benchmark-ids",
+      "sourcePath": "apps/uapi/app/api/read/synthesize-options/route.ts",
+      "passed": true
+    },
+    {
+      "id": "picker-in-evaluations-panel",
+      "sourcePath": "apps/uapi/components/reads/ReadsEvaluationBenchmarkPicker/ReadsEvaluationBenchmarkPicker.tsx",
+      "passed": true
+    },
+    {
+      "id": "rich-and-quick-measured-post-synthesis",
+      "sourcePath": "apps/uapi/app/api/read/synthesize-options/dispatch-read-synthesis.ts",
+      "passed": true
+    },
+    {
+      "id": "unpaid-projection-stays-source-safe",
+      "sourcePath": "apps/uapi/tests/readBenchmarkDeltas.test.tsx",
+      "passed": true
+    },
+    {
+      "id": "option-card-and-pr-show-deltas",
+      "sourcePath": "apps/uapi/components/reads/ReadsOptionCard/ReadsOptionCard.tsx",
+      "passed": true
+    },
+    {
+      "id": "living-ci-runs-benchmark-tests",
+      "sourcePath": "scripts/run-bitcode-local-ci.mjs",
+      "passed": true
+    },
+    {
+      "id": "spec-carries-benchmark-law",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49.md",
+      "passed": true
+    },
+    {
+      "id": "package-exports-benchmark-law",
+      "sourcePath": "packages/generic-measurements/relatives/package.json",
+      "passed": true
+    },
+    {
+      "id": "package-json-exposes-gate5",
+      "sourcePath": "package.json",
+      "passed": true
+    },
+    {
+      "id": "protocol-exports-gate5",
+      "sourcePath": "scripts/specifying/src/index.js",
+      "passed": true
+    },
+    {
+      "id": "generator-checker-test-exist",
+      "sourcePath": "scripts/generate-v49-benchmark-delta-relatives.mjs",
+      "passed": true
+    }
+  ],
+  "sourceRoots": {
+    "spec": ".specifications/BITCODE_SPEC_V49.md:1ff2b5927bc0351c106de312",
+    "manifest": "packages/generic-measurements/relatives/src/benchmark-delta/benchmark-manifest.ts:adce98c82999bd2777274077",
+    "reading": "packages/generic-measurements/relatives/src/benchmark-delta/benchmark-reading.ts:bada15deb6ffe4ae83f645eb",
+    "selection": "packages/generic-measurements/relatives/src/benchmark-delta/benchmark-selection.ts:fcbd8dd5b96a6b3b065da37a",
+    "masses": "packages/generic-measurements/relatives/src/relative-subfamily-masses.ts:3d1f1c34e3137a3f97a78d1b",
+    "catalog": "packages/generic-measurements/relatives/src/relatives-catalog.ts:19fe804d7145488a36431085",
+    "relativesPackage": "packages/generic-measurements/relatives/package.json:578fd206254ce7b3ca4661cd",
+    "benchmarkTest": "packages/generic-measurements/relatives/src/__tests__/benchmark-delta.test.ts:b49e78824afd988f948c23f1",
+    "massesTest": "packages/generic-measurements/relatives/src/__tests__/relative-subfamily-masses.test.ts:f38ec235397f2577d1919df1",
+    "btdMirror": "packages/btd/src/erc1155/settlement-btd-from-relatives.ts:f435e977ec3f74189c4a30fa",
+    "btdTest": "packages/btd/__tests__/settlement-btd-benchmark-relatives.test.ts:93f50a38c7463ebc8e640f0b",
+    "runner": "packages/pipeline-hosts/src/benchmark-runner.ts:0e735e597f9f4164f44729a4",
+    "runnerTest": "packages/pipeline-hosts/src/__tests__/benchmark-runner.test.ts:e9ea173b1206940c32a78555",
+    "fixtureManifest": ".fixtures/benchmark-repo/.bitcode/benchmarks.json:8fa8501bae2eb37bf34d63b1",
+    "fixtureLookup": ".fixtures/benchmark-repo/src/lookup.js:5b91b6b6156d947fb600a913",
+    "readValidation": "packages/asset-packs-pipelines/syntheses/read/src/agents/validation/read-ready-to-finish-agent.ts:6aea7074cb157808872d464e",
+    "settleParser": "packages/asset-packs-pipelines/settle/src/parse-settle-option.ts:4590f88001126b6926b1991f",
+    "settlePipeline": "packages/asset-packs-pipelines/settle/src/index.ts:406673c9b1e7423646b83920",
+    "settleTest": "packages/asset-packs-pipelines/settle/src/__tests__/settle-benchmark-relatives.test.ts:13f60551287b8750ba54dae6",
+    "uapiLib": "apps/uapi/lib/read-benchmarks.ts:6f5d260801219ac1207b0f66",
+    "benchmarksRoute": "apps/uapi/app/api/read/benchmarks/route.ts:9ed11fc106697026c80e313e",
+    "benchmarksRouteTest": "apps/uapi/tests/api/readBenchmarksRoute.test.ts:d034e9f85fc10bb578eb8647",
+    "synthesizeRoute": "apps/uapi/app/api/read/synthesize-options/route.ts:0e3628fb581f15e45e5fc507",
+    "synthesizeRouteTest": "apps/uapi/tests/api/readSynthesizeOptionsRoute.test.ts:6683cebd4a4fb8f6f091a10e",
+    "dispatcher": "apps/uapi/app/api/read/synthesize-options/dispatch-read-synthesis.ts:b371b1fd0eae9d207028658f",
+    "picker": "apps/uapi/components/reads/ReadsEvaluationBenchmarkPicker/ReadsEvaluationBenchmarkPicker.tsx:14a38b13ee339e48ef4a7f32",
+    "composePanel": "apps/uapi/components/reads/ReadsEvaluationComposePanel/ReadsEvaluationComposePanel.tsx:516cba4d1e97cb31f17a058c",
+    "synthesisHook": "apps/uapi/components/reads/ReadPageClient/hooks/use-read-option-synthesis.ts:7b962ab83767237939ee92eb",
+    "optionCard": "apps/uapi/components/reads/ReadsOptionCard/ReadsOptionCard.tsx:f993d15432c2b659d2ed3f5f",
+    "uapiTest": "apps/uapi/tests/readBenchmarkDeltas.test.tsx:28e98fef67e3b349d414bff9",
+    "localCi": "scripts/run-bitcode-local-ci.mjs:f90cf48c574381a07c102847",
+    "packageJson": "package.json:4420ed94d8150252b364aac7",
+    "protocolIndex": "scripts/specifying/src/index.js:251030e319e58bf9d39f085b",
+    "protocolTypes": "scripts/specifying/src/index.d.ts:29dc488866f416b427d695ee",
+    "generator": "scripts/generate-v49-benchmark-delta-relatives.mjs:1d31c235d730b31c199d2dd9",
+    "checker": "scripts/check-v49-gate5-benchmark-delta-relatives.mjs:971ba24a924c043bc6ca62a4",
+    "protocolTest": "scripts/specifying/test/v49-benchmark-delta-relatives.test.js:e83783b5ad4b68e82066bbd5"
+  },
+  "artifactRoot": "v49-benchmark-delta-relatives:4978740a9540950bb7a10f32",
+  "coverage": {
+    "requiredPredicateCount": 20,
+    "passedPredicateCount": 20,
+    "failedPredicateIds": [],
+    "declaredBenchmarksOnly": true,
+    "failedBenchmarksWeighZero": true,
+    "sourceSafeMetadataOnly": true,
+    "benchmarkOutputVisible": false,
+    "operatorSecretsInBenchmarkEnv": false,
+    "protectedSourceVisible": false
+  },
+  "passed": true
+}

@@ -22,7 +22,7 @@ import {
   smokeCheckAssetPacks,
 } from '@bitcode/asset-packs-pipelines-syntheses-domain/agents/validation/asset-packs-validation-checks';
 import { hasRequiredAbsolutes, resolvePackAbsolutes, resolvePackRelatives } from '@bitcode/asset-packs-pipelines-syntheses-domain/asset-pack-measurements';
-import { assertRelativeKindSuffix } from '../../read-relative-measurements';
+import { assertRelativeKindPattern } from '../../read-relative-measurements';
 import { resolveSourceCheckoutCatalog } from '@bitcode/asset-packs-pipelines-syntheses-domain/resolve-source-checkout-catalog';
 import { projectInventoryForPrompt } from '@bitcode/asset-packs-pipelines-syntheses-domain/asset-packs-synthesis';
 import { ensureDepositCheckoutSourceFiles } from '@bitcode/asset-packs-pipelines-syntheses-domain/ensure-checkout-source-files';
@@ -89,13 +89,13 @@ function relativeIssues(packs: any[]): string[] {
     const relatives = resolvePackRelatives(pack);
     if (relatives.length === 0) {
       issues.push(
-        `Pack "${pack?.title || '?'}" missing measurements.relatives (*-fit readings required on read).`,
+        `Pack "${pack?.title || '?'}" missing measurements.relatives (Relative readings required on read).`,
       );
     } else {
       for (const row of relatives) {
-        if (!assertRelativeKindSuffix(String(row.measurementKind || ''))) {
+        if (!assertRelativeKindPattern(String(row.measurementKind || ''))) {
           issues.push(
-            `Pack "${pack?.title || '?'}" relative "${row.measurementKind}" must end with -fit.`,
+            `Pack "${pack?.title || '?'}" relative "${row.measurementKind}" must be <slug>-fit or benchmark-delta:<id>.`,
           );
         }
       }

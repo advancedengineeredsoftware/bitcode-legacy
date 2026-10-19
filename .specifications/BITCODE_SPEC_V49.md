@@ -1983,6 +1983,19 @@ signed %, unit, honesty badge, rationale). PR bodies include them. Benchmark
 stdout/stderr is never projected; only parsed values and a source-safe failure
 class are stored.
 
+### B-5a Realization map (binding paths)
+
+| Concern | Path |
+|---|---|
+| Manifest, reading law, selection (dependency-free) | `packages/generic-measurements/relatives/src/benchmark-delta/` (`parseBenchmarkManifest`, `readBenchmarkDelta`, `extractBenchmarkMetric`, `resolveSelectedBenchmarkIds`, `benchmarkIdsReferencedInText`, `parseRequestedBenchmarkIds`); export `@bitcode/generic-measurements-relatives/benchmark-delta` |
+| Kind law + subfamily masses | `relatives/src/relative-subfamily-masses.ts` (`assertRelativeKindPattern`, `RELATIVE_SUBFAMILY_MASS_TABLE`, `applyRelativeSubfamilyMasses`); `computeEvaluationFitVolume` applies it (idempotent; static-only and static + inferred results unchanged) |
+| Settlement BTD mirror | `packages/btd/src/erc1155/settlement-btd-from-relatives.ts` (`RELATIVE_SUBFAMILY_MASSES`; benchmark rows with non-bearing status or stored weight 0 never mint); settle parser keeps `status`, `propertyClass`, `label`, parsed `benchmark` evidence |
+| Runner | `packages/pipeline-hosts/src/benchmark-runner.ts` (`runBenchmarkDeltas`): one workspace per runtime; `git reset --hard && git clean -fd` restore (ignored setup artifacts kept); full-body writes in ≤30k-char chunks; `env -i` (PATH/HOME) + coreutils `timeout`; receipt carries parsed samples and failure classes only |
+| Selection route + UI | `GET /api/read/benchmarks` (descriptors only; `manifestStatus` `declared` \| `absent` \| `invalid`); `ReadsEvaluationBenchmarkPicker` ("Measure improvement on…") → `benchmarkIds` on `POST /api/read/synthesize-options` (400 `invalid_benchmark_ids`) |
+| Measurement stage | `apps/uapi/lib/read-benchmarks.ts` `measureReadOptionBenchmarks`, run by the read dispatcher after rich or quick synthesis (not demonstration replay): rows join `fullOptions`, masses re-applied, evaluation-fit recomputed, unpaid projection regenerated; `output.benchmarkReceipt` + `context.benchmarkIds`; fail-soft; `BITCODE_BENCHMARKS=0` disables |
+| Display + delivery | `ReadsOptionCard` fit panel + Relative list (`formatBenchmarkDelta`); PR receipt `formatSettleReceiptRelative` |
+| Fixture | `.fixtures/benchmark-repo` (deterministic step-count metric; `render-throughput` declared but failing) |
+
 ### B-6 Completion
 
 Gate 5 closes when the manifest parser, selection route/UI, runner, reading

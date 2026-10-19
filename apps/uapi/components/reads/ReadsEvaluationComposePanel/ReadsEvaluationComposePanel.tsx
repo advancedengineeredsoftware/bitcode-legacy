@@ -17,6 +17,7 @@ import type {
 import type { RepositoryContextState } from "@/components/bitcode/pipeline/models/repository-context";
 import { ProductSynthesizeDataPackOptionsButton } from "@/components/bitcode/routes/ProductSynthesizeDataPackOptionsButton/ProductSynthesizeDataPackOptionsButton";
 import { ReadsEvaluationPathPickers } from "@/components/reads/ReadsEvaluationPathPickers/ReadsEvaluationPathPickers";
+import { ReadsEvaluationBenchmarkPicker } from "@/components/reads/ReadsEvaluationBenchmarkPicker/ReadsEvaluationBenchmarkPicker";
 import { ReadsEvaluationAnchorControls } from "@/components/reads/ReadsEvaluationAnchorControls/ReadsEvaluationAnchorControls";
 import type { ReadEvaluationAnchor } from "@/components/reads/models/read-activity-ledger";
 
@@ -164,6 +165,10 @@ export function ReadsEvaluationComposePanel(props: {
         onIrrelevantPathsChange={onIrrelevantPathsChange}
         repositoryContext={repositoryContext}
       />
+
+      {isRunReviewLocked ? null : (
+        <ReadsEvaluationBenchmarkPicker repositoryContext={repositoryContext} isConfigLocked={isConfigLocked} />
+      )}
 
       {isRunReviewLocked ? (
         // Pipeline run detail (non-new): never offer synthesize. Fresh runs only

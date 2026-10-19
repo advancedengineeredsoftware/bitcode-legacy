@@ -11,6 +11,7 @@
  */
 
 export * from './asset-pack-host-plan';
+export * from './benchmark-runner';
 export * from './distributed-execution-runtime-receipt';
 export * from './host';
 export * from './local-host';

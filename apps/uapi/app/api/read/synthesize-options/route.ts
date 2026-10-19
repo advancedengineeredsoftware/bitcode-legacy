@@ -21,6 +21,7 @@ import {
   parseRequestedSynthesisPipeline,
   type RequestableSynthesisPipeline,
 } from '@bitcode/asset-packs-pipelines-syntheses-domain/synthesis-pipeline-mode';
+import { parseRequestedBenchmarkIds } from '@bitcode/generic-measurements-relatives/benchmark-delta';
 import { runReadOptionSynthesis } from './dispatch-read-synthesis';
 
 export const runtime = 'nodejs';
@@ -117,6 +118,20 @@ export async function POST(request: Request) {
     );
   }
 
+  // V49 B-2: reader-checked declared benchmarks (restricted to the manifest later).
+  let benchmarkIds: string[];
+  try {
+    benchmarkIds = parseRequestedBenchmarkIds(body.benchmarkIds);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : 'Invalid benchmarkIds.',
+        code: 'invalid_benchmark_ids',
+      },
+      { status: 400 },
+    );
+  }
+
   const admin = supabaseAdmin;
   const { error: insertError } = await admin.from('executions').insert({
     id: requestedRunId,
@@ -131,6 +146,7 @@ export async function POST(request: Request) {
       evaluationLength: evaluation.length,
       relevantPathCount: relevantPaths.length,
       irrelevantPathCount: irrelevantPaths.length,
+      benchmarkIds,
     },
     context: withDemonstrationDataset({
       source: 'read-synthesize-options',
@@ -180,6 +196,7 @@ export async function POST(request: Request) {
       irrelevantPaths,
       execution: execution || undefined,
       synthesisPipeline,
+      benchmarkIds,
     }),
   );
 

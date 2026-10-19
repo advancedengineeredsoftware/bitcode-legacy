@@ -7,11 +7,32 @@ import type {
   AbsoluteReadingForSettlement,
   AssetPackMeasurementsForSettlement,
   RelativeRowInput,
+  SettlementBenchmarkEvidence,
 } from '@bitcode/btd/erc1155';
 import type { SettleAssetPackOption, SettleAssetPackPatch } from './settle-types';
 
+const RELATIVE_STATUSES = new Set(['measured', 'estimated', 'insufficient_evidence', 'not_run']);
+const RELATIVE_PROPERTY_CLASSES = new Set(['static-catalog', 'dynamic-inferred', 'benchmark-delta']);
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function finiteOrNull(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+/** Benchmark-delta evidence: parsed values only (never command output). */
+function parseBenchmarkEvidence(raw: unknown): SettlementBenchmarkEvidence | undefined {
+  if (!isObject(raw) || typeof raw.benchmarkId !== 'string') return undefined;
+  return {
+    benchmarkId: raw.benchmarkId.slice(0, 64),
+    baseline: finiteOrNull(raw.baseline),
+    candidate: finiteOrNull(raw.candidate),
+    unit: typeof raw.unit === 'string' ? raw.unit.slice(0, 24) : null,
+    direction: raw.direction === 'lower-is-better' ? 'lower-is-better' : 'higher-is-better',
+    improvementRatio: finiteOrNull(raw.improvementRatio),
+  };
 }
 
 function parseRelativeRow(raw: unknown): RelativeRowInput | null {
@@ -22,6 +43,15 @@ function parseRelativeRow(raw: unknown): RelativeRowInput | null {
   const magnitude =
     typeof raw.magnitude === 'number' && Number.isFinite(raw.magnitude) ? raw.magnitude : undefined;
   const unit = typeof raw.unit === 'string' ? raw.unit : null;
+  // V49: honesty status + subfamily class drive the subfamily mass law.
+  const honesty = {
+    ...(typeof raw.status === 'string' && RELATIVE_STATUSES.has(raw.status) ? { status: raw.status } : {}),
+    ...(typeof raw.propertyClass === 'string' && RELATIVE_PROPERTY_CLASSES.has(raw.propertyClass)
+      ? { propertyClass: raw.propertyClass }
+      : {}),
+  };
+  const label = typeof raw.label === 'string' && raw.label.trim() ? raw.label.trim().slice(0, 120) : undefined;
+  const benchmark = parseBenchmarkEvidence(raw.benchmark);
   if (typeof raw.measurementKind === 'string' && raw.measurementKind.trim()) {
     return {
       measurementKind: raw.measurementKind.trim(),
@@ -30,6 +60,9 @@ function parseRelativeRow(raw: unknown): RelativeRowInput | null {
       magnitude,
       unit,
       category: 'relative',
+      ...honesty,
+      ...(label ? { label } : {}),
+      ...(benchmark ? { benchmark } : {}),
     };
   }
   if (typeof raw.kind === 'string' && raw.kind.trim()) {
@@ -40,6 +73,7 @@ function parseRelativeRow(raw: unknown): RelativeRowInput | null {
       magnitude,
       unit,
       category: 'relative',
+      ...honesty,
     };
   }
   return null;

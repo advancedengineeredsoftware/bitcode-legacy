@@ -1148,6 +1148,11 @@ export {
   buildV49SettlementCompletion
 } from './canonical/v49-settlement-completion.js';
 export {
+  V49_BENCHMARK_DELTA_RELATIVES_ARTIFACT_PATH,
+  V49_BENCHMARK_DELTA_RELATIVES_SCHEMA_ID,
+  buildV49BenchmarkDeltaRelatives
+} from './canonical/v49-benchmark-delta-relatives.js';
+export {
   V47_READER_WEBSITE_COMPLETION_ARTIFACT_PATH,
   V47_READER_WEBSITE_COMPLETION_CURRENT_TARGET,
   V47_READER_WEBSITE_COMPLETION_ROWS,

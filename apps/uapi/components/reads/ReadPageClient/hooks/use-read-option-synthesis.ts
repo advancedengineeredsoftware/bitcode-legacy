@@ -6,6 +6,10 @@
 "use client";
 
 import { synthesisPipelineRequestField } from "@/components/bitcode/pipeline/models/synthesis-pipeline-preference";
+import {
+  benchmarkSelectionRequestField,
+  readBenchmarkSelectionScope,
+} from "@/components/reads/models/read-benchmark-selection";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RepositoryContextState } from "@/components/bitcode/pipeline/models/repository-context";
 import type { MeasurementReadingLike } from "@/components/reads/models/read-buyer-measurement-projection";
@@ -210,6 +214,12 @@ export function useReadOptionSynthesis(input: {
           permissibleSources: relevantPaths,
           impermissibleSources: irrelevantPaths,
           ...synthesisPipelineRequestField(),
+          ...benchmarkSelectionRequestField(
+            readBenchmarkSelectionScope(
+              fullName,
+              repositoryContext?.selectedCommit || repositoryContext?.selectedBranch || null,
+            ),
+          ),
         }),
       });
       const payload = await response.json().catch(() => null);

@@ -58,6 +58,7 @@
     "@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs": "workspace:*",
     "@bitcode/asset-packs-pipelines-syntheses-quick": "workspace:*",
     "@bitcode/generic-artifacts-patch-kind": "workspace:*",
+    "@bitcode/generic-measurements-relatives": "workspace:*",
     "@bitcode/generic-vcs-git": "workspace:*",
     "@bitcode/pipeline-hosts": "workspace:*",
     "@bitcode/prompts": "workspace:*",

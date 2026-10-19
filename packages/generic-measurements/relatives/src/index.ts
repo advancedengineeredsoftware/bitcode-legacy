@@ -32,3 +32,18 @@ export {
   type RelativePropertyClass,
   type RelativeReadingLike,
 } from './relatives-catalog';
+
+export {
+  BENCHMARK_DELTA_KIND_PREFIX,
+  RELATIVE_SUBFAMILY_MASS_TABLE,
+  STATIC_FIT_KINDS,
+  applyRelativeSubfamilyMasses,
+  assertRelativeKindPattern,
+  isBenchmarkDeltaKind,
+  isWeightBearingRelative,
+  relativeSubfamilyOf,
+  resolveRelativeSubfamilyMasses,
+  type MassableRelativeRow,
+  type RelativeHonestyStatus,
+  type RelativeSubfamily,
+} from './relative-subfamily-masses';

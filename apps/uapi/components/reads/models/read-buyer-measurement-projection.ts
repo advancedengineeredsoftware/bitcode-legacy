@@ -11,6 +11,12 @@
  * Full absolute catalogue is secondary ("show all").
  */
 
+import {
+  applyRelativeSubfamilyMasses,
+  assertRelativeKindPattern,
+  type MassableRelativeRow,
+} from '@bitcode/generic-measurements-relatives/relative-subfamily-masses';
+
 export type AbsoluteHonestyStatus =
   | 'measured'
   | 'estimated'
@@ -172,28 +178,34 @@ function indexByKind(rows: MeasurementReadingLike[]): Map<string, MeasurementRea
   return map;
 }
 
-/** Weighted mean of present *-fit relatives (excludes composite evaluation-fit row). */
+/**
+ * Weighted mean of present Relative rows (`*-fit` and `benchmark-delta:*`;
+ * excludes the composite evaluation-fit row) under the V49 subfamily mass law.
+ */
 export function computeEvaluationFitFromReadings(relatives: MeasurementReadingLike[]): number | null {
   const weightByKind = new Map(
     BUYER_RELATIVES_STATIC.map((s) => [s.measurementKind, s.weight]),
   );
-  let sumW = 0;
-  let sum = 0;
-  let any = false;
+  const rows: MassableRelativeRow[] = [];
   for (const row of relatives) {
     const k = kindOf(row);
-    if (!k || k === 'evaluation-fit' || !k.endsWith('-fit')) continue;
+    if (!k || k === 'evaluation-fit' || !assertRelativeKindPattern(k)) continue;
     const v = volumeOf(row);
     if (v === null) continue;
-    const w =
-      typeof row.weight === 'number' && Number.isFinite(row.weight) && row.weight > 0
-        ? row.weight
-        : weightByKind.get(k) ?? 1;
-    sumW += w;
-    sum += w * v;
-    any = true;
+    rows.push({ measurementKind: k, volume: v, weight: row.weight, status: row.status });
   }
-  if (!any || sumW <= 0) return null;
+  if (rows.length === 0) return null;
+  let sumW = 0;
+  let sum = 0;
+  for (const row of applyRelativeSubfamilyMasses(rows, {
+    fallbackWeight: (r) => weightByKind.get(r.measurementKind),
+  })) {
+    const w = row.weight ?? 0;
+    if (!(w > 0)) continue;
+    sumW += w;
+    sum += w * row.volume;
+  }
+  if (sumW <= 0) return null;
   return clamp01(sum / sumW);
 }
 

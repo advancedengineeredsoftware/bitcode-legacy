@@ -48,7 +48,78 @@ export type ReadSynthesisDispatchInput = {
   execution?: { id: string; get?: Function; findUp?: Function; store?: Function };
   /** Per-run override of BITCODE_SYNTHESIS_PIPELINE (V49 quick synthesis law Q-1). */
   synthesisPipeline?: RequestableSynthesisPipeline | null;
+  /** Reader-checked declared benchmark ids (V49 benchmark-delta law B-2). */
+  benchmarkIds?: string[];
 };
+
+type DeclaredBenchmarkManifest = import('@bitcode/generic-measurements-relatives/benchmark-delta').BenchmarkManifest;
+
+/** Load the declared manifest; absent / invalid / unreadable → no benchmarks (fail-soft). */
+async function loadDeclaredBenchmarks(input: {
+  token: string | null;
+  repositoryFullName: string;
+  reference: string;
+  emitStatus: (message: string) => void;
+}): Promise<DeclaredBenchmarkManifest | null> {
+  try {
+    const { isReadBenchmarkMeasurementEnabled, loadReadBenchmarkManifest } = await import('@/lib/read-benchmarks');
+    if (!isReadBenchmarkMeasurementEnabled()) return null;
+    const load = await loadReadBenchmarkManifest(input);
+    if (load.status === 'invalid') {
+      input.emitStatus(`benchmarks: .bitcode/benchmarks.json rejected (${load.error.slice(0, 160)}).`);
+      return null;
+    }
+    if (load.status === 'declared') {
+      input.emitStatus(`benchmarks: ${load.manifest.benchmarks.length} declared benchmark(s) found.`);
+      return load.manifest;
+    }
+  } catch {
+    input.emitStatus('benchmarks: manifest unavailable (continuing without benchmark deltas).');
+  }
+  return null;
+}
+
+/** Select + measure; null when nothing is selected or the stage fails (fail-soft). */
+async function runReadBenchmarkStage(input: {
+  manifest: DeclaredBenchmarkManifest;
+  requestedIds: string[];
+  synthesizedIds: unknown;
+  evaluation: string;
+  fullOptions: unknown[];
+  catalogSourcePathCount: number | null;
+  repositoryFullName: string;
+  reference: string;
+  token: string | null;
+  emitStatus: (message: string) => void;
+}) {
+  try {
+    const { measureReadOptionBenchmarks, selectReadBenchmarks } = await import('@/lib/read-benchmarks');
+    const benchmarks = selectReadBenchmarks({
+      manifest: input.manifest,
+      requestedIds: input.requestedIds,
+      synthesizedIds: Array.isArray(input.synthesizedIds) ? input.synthesizedIds : [],
+      evaluation: input.evaluation,
+    });
+    if (benchmarks.length === 0) return null;
+    input.emitStatus(
+      `benchmarks: measuring ${benchmarks.map((benchmark) => benchmark.id).join(', ')} on baseline and ${input.fullOptions.length} option(s)…`,
+    );
+    return await measureReadOptionBenchmarks({
+      benchmarks,
+      fullOptions: input.fullOptions,
+      catalogSourcePathCount: input.catalogSourcePathCount,
+      repositoryFullName: input.repositoryFullName,
+      reference: input.reference,
+      token: input.token,
+      emitStatus: input.emitStatus,
+    });
+  } catch (error) {
+    input.emitStatus(
+      `benchmarks: stage failed (${error instanceof Error ? error.message.slice(0, 160) : 'unknown'}); options keep their non-benchmark Relatives.`,
+    );
+    return null;
+  }
+}
 
 export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput): Promise<void> {
   const admin = supabaseAdmin;
@@ -169,18 +240,29 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
     );
 
     const reference = input.sourceCommit || input.sourceBranch || 'HEAD';
+    const accessToken = demonstrationReplay ? null : await resolveGitHubAccessTokenForUser(userId);
+    // V49 B-1: the reader repository's declared benchmarks at the request revision.
+    const benchmarkManifest = demonstrationReplay
+      ? null
+      : await loadDeclaredBenchmarks({
+          token: accessToken,
+          repositoryFullName: input.repositoryFullName,
+          reference,
+          emitStatus,
+        });
     const result = synthesisPipeline === 'quick'
       ? await runQuickReadSynthesis({
           runId,
           execution,
           repositoryFullName: input.repositoryFullName,
           reference,
-          accessToken: await resolveGitHubAccessTokenForUser(userId),
+          accessToken,
           sourceBranch: input.sourceBranch,
           evaluation: input.evaluation,
           relevantPaths: input.relevantPaths || [],
           irrelevantPaths: input.irrelevantPaths || [],
           depositorySupply: toQuickDepositorySupplyRows(searchAssets),
+          declaredBenchmarkIds: benchmarkManifest?.benchmarks.map((benchmark) => benchmark.id) ?? [],
           emitStatus,
         })
       : demonstrationReplay
@@ -206,15 +288,15 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
 
     // V48-Gate5-F01: finish returns unpaid options for browser; fullOptions
     // for settle rehydrate only (history API redacts fullOptions forever).
-    const selectionEnvelope =
+    let selectionEnvelope =
       (execution as any).get?.('finish', 'selectionEnvelope') ||
       (result as any)?.selectionEnvelope ||
       null;
-    const unpaidOptions =
+    let unpaidOptions =
       (result as any)?.options ||
       selectionEnvelope?.options ||
       [];
-    const fullOptions =
+    let fullOptions =
       (execution as any).get?.('finish', 'fullOptions') ||
       (result as any)?.fullOptions ||
       [];
@@ -222,6 +304,30 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
       (execution as any).get?.('finish', 'catalogSourcePathCount') ||
       (result as any)?.catalogSourcePathCount ||
       null;
+
+    // V49 benchmark-delta law: post-synthesis Host stage for every real mode.
+    let benchmarkReceipt: Record<string, unknown> | null = null;
+    if (benchmarkManifest && Array.isArray(fullOptions) && fullOptions.length > 0) {
+      await assertNotCancelled();
+      const stage = await runReadBenchmarkStage({
+        manifest: benchmarkManifest,
+        requestedIds: input.benchmarkIds || [],
+        synthesizedIds: (execution as any).get?.('read', 'benchmarkIds'),
+        evaluation: input.evaluation,
+        fullOptions,
+        catalogSourcePathCount,
+        repositoryFullName: input.repositoryFullName,
+        reference,
+        token: accessToken,
+        emitStatus,
+      });
+      if (stage) {
+        fullOptions = stage.fullOptions;
+        unpaidOptions = stage.unpaidOptions;
+        selectionEnvelope = selectionEnvelope ? { ...selectionEnvelope, options: stage.unpaidOptions } : selectionEnvelope;
+        benchmarkReceipt = stage.receipt;
+      }
+    }
     const optionCount = Array.isArray(unpaidOptions) ? unpaidOptions.length : 0;
 
     await finalizeIfStillRunning({
@@ -236,6 +342,8 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
         // Server rehydrate for settle — never returned by history redaction.
         fullOptions: Array.isArray(fullOptions) ? fullOptions : [],
         catalogSourcePathCount,
+        // Source-safe: benchmark ids, parsed baselines, failure classes, timing.
+        ...(benchmarkReceipt ? { benchmarkReceipt } : {}),
         success: true,
         disclosure: {
           class: 'unpaid-title-summary-measurements-only',
@@ -251,6 +359,7 @@ export async function runReadOptionSynthesis(input: ReadSynthesisDispatchInput):
         sourceCommit: input.sourceCommit,
         optionCount,
         synthesisPipeline,
+        ...(benchmarkReceipt ? { benchmarkIds: benchmarkReceipt.benchmarkIds } : {}),
         ...(demonstrationReplay ? { synthesisReplay: 'demonstration' } : {}),
       },
     });

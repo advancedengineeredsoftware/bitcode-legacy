@@ -141,6 +141,7 @@ let nextConfig = {
     '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-deposits-asset-packs',
     '@bitcode/asset-packs-pipelines-execution-pipeline-sdivf-synthesize-reads-asset-packs',
     '@bitcode/asset-packs-pipelines-syntheses-quick',
+    '@bitcode/generic-measurements-relatives',
     '@bitcode/generic-pipelines-execution-pipeline-simple',
     '@bitcode/generic-pipelines-execution-pipeline-sdivf',
     '@bitcode/pipelines-generics',

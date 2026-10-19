@@ -160,4 +160,33 @@ describe('POST /api/read/synthesize-options (MVP-E2E L1-R1)', () => {
     expect(row.input.evaluationLength).toBeGreaterThan(0);
     expect(response.status).toBeGreaterThanOrEqual(200);
   });
+
+  it('rejects malformed benchmarkIds (V49 B-2)', async () => {
+    installSession({ id: 'u1' });
+    const response = await POST(
+      requestFor({ repositoryFullName: 'acme/demo', evaluation: 'Speed up parsing', benchmarkIds: ['Not An Id'] }),
+    );
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual(expect.objectContaining({ code: 'invalid_benchmark_ids' }));
+  });
+
+  it('records and dispatches reader-checked benchmarkIds (V49 B-2)', async () => {
+    installSession({ id: 'u1' });
+    const insert = jest.fn(async () => ({ error: null }));
+    mockFrom.mockReturnValue({ insert });
+    const { runReadOptionSynthesis } = jest.requireMock('@/app/api/read/synthesize-options/dispatch-read-synthesis');
+    const response = await POST(
+      requestFor({
+        repositoryFullName: 'acme/demo',
+        evaluation: 'Speed up parsing',
+        benchmarkIds: ['parse-throughput', 'parse-throughput', 'lookup-steps'],
+      }),
+    );
+    expect(response.status).toBe(200);
+    const row = (insert.mock.calls[0] as unknown[])[0] as { input: Record<string, unknown> };
+    expect(row.input.benchmarkIds).toEqual(['parse-throughput', 'lookup-steps']);
+    expect(runReadOptionSynthesis).toHaveBeenCalledWith(
+      expect.objectContaining({ benchmarkIds: ['parse-throughput', 'lookup-steps'] }),
+    );
+  });
 });

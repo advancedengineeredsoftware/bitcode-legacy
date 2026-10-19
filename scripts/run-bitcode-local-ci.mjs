@@ -659,6 +659,31 @@ export function buildLocalCiSteps(repoRoot, mode) {
       '--forceExit',
     ]),
   );
+  add('gate-test-benchmark-delta-relatives', () =>
+    runPnpm(repoRoot, 'Gate test: benchmark-delta Relatives (manifest, masses, runner fixture)', [
+      '--filter',
+      '@bitcode/generic-measurements-relatives',
+      'exec',
+      'jest',
+      '--config',
+      'jest.config.cjs',
+      '--runInBand',
+      '--forceExit',
+    ]),
+  );
+  add('gate-test-benchmark-runner', () =>
+    runPnpm(repoRoot, 'Gate test: benchmark runner (LocalHost fixture repository)', [
+      '--filter',
+      '@bitcode/pipeline-hosts',
+      'exec',
+      'jest',
+      '--config',
+      'jest.config.cjs',
+      'src/__tests__/benchmark-runner.test.ts',
+      '--runInBand',
+      '--forceExit',
+    ]),
+  );
   add('gate-test-reading-telemetry', () =>
     runPnpm(repoRoot, 'Gate test: reading operational telemetry', [
       '--filter',
