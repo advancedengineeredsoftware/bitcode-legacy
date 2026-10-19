@@ -20,7 +20,9 @@ describe('API Key Management Routes', () => {
     });
     it('lists keys for authenticated user', async () => {
       mockAuth.mockResolvedValueOnce({ userId: 'user-1' });
-      const mockData = [{ id: 'k1', name: 'first', expire_at: '2023-01-01T00:00:00Z', created_at: '2022-01-01T00:00:00Z' }];
+      const mockData = [
+        { id: 'k1', name: 'first', expires_at: '2023-01-01T00:00:00Z', last_used_at: null, created_at: '2022-01-01T00:00:00Z' },
+      ];
       // Builder that resolves on await
       const builder = {
         select: jest.fn().mockReturnThis(),
@@ -33,7 +35,7 @@ describe('API Key Management Routes', () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body).toEqual([
-        { id: 'k1', name: 'first', expireAt: '2023-01-01T00:00:00Z', createdAt: '2022-01-01T00:00:00Z' }
+        { id: 'k1', name: 'first', expireAt: '2023-01-01T00:00:00Z', lastUsedAt: null, createdAt: '2022-01-01T00:00:00Z' }
       ]);
       expect(supabaseAdmin.from).toHaveBeenCalledWith('user_api_keys');
     });
@@ -62,7 +64,7 @@ describe('API Key Management Routes', () => {
       const builder = {
         insert: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: { id: 'k2', key: rawKey }, error: null })
+        single: jest.fn().mockResolvedValue({ data: { id: 'k2' }, error: null })
       };
       mockFrom.mockReturnValue(builder);
       const payload = { name: 'test', expireAt: '2025-01-01' };
@@ -71,6 +73,15 @@ describe('API Key Management Routes', () => {
       const body = await res.json();
       expect(body).toEqual({ id: 'k2', apiKey: rawKey });
       expect(supabaseAdmin.from).toHaveBeenCalledWith('user_api_keys');
+      // V49 C-5: only the SHA-256 hash and expires_at are stored, never the key.
+      const row = builder.insert.mock.calls[0][0];
+      expect(row).toEqual({
+        user_id: 'u1',
+        name: 'test',
+        key_hash: require('crypto').createHash('sha256').update(rawKey).digest('hex'),
+        expires_at: '2025-01-01',
+      });
+      expect(JSON.stringify(row)).not.toContain(rawKey);
       // restore
       jest.spyOn(require('crypto'), 'randomBytes').mockRestore();
     });

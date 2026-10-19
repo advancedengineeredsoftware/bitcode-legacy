@@ -77,7 +77,7 @@
     },
     {
       "id": "request-carries-benchmark-ids",
-      "sourcePath": "apps/uapi/app/api/read/synthesize-options/route.ts",
+      "sourcePath": "apps/uapi/app/api/read/synthesize-options/start-read-synthesis.ts",
       "passed": true
     },
     {
@@ -132,7 +132,7 @@
     }
   ],
   "sourceRoots": {
-    "spec": ".specifications/BITCODE_SPEC_V49.md:1ff2b5927bc0351c106de312",
+    "spec": ".specifications/BITCODE_SPEC_V49.md:cd028ee8d7d5a82e67cd4af8",
     "manifest": "packages/generic-measurements/relatives/src/benchmark-delta/benchmark-manifest.ts:adce98c82999bd2777274077",
     "reading": "packages/generic-measurements/relatives/src/benchmark-delta/benchmark-reading.ts:bada15deb6ffe4ae83f645eb",
     "selection": "packages/generic-measurements/relatives/src/benchmark-delta/benchmark-selection.ts:fcbd8dd5b96a6b3b065da37a",
@@ -154,7 +154,7 @@
     "uapiLib": "apps/uapi/lib/read-benchmarks.ts:6f5d260801219ac1207b0f66",
     "benchmarksRoute": "apps/uapi/app/api/read/benchmarks/route.ts:9ed11fc106697026c80e313e",
     "benchmarksRouteTest": "apps/uapi/tests/api/readBenchmarksRoute.test.ts:d034e9f85fc10bb578eb8647",
-    "synthesizeRoute": "apps/uapi/app/api/read/synthesize-options/route.ts:0e3628fb581f15e45e5fc507",
+    "synthesizeRoute": "apps/uapi/app/api/read/synthesize-options/start-read-synthesis.ts:8e1c1e184b59649accaa9620",
     "synthesizeRouteTest": "apps/uapi/tests/api/readSynthesizeOptionsRoute.test.ts:6683cebd4a4fb8f6f091a10e",
     "dispatcher": "apps/uapi/app/api/read/synthesize-options/dispatch-read-synthesis.ts:b371b1fd0eae9d207028658f",
     "picker": "apps/uapi/components/reads/ReadsEvaluationBenchmarkPicker/ReadsEvaluationBenchmarkPicker.tsx:14a38b13ee339e48ef4a7f32",
@@ -162,15 +162,15 @@
     "synthesisHook": "apps/uapi/components/reads/ReadPageClient/hooks/use-read-option-synthesis.ts:7b962ab83767237939ee92eb",
     "optionCard": "apps/uapi/components/reads/ReadsOptionCard/ReadsOptionCard.tsx:f993d15432c2b659d2ed3f5f",
     "uapiTest": "apps/uapi/tests/readBenchmarkDeltas.test.tsx:28e98fef67e3b349d414bff9",
-    "localCi": "scripts/run-bitcode-local-ci.mjs:f90cf48c574381a07c102847",
-    "packageJson": "package.json:4420ed94d8150252b364aac7",
-    "protocolIndex": "scripts/specifying/src/index.js:251030e319e58bf9d39f085b",
-    "protocolTypes": "scripts/specifying/src/index.d.ts:29dc488866f416b427d695ee",
+    "localCi": "scripts/run-bitcode-local-ci.mjs:77216d9e1417759a3faa819a",
+    "packageJson": "package.json:b5323d4ff89a558515c9a3fd",
+    "protocolIndex": "scripts/specifying/src/index.js:34f6e9d7ec9e0a16757d7067",
+    "protocolTypes": "scripts/specifying/src/index.d.ts:714e25b85b8a558c2acc2881",
     "generator": "scripts/generate-v49-benchmark-delta-relatives.mjs:1d31c235d730b31c199d2dd9",
     "checker": "scripts/check-v49-gate5-benchmark-delta-relatives.mjs:971ba24a924c043bc6ca62a4",
     "protocolTest": "scripts/specifying/test/v49-benchmark-delta-relatives.test.js:e83783b5ad4b68e82066bbd5"
   },
-  "artifactRoot": "v49-benchmark-delta-relatives:4978740a9540950bb7a10f32",
+  "artifactRoot": "v49-benchmark-delta-relatives:89fc27256bbfdef9dd92fa62",
   "coverage": {
     "requiredPredicateCount": 20,
     "passedPredicateCount": 20,

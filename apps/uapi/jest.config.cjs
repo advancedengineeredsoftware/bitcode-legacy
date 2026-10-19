@@ -183,6 +183,8 @@ module.exports = {
     '<rootDir>/tests/RunDetailsView.mapping.test.tsx',
     '<rootDir>/tests/synthesisPipelinePreference.test.tsx',
     '<rootDir>/tests/settlementViewers.test.tsx',
+    '<rootDir>/tests/apiKeysRoutes.test.ts',
+    '<rootDir>/tests/externalsClaudeCard.test.tsx',
     '<rootDir>/tests/readBenchmarkDeltas.test.tsx',
     '<rootDir>/tests/usePipelineExecution.test.tsx',
     // BTD and auxillaries coverage

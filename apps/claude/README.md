@@ -1,41 +1,42 @@
 # @bitcode/external-apps-claude
 
-**Claude Code plugin scaffold** for Bitcode.
+Bitcode plugins for Claude (V49 Claude External law C-5).
 
-## Hierarchy
+## Plugins
 
-```
-packages/external-apps/
- chatgpt/ # ChatGPT App MCP (existing product surface)
- claude/ # this package — Claude Code plugin scaffold
-```
-
-## Layout (Claude Code plugin convention)
+| Plugin | Path | For |
+|---|---|---|
+| `bitcode` | `apps/claude/` | Product use: remote MCP connector at `https://bitcode.exchange/api/mcp` (OAuth with your Bitcode account) + the `bitcode` usage skill |
+| `bitcode-developer` | `apps/claude/developer/` | Monorepo development: hierarchy-aware operator skill, assistant agent, session hook, and the local stdio MCP server (`apps/mcp`, API key) |
 
 ```
 claude/
-├── .claude-plugin/
-│ └── plugin.json # manifest only
-├── skills/
-│ └── bitcode-operator/
-│ └── SKILL.md
-├── agents/
-│ └── bitcode-assistant.md
-├── hooks/
-│ └── hooks.json
-├── .mcp.json # optional Bitcode MCP wiring
-└── README.md
+├── .claude-plugin/plugin.json   # bitcode (product)
+├── .mcp.json                    # { "type": "http", "url": ".../api/mcp" }
+├── skills/bitcode/SKILL.md
+└── developer/                   # bitcode-developer
+    ├── .claude-plugin/plugin.json
+    ├── .mcp.json                # stdio apps/mcp
+    ├── skills/bitcode-operator/SKILL.md
+    ├── agents/bitcode-assistant.md
+    └── hooks/hooks.json
 ```
 
-Components sit at the **plugin root**, not inside `.claude-plugin/` (Claude Code layout law).
+Components sit at each **plugin root**, not inside `.claude-plugin/` (Claude
+Code layout law).
 
-## Install (local / team)
+## Connect without the plugin
 
-From a Claude Code marketplace or local path source, point at this directory.
-Omit `version` for commit-SHA updates during active development, or bump
-`plugin.json` `version` for explicit releases.
+- **Claude.ai / Claude Desktop:** Settings → Connectors → Add custom connector →
+  `https://bitcode.exchange/api/mcp`, then approve on Bitcode.
+- **Claude Code:** `claude mcp add --transport http bitcode https://bitcode.exchange/api/mcp`,
+  then `/mcp` to sign in.
+
+Grants are listed (and revocable) in Bitcode → Auxillaries → Externals →
+Claude. Bitcode never receives Anthropic credentials.
 
 ## Related
 
 - ChatGPT App: `@bitcode/external-apps-chatgpt`
-- Bitcode Exchange MCP: `@bitcode/generic-mcps-bitcode`
+- Bitcode stdio MCP: `@bitcode/generic-mcps-bitcode` (`apps/mcp`)
+- Hosted MCP + OAuth: `apps/uapi/app/api/mcp`, `apps/uapi/lib/oauth`

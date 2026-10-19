@@ -1,7 +1,8 @@
 "use client";
 
 /**
- * Externals auxillary pane — GitHub repository attachment, readiness, and data sharing.
+ * Externals auxillary pane — GitHub repository attachment, readiness, and data sharing,
+ * plus the Claude External (remote MCP connector, V49 C-4).
  * State projection lives in hooks/; gate and connected workspace are named units.
  */
 
@@ -9,6 +10,7 @@ import React from 'react';
 
 import AuxillariesExternalsPaneHeader from '@/components/auxillaries/headers/AuxillariesExternalsPaneHeader/AuxillariesExternalsPaneHeader';
 
+import ExternalsClaudeCard from './ExternalsClaudeCard/ExternalsClaudeCard';
 import ExternalsConnectedWorkspace from './ExternalsConnectedWorkspace/ExternalsConnectedWorkspace';
 import ExternalsWalletRequiredGate from './ExternalsWalletRequiredGate/ExternalsWalletRequiredGate';
 import { useExternalsPaneState } from './hooks/use-externals-pane-state';
@@ -59,6 +61,7 @@ export default function AuxillariesExternalsPane({
             refresh={state.refresh}
           />
         )}
+        {state.hasExternalsIdentity ? <ExternalsClaudeCard state={state.claude} /> : null}
       </div>
     </div>
   );

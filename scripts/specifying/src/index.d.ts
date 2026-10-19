@@ -995,6 +995,9 @@ export function buildV49SettlementCompletion(input?: Record<string, unknown>): B
 export const V49_BENCHMARK_DELTA_RELATIVES_ARTIFACT_PATH: string;
 export const V49_BENCHMARK_DELTA_RELATIVES_SCHEMA_ID: string;
 export function buildV49BenchmarkDeltaRelatives(input?: Record<string, unknown>): BitcodeProtocolReport;
+export const V49_CLAUDE_EXTERNAL_ARTIFACT_PATH: string;
+export const V49_CLAUDE_EXTERNAL_SCHEMA_ID: string;
+export function buildV49ClaudeExternal(input?: Record<string, unknown>): BitcodeProtocolReport;
 export const V47_READER_WEBSITE_COMPLETION_ARTIFACT_PATH: string;
 export const V47_READER_WEBSITE_COMPLETION_CURRENT_TARGET: string;
 export const V47_READER_WEBSITE_COMPLETION_SCHEMA_ID: string;

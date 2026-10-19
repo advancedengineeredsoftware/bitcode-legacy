@@ -1,7 +1,7 @@
 {
   "name": "bitcode",
-  "version": "0.1.0",
-  "description": "Bitcode protocol operator surface for Claude Code: AssetPacks, deposits, reads, Externals, and source-safe workflows.",
+  "version": "0.2.0",
+  "description": "Use Bitcode from Claude: synthesize deposit and read DataPacks, measure them, and review the DataPacks you own or sold, through Bitcode's remote MCP connector (OAuth with your Bitcode account).",
   "author": {
     "name": "Bitcode"
   }

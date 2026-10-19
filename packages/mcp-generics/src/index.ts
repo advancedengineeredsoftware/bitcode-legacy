@@ -5,8 +5,9 @@
  *   McpConfig / McpConfigSchema / validateMcpConfig   # this package
  *     → @bitcode/generic-mcps-bitcode                 # Bitcode Exchange-facing MCP server
  *
- * Full MCP tool definitions and the Exchange server live in generic-mcps/bitcode.
- * This package stays below that surface as reusable config + validation primitives.
+ * Also owns the Bitcode product MCP tool registry (V49 C-2): names, scopes,
+ * descriptions, and input schemas shared by the hosted remote MCP server and
+ * the stdio server. Execution lives with each server.
  */
 
 export interface McpConfig {
@@ -98,3 +99,5 @@ export function validateMcpConfig(config: unknown) {
 }
 
 export default McpConfigSchema;
+
+export * from './bitcode-product-tools';

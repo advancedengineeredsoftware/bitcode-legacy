@@ -1,12 +1,8 @@
 {
   "mcpServers": {
     "bitcode": {
-      "command": "pnpm",
-      "args": ["exec", "tsx", "apps/mcp/src/index.ts"],
-      "cwd": "${CLAUDE_PLUGIN_ROOT}/../../..",
-      "env": {
-        "BITCODE_MCP_MODE": "plugin"
-      }
+      "type": "http",
+      "url": "https://bitcode.exchange/api/mcp"
     }
   }
 }

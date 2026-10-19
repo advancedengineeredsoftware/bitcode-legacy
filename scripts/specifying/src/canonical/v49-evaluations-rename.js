@@ -68,7 +68,8 @@ const SOURCE_ROOTS = Object.freeze({
   measurementTypes: 'packages/measurement-generics/src/types.ts',
   settlementBtd: 'packages/btd/src/erc1155/settlement-btd-from-relatives.ts',
   readEvaluation: 'packages/asset-packs-pipelines/syntheses/read/src/read-evaluation.ts',
-  readRoute: 'apps/uapi/app/api/read/synthesize-options/route.ts',
+  // Request validation lives in the session-free dispatch core (V49 Gate 6 split).
+  readRoute: 'apps/uapi/app/api/read/synthesize-options/start-read-synthesis.ts',
   composePanel:
     'apps/uapi/components/reads/ReadsEvaluationComposePanel/ReadsEvaluationComposePanel.tsx',
   optionCard: 'apps/uapi/components/reads/ReadsOptionCard/ReadsOptionCard.tsx',

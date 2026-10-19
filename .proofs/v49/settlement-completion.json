@@ -107,7 +107,7 @@
     }
   ],
   "sourceRoots": {
-    "spec": ".specifications/BITCODE_SPEC_V49.md:1ff2b5927bc0351c106de312",
+    "spec": ".specifications/BITCODE_SPEC_V49.md:cd028ee8d7d5a82e67cd4af8",
     "compensation": "packages/btd/src/erc1155/contributor-compensation.ts:cf027794a8c45bb3c4f6e25b",
     "compensationTest": "packages/btd/__tests__/contributor-compensation.test.ts:608ed0a9f2ecedb7ffd89aad",
     "holdings": "packages/btd/src/erc1155/projected-holdings.ts:cc318897a24ea9c6d42f7c15",
@@ -136,15 +136,15 @@
     "ownedViewer": "apps/uapi/components/reads/ReadsOwnedDataPacks/ReadsOwnedDataPacks.tsx:a4745a4129ba9ef2bd84514e",
     "viewerTest": "apps/uapi/tests/settlementViewers.test.tsx:f4c4fd968bf31885245b1daf",
     "exchangeDetail": "apps/uapi/components/exchange/ExchangeActivityDetail/ExchangeActivityDetail.tsx:f3b374149c2c9c3f65de0e3d",
-    "localCi": "scripts/run-bitcode-local-ci.mjs:f90cf48c574381a07c102847",
-    "packageJson": "package.json:4420ed94d8150252b364aac7",
-    "protocolIndex": "scripts/specifying/src/index.js:251030e319e58bf9d39f085b",
-    "protocolTypes": "scripts/specifying/src/index.d.ts:29dc488866f416b427d695ee",
+    "localCi": "scripts/run-bitcode-local-ci.mjs:77216d9e1417759a3faa819a",
+    "packageJson": "package.json:b5323d4ff89a558515c9a3fd",
+    "protocolIndex": "scripts/specifying/src/index.js:34f6e9d7ec9e0a16757d7067",
+    "protocolTypes": "scripts/specifying/src/index.d.ts:714e25b85b8a558c2acc2881",
     "generator": "scripts/generate-v49-settlement-completion.mjs:8b6e3743d6f4dc22696737e7",
     "checker": "scripts/check-v49-gate4-settlement-completion.mjs:fc30e185c3566b87ead748d6",
     "protocolTest": "scripts/specifying/test/v49-settlement-completion.test.js:d7f500b2c5cdd853d2b493e6"
   },
-  "artifactRoot": "v49-settlement-completion:cd4d2d262a78046e5c73445e",
+  "artifactRoot": "v49-settlement-completion:1f0fd4c1b319ad369a6e79b4",
   "coverage": {
     "requiredPredicateCount": 18,
     "passedPredicateCount": 18,

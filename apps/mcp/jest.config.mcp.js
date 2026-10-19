@@ -63,8 +63,7 @@ const explicitMapper = {
   '^@bitcode/pipeline-recovery$': '<rootDir>/src/__stubs__/pipeline-recovery.ts',
   '^@bitcode/generic-mcps-bitcode$': '<rootDir>/src/index.ts',
   '^@bitcode/generic-mcps-bitcode$': '<rootDir>/src/index.ts',
-  '^@bitcode/mcp-generics$': '<rootDir>/../../mcp-generics/src/index.ts',
-  '^@bitcode/mcp-generics$': '<rootDir>/../../mcp-generics/src/index.ts',
+  '^@bitcode/mcp-generics$': '<rootDir>/../../packages/mcp-generics/src/index.ts',
 };
 
 module.exports = {

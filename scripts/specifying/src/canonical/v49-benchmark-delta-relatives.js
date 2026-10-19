@@ -62,7 +62,8 @@ const SOURCE_ROOTS = Object.freeze({
   uapiLib: 'apps/uapi/lib/read-benchmarks.ts',
   benchmarksRoute: 'apps/uapi/app/api/read/benchmarks/route.ts',
   benchmarksRouteTest: 'apps/uapi/tests/api/readBenchmarksRoute.test.ts',
-  synthesizeRoute: 'apps/uapi/app/api/read/synthesize-options/route.ts',
+  // Request validation lives in the session-free dispatch core (V49 Gate 6 split).
+  synthesizeRoute: 'apps/uapi/app/api/read/synthesize-options/start-read-synthesis.ts',
   synthesizeRouteTest: 'apps/uapi/tests/api/readSynthesizeOptionsRoute.test.ts',
   dispatcher: 'apps/uapi/app/api/read/synthesize-options/dispatch-read-synthesis.ts',
   picker: 'apps/uapi/components/reads/ReadsEvaluationBenchmarkPicker/ReadsEvaluationBenchmarkPicker.tsx',

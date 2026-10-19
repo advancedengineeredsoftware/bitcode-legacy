@@ -45,7 +45,7 @@
     },
     {
       "id": "read-route-accepts-evaluation-only",
-      "sourcePath": "apps/uapi/app/api/read/synthesize-options/route.ts",
+      "sourcePath": "apps/uapi/app/api/read/synthesize-options/start-read-synthesis.ts",
       "passed": true
     },
     {
@@ -90,25 +90,25 @@
     }
   ],
   "sourceRoots": {
-    "spec": ".specifications/BITCODE_SPEC_V49.md:1ff2b5927bc0351c106de312",
+    "spec": ".specifications/BITCODE_SPEC_V49.md:cd028ee8d7d5a82e67cd4af8",
     "migration": "supabase/migrations/20261018120000_v49_evaluations_rename.sql:6b5a1229d7914c36973e31ea",
     "relativesPackage": "packages/generic-measurements/relatives/package.json:578fd206254ce7b3ca4661cd",
     "relativesCatalog": "packages/generic-measurements/relatives/src/relatives-catalog.ts:19fe804d7145488a36431085",
     "measurementTypes": "packages/measurement-generics/src/types.ts:61fa4051bac631e281002b35",
     "settlementBtd": "packages/btd/src/erc1155/settlement-btd-from-relatives.ts:f435e977ec3f74189c4a30fa",
     "readEvaluation": "packages/asset-packs-pipelines/syntheses/read/src/read-evaluation.ts:4f656f0096af629053aeb6e2",
-    "readRoute": "apps/uapi/app/api/read/synthesize-options/route.ts:0e3628fb581f15e45e5fc507",
+    "readRoute": "apps/uapi/app/api/read/synthesize-options/start-read-synthesis.ts:8e1c1e184b59649accaa9620",
     "composePanel": "apps/uapi/components/reads/ReadsEvaluationComposePanel/ReadsEvaluationComposePanel.tsx:516cba4d1e97cb31f17a058c",
     "optionCard": "apps/uapi/components/reads/ReadsOptionCard/ReadsOptionCard.tsx:f993d15432c2b659d2ed3f5f",
-    "localCi": "scripts/run-bitcode-local-ci.mjs:f90cf48c574381a07c102847",
-    "packageJson": "package.json:4420ed94d8150252b364aac7",
-    "protocolIndex": "scripts/specifying/src/index.js:251030e319e58bf9d39f085b",
-    "protocolTypes": "scripts/specifying/src/index.d.ts:29dc488866f416b427d695ee",
+    "localCi": "scripts/run-bitcode-local-ci.mjs:77216d9e1417759a3faa819a",
+    "packageJson": "package.json:b5323d4ff89a558515c9a3fd",
+    "protocolIndex": "scripts/specifying/src/index.js:34f6e9d7ec9e0a16757d7067",
+    "protocolTypes": "scripts/specifying/src/index.d.ts:714e25b85b8a558c2acc2881",
     "generator": "scripts/generate-v49-evaluations-rename.mjs:e4293297a740dacbbdc53523",
     "checker": "scripts/check-v49-gate2-evaluations-rename.mjs:c677c2b2d1172c5ee0ac6cdc",
     "protocolTest": "scripts/specifying/test/v49-evaluations-rename.test.js:5beddb3c575ab8cb55a2f2fe"
   },
-  "artifactRoot": "v49-evaluations-rename:4e891ad04aa59d84781ae4f0",
+  "artifactRoot": "v49-evaluations-rename:0c809570dc2b878b10743a8c",
   "coverage": {
     "requiredPredicateCount": 14,
     "passedPredicateCount": 14,

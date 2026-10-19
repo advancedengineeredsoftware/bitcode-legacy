@@ -2,9 +2,9 @@
   "name": "@bitcode/external-apps-claude",
   "version": "0.1.0",
   "private": true,
-  "description": "Bitcode Claude Code plugin scaffold under apps/claude",
+  "description": "Bitcode Claude plugins: product (remote MCP connector) and monorepo developer",
   "main": "README.md",
   "scripts": {
-    "validate": "node -e \"require('fs').accessSync('.claude-plugin/plugin.json')\""
+    "validate": "node -e \"for (const f of ['.claude-plugin/plugin.json','developer/.claude-plugin/plugin.json','.mcp.json','developer/.mcp.json']) JSON.parse(require('fs').readFileSync(f,'utf8'))\""
   }
 }

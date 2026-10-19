@@ -48,8 +48,9 @@ const SOURCE_ROOTS = Object.freeze({
   modeTest: 'packages/asset-packs-pipelines/syntheses/domain/src/__tests__/synthesis-pipeline-mode.test.ts',
   profileAbsolutes: 'packages/asset-packs-pipelines/syntheses/domain/src/profile-absolutes.ts',
   uapiRunners: 'apps/uapi/lib/quick-synthesis.ts',
-  depositRoute: 'apps/uapi/app/api/deposit/synthesize-options/route.ts',
-  readRoute: 'apps/uapi/app/api/read/synthesize-options/route.ts',
+  // Request validation lives in the session-free dispatch cores (V49 Gate 6 split).
+  depositRoute: 'apps/uapi/app/api/deposit/synthesize-options/start-deposit-synthesis.ts',
+  readRoute: 'apps/uapi/app/api/read/synthesize-options/start-read-synthesis.ts',
   depositDispatch: 'apps/uapi/app/api/deposit/synthesize-options/dispatch-deposit-synthesis.ts',
   readDispatch: 'apps/uapi/app/api/read/synthesize-options/dispatch-read-synthesis.ts',
   toggle: 'apps/uapi/components/bitcode/routes/BitcodeSynthesisPipelineToggle/BitcodeSynthesisPipelineToggle.tsx',

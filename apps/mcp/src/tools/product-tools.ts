@@ -11,6 +11,7 @@
 
 import { z } from 'zod';
 import { getBtdMcpToolContract } from '@bitcode/btd';
+import { BitcodeMcpPacksInputSchema } from '@bitcode/mcp-generics';
 import type { MCPAuthContext } from '../types';
 import { executePipelineWithMonitoring } from './pipeline-tools';
 import { executeRepositoryMeasure } from './measure-tools';
@@ -92,11 +93,8 @@ const MeasureSchema = z.object({
   outputFormat: z.enum(['json', 'markdown', 'summary']).optional().default('json'),
 });
 
-const PacksSchema = z.object({
-  activityId: z.string().optional().describe('Optional pack/activity id to reread'),
-  limit: z.number().int().min(1).max(50).optional().default(20),
-  organizationId: z.string().optional(),
-});
+// V49 C-2: shared with the hosted remote MCP server (@bitcode/mcp-generics registry).
+const PacksSchema = BitcodeMcpPacksInputSchema;
 
 const AuxiliaryPaneSchema = z.object({
   organizationId: z.string().optional(),
@@ -229,9 +227,10 @@ export function registerProductTools(): MCPTool[] {
         return {
           toolId: packsContract.toolId,
           productRoute: '/packs',
-          activityId: args.activityId ?? null,
+          view: args.view,
+          runId: args.runId ?? null,
           limit: args.limit,
-          organizationId: args.organizationId ?? context.organizationId ?? null,
+          organizationId: context.organizationId ?? null,
           actorId: context.userId,
           status: 'source_safe_preview',
           interfaceSurface: 'mcp',

@@ -2068,6 +2068,20 @@ Storage (new migration): `oauth_clients`, `oauth_authorization_codes`,
   issuance stores `key_hash` (SHA-256) and `expires_at`, never the plaintext key,
   matching the stdio server's verification.
 
+### C-5a Realization map (binding paths)
+
+| Concern | Path |
+|---|---|
+| Tool registry (shared) | `packages/mcp-generics/src/bitcode-product-tools.ts` (`BITCODE_PRODUCT_TOOLS`: `deposit`, `read`, `packs`, `measure`, `auxiliary`; `BITCODE_MCP_SCOPES`; zod input schemas; `contractToolId` per BTD contract); stdio `packs` uses the shared schema |
+| Remote MCP | `apps/uapi/app/api/mcp/route.ts` — Streamable HTTP, stateless JSON-response mode (`JsonResponseTransport`, `lib/mcp/json-response-transport.ts`); SDK low-level `Server` per request (`lib/mcp/bitcode-mcp-server.ts`) with scope-filtered `tools/list` / `tools/call`; GET / DELETE → 405; notifications → 202 |
+| Tool execution | `lib/mcp/bitcode-mcp-tools.ts`: `deposit` / `read` call the session-free dispatch cores (`start-deposit-synthesis.ts`, `start-read-synthesis.ts`) shared with the website routes; `packs` (owned / sold own-slice / run), `measure`, `auxiliary` read source-safe projections (`toUnpaidReadOptionsPresentation`) |
+| OAuth service | `lib/oauth/oauth-service.ts` over `OAuthRepository` (`lib/oauth/oauth-repository.ts`, Supabase service role; atomic code consumption and refresh rotation); `lib/oauth/oauth-crypto.ts` (SHA-256 storage hashes, PKCE S256) |
+| OAuth endpoints | `app/.well-known/oauth-protected-resource/[[...path]]`, `app/.well-known/oauth-authorization-server/[[...path]]`, `app/api/oauth/{register,token,revoke,authorize}`, consent page `app/oauth/authorize/page.tsx` (same-origin POST; signed-out users sign in then Continue) |
+| Storage | `supabase/migrations/20261019120000_v49_claude_external_oauth.sql` (`oauth_clients`, `oauth_authorization_codes`, `oauth_tokens`; RLS on, service role only) |
+| Claude card | `AuxillariesExternalsPane/ExternalsClaudeCard` + `hooks/use-claude-external.ts`; `GET/DELETE /api/auxillaries/claude`; `user_connections` `anthropic-claude` upserted on token issuance, deactivated when the last grant is revoked; Externals step completes on GitHub **or** Claude |
+| Plugin | `apps/claude` (`bitcode`: `.mcp.json` `{ "type": "http", "url": "https://bitcode.exchange/api/mcp" }`, `skills/bitcode`); `apps/claude/developer` (`bitcode-developer`: stdio MCP, operator skill, agent, hook) |
+| API keys | `app/api/auxillaries/api-keys/route.ts` stores `key_hash` (SHA-256) + `expires_at`; the migration creates / repairs `user_api_keys` (hashes and drops legacy plaintext `key`) |
+
 ### C-6 Completion
 
 Gate 6 closes when the remote MCP server, OAuth server, Claude card, plugin, and

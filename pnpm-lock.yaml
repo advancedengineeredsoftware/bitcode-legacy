@@ -275,6 +275,9 @@ importers:
       '@bitcode/generic-vcs-git':
         specifier: workspace:*
         version: link:../../packages/generic-vcs/git
+      '@bitcode/mcp-generics':
+        specifier: workspace:*
+        version: link:../../packages/mcp-generics
       '@bitcode/observability':
         specifier: workspace:*
         version: link:../../packages/observability
@@ -293,6 +296,9 @@ importers:
       '@heroicons/react':
         specifier: ^2.1.1
         version: 2.2.0(react@18.3.1)
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.21.0
+        version: 1.21.0
       '@next/bundle-analyzer':
         specifier: 15.3.1
         version: 15.3.1
@@ -6456,6 +6462,10 @@ importers:
         version: 29.4.0(@babel/core@7.27.7)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.7))(jest-util@29.7.0)(jest@29.7.0(@types/node@25.6.0)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@25.6.0)(typescript@6.0.3)))(typescript@6.0.3)
 
   packages/mcp-generics:
+    dependencies:
+      zod:
+        specifier: ^3.22.4
+        version: 3.25.76
     devDependencies:
       '@types/node':
         specifier: ^25.0.0

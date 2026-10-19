@@ -1,0 +1,8 @@
+{
+  "name": "bitcode-developer",
+  "version": "0.1.0",
+  "description": "Bitcode monorepo developer plugin: hierarchy-aware operator skill, assistant agent, and the local stdio MCP server (apps/mcp).",
+  "author": {
+    "name": "Bitcode"
+  }
+}

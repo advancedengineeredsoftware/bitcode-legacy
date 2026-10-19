@@ -684,6 +684,21 @@ export function buildLocalCiSteps(repoRoot, mode) {
       '--forceExit',
     ]),
   );
+  add('gate-test-claude-external', () =>
+    runPnpm(repoRoot, 'Gate test: Claude External (OAuth server, remote MCP, card, API keys)', [
+      '--dir',
+      'apps/uapi',
+      'exec',
+      'jest',
+      '--runTestsByPath',
+      'tests/lib/oauthService.test.ts',
+      'tests/api/claudeExternalMcp.test.ts',
+      'tests/externalsClaudeCard.test.tsx',
+      'tests/apiKeysRoutes.test.ts',
+      '--runInBand',
+      '--forceExit',
+    ]),
+  );
   add('gate-test-reading-telemetry', () =>
     runPnpm(repoRoot, 'Gate test: reading operational telemetry', [
       '--filter',

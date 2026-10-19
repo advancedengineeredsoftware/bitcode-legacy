@@ -1,0 +1,195 @@
+{
+  "artifactId": "v49-claude-external",
+  "schemaId": "bitcode.v49.claudeExternal.v1",
+  "version": "V49",
+  "currentTarget": "V48",
+  "artifactPath": ".proofs/v49/claude-external.json",
+  "sourceSafetyVerdict": "source-safe-claude-external",
+  "scopes": [
+    "deposits",
+    "reads",
+    "packs"
+  ],
+  "tools": [
+    "deposit",
+    "read",
+    "packs",
+    "measure",
+    "auxiliary"
+  ],
+  "oauthLaw": {
+    "grantTypes": [
+      "authorization_code",
+      "refresh_token"
+    ],
+    "codeChallengeMethods": [
+      "S256"
+    ],
+    "clientAuthentication": "none",
+    "accessTokenTtlSeconds": 3600,
+    "refreshTokenTtlDays": 30,
+    "authorizationCodeTtlMinutes": 10,
+    "refreshRotation": "rotate-on-use; reuse revokes family",
+    "storage": "sha256-hash-only"
+  },
+  "predicateResults": [
+    {
+      "id": "shared-product-tool-registry",
+      "sourcePath": "packages/mcp-generics/src/bitcode-product-tools.ts",
+      "passed": true
+    },
+    {
+      "id": "remote-mcp-bearer-gated",
+      "sourcePath": "apps/uapi/app/api/mcp/route.ts",
+      "passed": true
+    },
+    {
+      "id": "streamable-http-json-response",
+      "sourcePath": "apps/uapi/lib/mcp/json-response-transport.ts",
+      "passed": true
+    },
+    {
+      "id": "scopes-gate-tools",
+      "sourcePath": "apps/uapi/lib/mcp/bitcode-mcp-server.ts",
+      "passed": true
+    },
+    {
+      "id": "oauth-metadata-rfc8414-rfc9728",
+      "sourcePath": "apps/uapi/lib/oauth/oauth-http.ts",
+      "passed": true
+    },
+    {
+      "id": "dynamic-registration-public-clients",
+      "sourcePath": "apps/uapi/app/api/oauth/register/route.ts",
+      "passed": true
+    },
+    {
+      "id": "pkce-s256-single-use-codes",
+      "sourcePath": "apps/uapi/lib/oauth/oauth-service.ts",
+      "passed": true
+    },
+    {
+      "id": "refresh-rotation-reuse-revokes-family",
+      "sourcePath": "apps/uapi/lib/oauth/oauth-service.ts",
+      "passed": true
+    },
+    {
+      "id": "revocation-yields-401",
+      "sourcePath": "apps/uapi/app/api/oauth/revoke/route.ts",
+      "passed": true
+    },
+    {
+      "id": "hash-only-storage-and-ttls",
+      "sourcePath": "supabase/migrations/20261019120000_v49_claude_external_oauth.sql",
+      "passed": true
+    },
+    {
+      "id": "consent-requires-session-same-origin",
+      "sourcePath": "apps/uapi/app/api/oauth/authorize/route.ts",
+      "passed": true
+    },
+    {
+      "id": "tools-dispatch-like-website",
+      "sourcePath": "apps/uapi/lib/mcp/bitcode-mcp-tools.ts",
+      "passed": true
+    },
+    {
+      "id": "packs-source-safe-and-own-slice",
+      "sourcePath": "apps/uapi/lib/mcp/bitcode-mcp-tools.ts",
+      "passed": true
+    },
+    {
+      "id": "claude-card-grants-revoke",
+      "sourcePath": "apps/uapi/components/auxillaries/AuxillariesExternalsPane/ExternalsClaudeCard/ExternalsClaudeCard.tsx",
+      "passed": true
+    },
+    {
+      "id": "claude-satisfies-externals-step",
+      "sourcePath": "apps/uapi/components/auxillaries/AuxillariesExternalsPane/hooks/use-externals-pane-state.ts",
+      "passed": true
+    },
+    {
+      "id": "plugin-targets-remote-server",
+      "sourcePath": "apps/claude/.mcp.json",
+      "passed": true
+    },
+    {
+      "id": "api-keys-hashed",
+      "sourcePath": "apps/uapi/app/api/auxillaries/api-keys/route.ts",
+      "passed": true
+    },
+    {
+      "id": "living-ci-runs-claude-external-tests",
+      "sourcePath": "scripts/run-bitcode-local-ci.mjs",
+      "passed": true
+    },
+    {
+      "id": "spec-carries-claude-external-law",
+      "sourcePath": ".specifications/BITCODE_SPEC_V49.md",
+      "passed": true
+    },
+    {
+      "id": "package-json-exposes-gate6",
+      "sourcePath": "package.json",
+      "passed": true
+    }
+  ],
+  "sourceRoots": {
+    "spec": ".specifications/BITCODE_SPEC_V49.md:cd028ee8d7d5a82e67cd4af8",
+    "registry": "packages/mcp-generics/src/bitcode-product-tools.ts:20d319961354917457cbbaa1",
+    "registryIndex": "packages/mcp-generics/src/index.ts:0978355add1977c4442fcfc1",
+    "stdioTools": "apps/mcp/src/tools/product-tools.ts:198ab34a0e360042cd33d665",
+    "mcpRoute": "apps/uapi/app/api/mcp/route.ts:5812190eedd60e92b23eab13",
+    "mcpServer": "apps/uapi/lib/mcp/bitcode-mcp-server.ts:eb67bd1e46fea178443abe7e",
+    "mcpTools": "apps/uapi/lib/mcp/bitcode-mcp-tools.ts:c9a2870d4d2a26ec5db0c7d6",
+    "mcpTransport": "apps/uapi/lib/mcp/json-response-transport.ts:1e381d64443365fac8412010",
+    "oauthService": "apps/uapi/lib/oauth/oauth-service.ts:209d53f8d14c4f414c1388d2",
+    "oauthRepository": "apps/uapi/lib/oauth/oauth-repository.ts:74a7d84cd578b80fa6d7cf3d",
+    "oauthCrypto": "apps/uapi/lib/oauth/oauth-crypto.ts:8a77ab19a8b84d427bc73091",
+    "oauthHttp": "apps/uapi/lib/oauth/oauth-http.ts:211f096833734e84433d2989",
+    "resourceMetadataRoute": "apps/uapi/app/.well-known/oauth-protected-resource/[[...path]]/route.ts:9a7cf618788daa7f8e2f8949",
+    "serverMetadataRoute": "apps/uapi/app/.well-known/oauth-authorization-server/[[...path]]/route.ts:a476fae58f2ef9a030422f7f",
+    "registerRoute": "apps/uapi/app/api/oauth/register/route.ts:76fb6c6db86da20bb1c8573d",
+    "tokenRoute": "apps/uapi/app/api/oauth/token/route.ts:605ec15578ed34e7eece7c0d",
+    "revokeRoute": "apps/uapi/app/api/oauth/revoke/route.ts:bd8e8db8041101fcc5217320",
+    "consentRoute": "apps/uapi/app/api/oauth/authorize/route.ts:d7d036d97cee1c4269701bce",
+    "consentPage": "apps/uapi/app/oauth/authorize/page.tsx:47c1dbf92dad9f92a44cad38",
+    "migration": "supabase/migrations/20261019120000_v49_claude_external_oauth.sql:2080a1eb09e02b33f7d837b9",
+    "depositRoute": "apps/uapi/app/api/deposit/synthesize-options/route.ts:f3a2214aa9064470a7dbfca6",
+    "depositCore": "apps/uapi/app/api/deposit/synthesize-options/start-deposit-synthesis.ts:15d07ddb7429bb2b9e1952dd",
+    "readRoute": "apps/uapi/app/api/read/synthesize-options/route.ts:513ff4697082dc0c825e3a23",
+    "readCore": "apps/uapi/app/api/read/synthesize-options/start-read-synthesis.ts:8e1c1e184b59649accaa9620",
+    "claudeRoute": "apps/uapi/app/api/auxillaries/claude/route.ts:ecb3d4ef8e9cac6f16c2acf7",
+    "claudeCard": "apps/uapi/components/auxillaries/AuxillariesExternalsPane/ExternalsClaudeCard/ExternalsClaudeCard.tsx:df95ef932cf17bd6044bdf1e",
+    "claudeHook": "apps/uapi/components/auxillaries/AuxillariesExternalsPane/hooks/use-claude-external.ts:f753c78281deff77f3b31b31",
+    "externalsState": "apps/uapi/components/auxillaries/AuxillariesExternalsPane/hooks/use-externals-pane-state.ts:f42589a168b391001c51e110",
+    "apiKeysRoute": "apps/uapi/app/api/auxillaries/api-keys/route.ts:c2bff467c90d863ae3bb57bd",
+    "pluginMcp": "apps/claude/.mcp.json:931ce4253b03d47e36cd8d72",
+    "pluginManifest": "apps/claude/.claude-plugin/plugin.json:792a3d40b07c629f09854c71",
+    "pluginSkill": "apps/claude/skills/bitcode/SKILL.md:83ceea4899acf346b8548359",
+    "developerManifest": "apps/claude/developer/.claude-plugin/plugin.json:1c7e6d8ec912e4fb61df5ecb",
+    "developerMcp": "apps/claude/developer/.mcp.json:9a32c7b2536afa0f0fb15311",
+    "serviceTest": "apps/uapi/tests/lib/oauthService.test.ts:c29e303039ef1542ab02ba97",
+    "e2eTest": "apps/uapi/tests/api/claudeExternalMcp.test.ts:e6fe0d15253d07cd15f18637",
+    "cardTest": "apps/uapi/tests/externalsClaudeCard.test.tsx:8bde32e763dfa0249888b8ad",
+    "apiKeysTest": "apps/uapi/tests/apiKeysRoutes.test.ts:b16045c23aeb34f4b4eee83b",
+    "localCi": "scripts/run-bitcode-local-ci.mjs:77216d9e1417759a3faa819a",
+    "packageJson": "package.json:b5323d4ff89a558515c9a3fd",
+    "protocolIndex": "scripts/specifying/src/index.js:34f6e9d7ec9e0a16757d7067",
+    "protocolTypes": "scripts/specifying/src/index.d.ts:714e25b85b8a558c2acc2881",
+    "generator": "scripts/generate-v49-claude-external.mjs:f32271e93261c2b2e78ae2d1",
+    "checker": "scripts/check-v49-gate6-claude-external.mjs:a20b8b474cb3caae022a4875",
+    "protocolTest": "scripts/specifying/test/v49-claude-external.test.js:6054a9954836e55f8de60b65"
+  },
+  "artifactRoot": "v49-claude-external:32509a35594e32a0983a9b5e",
+  "coverage": {
+    "requiredPredicateCount": 20,
+    "passedPredicateCount": 20,
+    "failedPredicateIds": [],
+    "anthropicCredentialsStored": false,
+    "plaintextTokensStored": false,
+    "sourceSafeMetadataOnly": true,
+    "protectedSourceVisible": false
+  },
+  "passed": true
+}

@@ -1153,6 +1153,11 @@ export {
   buildV49BenchmarkDeltaRelatives
 } from './canonical/v49-benchmark-delta-relatives.js';
 export {
+  V49_CLAUDE_EXTERNAL_ARTIFACT_PATH,
+  V49_CLAUDE_EXTERNAL_SCHEMA_ID,
+  buildV49ClaudeExternal
+} from './canonical/v49-claude-external.js';
+export {
   V47_READER_WEBSITE_COMPLETION_ARTIFACT_PATH,
   V47_READER_WEBSITE_COMPLETION_CURRENT_TARGET,
   V47_READER_WEBSITE_COMPLETION_ROWS,

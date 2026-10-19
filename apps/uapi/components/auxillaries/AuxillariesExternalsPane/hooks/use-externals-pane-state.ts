@@ -9,6 +9,8 @@ import { deriveBitcodeTransactionReadiness } from '@/components/bitcode/pipeline
 import { useUserData } from '@/hooks/useUserData';
 import { bitcodeQaTelemetry } from '@bitcode/auth/qa-telemetry';
 
+import { useClaudeExternal } from './use-claude-external';
+
 export function useExternalsPaneState(onCompletionStatusChange?: (isComplete: boolean) => void) {
   const { user } = useAuth();
   const {
@@ -42,10 +44,13 @@ export function useExternalsPaneState(onCompletionStatusChange?: (isComplete: bo
     telemetryProofHooks.find((hook: any) => hook?.pane === 'externals') ?? telemetryProofHooks[0] ?? null;
 
   const hasExternalsIdentity = Boolean(user || hasWalletConnection);
+  // V49 C-4: a connected Claude External satisfies the step alongside GitHub.
+  const claude = useClaudeExternal(Boolean(user));
+  const hasClaudeConnection = claude.connected;
 
   useEffect(() => {
-    onCompletionStatusChange?.(Boolean(hasExternalsIdentity && hasValidGitHubConnection));
-  }, [hasExternalsIdentity, hasValidGitHubConnection, onCompletionStatusChange]);
+    onCompletionStatusChange?.(Boolean(hasExternalsIdentity && (hasValidGitHubConnection || hasClaudeConnection)));
+  }, [hasExternalsIdentity, hasValidGitHubConnection, hasClaudeConnection, onCompletionStatusChange]);
 
   useEffect(() => {
     bitcodeQaTelemetry('info', 'auxillaries.externals', 'readiness', {
@@ -81,6 +86,8 @@ export function useExternalsPaneState(onCompletionStatusChange?: (isComplete: bo
   });
 
   return {
+    claude,
+    hasClaudeConnection,
     hasExternalsIdentity,
     hasGitHubConnection,
     hasValidGitHubConnection,

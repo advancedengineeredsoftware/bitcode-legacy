@@ -2,7 +2,7 @@
   "name": "@bitcode/mcp-generics",
   "version": "0.0.1",
   "private": true,
-  "description": "MCP primitive contracts: McpConfig, schema, validation (product-neutral)",
+  "description": "MCP primitive contracts (McpConfig, schema, validation) and the Bitcode product MCP tool registry",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "exports": {
@@ -16,5 +16,7 @@
     "@types/node": "^25.0.0",
     "typescript": "^5.0.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "zod": "^3.22.4"
+  }
 }

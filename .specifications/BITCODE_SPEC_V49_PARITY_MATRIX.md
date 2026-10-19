@@ -58,10 +58,11 @@ and `.proofs/v49/*` gate artifacts as they are generated.
 | Benchmark manifest + selection | system | `.bitcode/benchmarks.json` parse; selection route/UI | `parseBenchmarkManifest` (fail-closed); `GET /api/read/benchmarks`; `ReadsEvaluationBenchmarkPicker` → `benchmarkIds`; union with quick/Evaluation-named ids | parser + route + picker tests | implemented; promotion pending | Gate 5 |
 | Benchmark runner | realization | Sandbox baseline/candidate medians, budget, no secrets | `runBenchmarkDeltas` on VercelSandboxHost / LocalHost; post-synthesis dispatcher stage | fixture repo tests (pipeline-hosts + uapi) | implemented; promotion pending | Gate 5 |
 | Relative weighting | system | Subfamily mass table; zero-weight unmeasured benchmarks | `applyRelativeSubfamilyMasses` in `computeEvaluationFitVolume`; btd mirror for settlement BTD | relatives + btd + settle tests | implemented; promotion pending | Gate 5 |
-| Remote MCP | system | `/api/mcp` Streamable HTTP, bearer, scopes | stdio only | route tests | spec closed; source gap | Gate 6 |
-| OAuth 2.1 server | system | Metadata, DCR, PKCE, rotation, revocation, hashed storage | Not present | unit + route tests | spec closed; source gap | Gate 6 |
-| Claude External card | operator | Externals pane card, grants, revoke, onboarding | GitHub only | component tests | spec closed; source gap | Gate 6 |
-| API-key repair | system | `user_api_keys` migration; hashed issuance | Plaintext issuance; table missing | route test | spec closed; source gap | Gate 6 |
+| Remote MCP | system | `/api/mcp` Streamable HTTP, bearer, scopes | Stateless JSON-response route; scope-filtered tools from the shared registry; 401 + `WWW-Authenticate` | `claudeExternalMcp` route tests | implemented; promotion pending | Gate 6 |
+| OAuth 2.1 server | system | Metadata, DCR, PKCE, rotation, revocation, hashed storage | `createOAuthService` + Supabase repository + migration; RFC 8414 / 9728 metadata | `oauthService` unit + route tests | implemented; promotion pending | Gate 6 |
+| Claude External card | operator | Externals pane card, grants, revoke, onboarding | `ExternalsClaudeCard` + `/api/auxillaries/claude`; step completes on GitHub or Claude | card component test | implemented; promotion pending | Gate 6 |
+| API-key repair | system | `user_api_keys` migration; hashed issuance | `key_hash` + `expires_at` issuance; guarded repair migration | `apiKeysRoutes` test | implemented; promotion pending | Gate 6 |
+| Claude plugin | operator | `apps/claude` targets the remote server; developer variant separate | `bitcode` (http `.mcp.json`, product skill) + `bitcode-developer` (stdio) | plugin manifest validation | implemented; promotion pending | Gate 6 |
 | Promotion readiness | promotion | Gates 1–6 artifacts fresh; `_PROVEN_`; pointer advance | Not started | `check:v49-gate7` | drafted | Gate 7 |
 
 ## V49 implementation checklist

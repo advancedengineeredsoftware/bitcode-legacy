@@ -140,6 +140,24 @@ complete MVP:
 - Network egress during benchmark commands is not enforced by the runner; it
   relies on the Host's network policy. Commands never receive operator
   secrets (`env -i`).
+- The remote MCP server uses the SDK's low-level `Server` with a per-request
+  in-process transport in Streamable HTTP's stateless JSON-response mode: the
+  SDK 1.21 Streamable HTTP server transport needs Node `req`/`res`, which a
+  Next route handler does not have. No server-initiated stream (GET → 405).
+- Remote tool names are `deposit`, `read`, `packs`, `measure`, `auxiliary`
+  (MCP tool-name charset); the stdio server keeps its BTD contract ids. The
+  remote `measure` reads measurements of a synthesis run's options (the
+  website's measurement surface) rather than the stdio repository measure.
+- The synthesize routes were split into session-free dispatch cores so the MCP
+  tools dispatch exactly as the website does (same validation, ownership,
+  execution rows, waitUntil).
+- Signed-out consent: sign-in is an in-app Auxillaries flow without a generic
+  return path, so the consent page links to sign-in and offers Continue
+  (reload) once the session cookie exists.
+- A failed PKCE attempt consumes the authorization code (single-use regardless
+  of outcome); replaying a consumed code revokes tokens it issued.
+- `apps/mcp` `measure-tools.ts` does not typecheck at the V49 Gate 5 tip
+  (pre-existing; not in the living CI typecheck set); Gate 6 does not touch it.
 - `verificationSignals` for `test-pass-rate` / `buildability` are read but never
   set; the Gate 5 runner is the future source (deferred beyond V49 scope).
 - 46 frozen historical gate scripts reference Need vocabulary; they stay
