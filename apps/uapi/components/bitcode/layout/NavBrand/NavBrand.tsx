@@ -49,10 +49,9 @@ export const BITCODE_X_URL =
 
 const DOCS_HREF = "/docs";
 
-/**
- * Pitch deck — PDF from monorepo SoT `.bd/the-pitch.pdf` via API (no public copy).
- */
-export const BITCODE_DECK_HREF = "/api/deck";
+/** Pitch deck — hosted on Google Drive. */
+export const BITCODE_DECK_HREF =
+  "https://drive.google.com/file/d/14nUHkYWX5EOOWS1i_BY2aHKRqU2yNlt2/view?usp=drive_link";
 
 /** Soft thematic green icons; un-soften + glow on hover. */
 const logoAreaIconLinkClassName =
